@@ -94,22 +94,22 @@
 - [x] Add rate limiting (5 calls/minute)
   - [x] Test: 6th call within 1 minute returns 429
 
-### 1.5 AI Integration (`src/lib/openrouter.ts` + `src/app/api/chat/route.ts`)
-- [ ] Create OpenRouter client
-  - [ ] Support model selection
-  - [ ] Implement streaming responses
-- [ ] Create mission profile prompts (`src/lib/prompts.ts`)
-  - [ ] Template: Database Reactivation
-  - [ ] Template: Inbound Nurture
-  - [ ] Template: Customer Service
-  - [ ] Template: Review Generation
-- [ ] Create API route `POST /api/chat`
-  - [ ] Input: `{ demoId, message, history[] }`
-  - [ ] Output: Server-sent events (streaming)
-  - [ ] Test: Responds with valid AI message
-- [ ] Implement token counting for rate limits
-  - [ ] Track tokens per demo session
-  - [ ] Test: Exceeding 10,000 tokens stops responses
+### 1.5 AI Integration (`src/lib/openrouter.ts` + `src/app/api/chat/route.ts`) ✅
+- [x] Create OpenRouter client
+  - [x] Support model selection
+  - [x] Implement streaming responses
+- [x] Create mission profile prompts (`src/lib/prompts.ts`)
+  - [x] Template: Database Reactivation
+  - [x] Template: Inbound Nurture
+  - [x] Template: Customer Service
+  - [x] Template: Review Generation
+- [x] Create API route `POST /api/chat`
+  - [x] Input: `{ demoId, message, history[] }`
+  - [x] Output: Server-sent events (streaming)
+  - [x] Test: Responds with valid AI message
+- [x] Implement token counting for rate limits
+  - [x] Track tokens per demo session
+  - [x] Test: Exceeding 10,000 tokens stops responses
 
 ### 1.6 Demo Builder Page (`src/app/lab/page.tsx`)
 - [ ] Create 3-panel layout component
