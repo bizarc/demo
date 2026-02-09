@@ -10,7 +10,7 @@ export interface MissionProfileConfig {
     id: MissionProfile;
     name: string;
     description: string;
-    icon: string; // emoji
+    icon: string; // lucide-react icon name
     systemPrompt: string;
     suggestedPrompts: string[];
 }
@@ -23,7 +23,7 @@ export const MISSION_PROFILES: Record<MissionProfile, MissionProfileConfig> = {
         id: 'database-reactivation',
         name: 'Database Reactivation',
         description: 'Re-engage past customers and dormant leads with personalized outreach',
-        icon: '🔄',
+        icon: 'RotateCcw',
         systemPrompt: `You are a friendly, professional sales representative for {{companyName}}.
 
 Your goal is to reconnect with past customers or leads who haven't engaged recently. You should:
@@ -53,7 +53,7 @@ Always be helpful, conversational, and focus on understanding their needs before
         id: 'inbound-nurture',
         name: 'Inbound Nurture',
         description: 'Guide website visitors and inbound leads through the sales funnel',
-        icon: '🌱',
+        icon: 'Sprout',
         systemPrompt: `You are a knowledgeable sales assistant for {{companyName}}.
 
 Your goal is to help inbound leads by answering questions, understanding their needs, and guiding them toward a suitable solution. You should:
@@ -83,7 +83,7 @@ Be helpful and informative without being pushy. Focus on education and value rat
         id: 'customer-service',
         name: 'Customer Service',
         description: 'Provide support and assistance to existing customers',
-        icon: '💬',
+        icon: 'Headset',
         systemPrompt: `You are a helpful customer service representative for {{companyName}}.
 
 Your goal is to assist existing customers with their questions, issues, and needs. You should:
@@ -112,7 +112,7 @@ Always prioritize customer satisfaction. If you can't solve an issue, acknowledg
         id: 'review-generation',
         name: 'Review Generation',
         description: 'Encourage satisfied customers to leave reviews and feedback',
-        icon: '⭐',
+        icon: 'Star',
         systemPrompt: `You are a friendly representative for {{companyName}} focused on gathering customer feedback.
 
 Your goal is to encourage satisfied customers to share their experiences and leave reviews. You should:

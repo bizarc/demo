@@ -111,28 +111,28 @@
   - [x] Track tokens per demo session
   - [x] Test: Exceeding 10,000 tokens stops responses
 
-### 1.6 Demo Builder Page (`src/app/lab/page.tsx`)
-- [ ] Create 3-panel layout component
-  - [ ] Left: Step indicator sidebar
-  - [ ] Center: Configuration form
-  - [ ] Right: Live chat preview
-- [ ] Implement Step 1: Mission Profile
-  - [ ] 4 selectable cards (Reactivation, Nurture, Service, Review)
-  - [ ] Store selection in form state
-- [ ] Implement Step 2: Target Website
-  - [ ] URL input with validation
-  - [ ] "Scrape" button triggers `/api/scrape`
-  - [ ] Display scraped content preview
-- [ ] Implement Step 3: Context
-  - [ ] Editable fields: products, offers, qualifications
-  - [ ] Auto-populated from scrape results
-- [ ] Implement Step 4: Model Selection
-  - [ ] Dropdown with OpenRouter models
-  - [ ] Model info display (cost, speed, context)
-- [ ] Implement Step 5: Summary & Create
-  - [ ] Review all settings
-  - [ ] "Create Demo" saves to Supabase
-  - [ ] Redirect to Magic Link Display
+### 1.6 Demo Builder Page (`src/app/lab/page.tsx`) ✅
+- [x] Create 3-panel layout component
+  - [x] Left: Step indicator sidebar
+  - [x] Center: Configuration form
+  - [x] Right: Live chat preview
+- [x] Implement Step 1: Mission Profile
+  - [x] 4 selectable cards (Reactivation, Nurture, Service, Review)
+  - [x] Store selection in form state
+- [x] Implement Step 2: Target Website
+  - [x] URL input with validation
+  - [x] "Scrape" button triggers `/api/scrape`
+  - [x] Display scraped content preview
+- [x] Implement Step 3: Context
+  - [x] Editable fields: products, offers, qualifications
+  - [x] Auto-populated from scrape results
+- [x] Implement Step 4: Model Selection
+  - [x] Dropdown with OpenRouter models
+  - [x] Model info display (cost, speed, context)
+- [x] Implement Step 5: Summary & Create
+  - [x] Review all settings
+  - [x] "Create Demo" saves to Supabase
+  - [x] Redirect to Magic Link Display
 
 ### 1.7 Demo API (`src/app/api/demo/route.ts`)
 - [ ] Implement `POST /api/demo` - Create demo
