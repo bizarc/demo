@@ -44,26 +44,40 @@
 - [x] Set up Row Level Security (RLS) policies
 - [x] Generate TypeScript types: `npx supabase gen types typescript`
 
-### 1.3 Design System Components (`src/components/ui/`)
-- [ ] Create `Button` component
-  - [ ] Variants: primary, secondary, ghost, destructive
-  - [ ] States: default, hover, disabled, loading
-  - [ ] Test: Renders all variants correctly
-- [ ] Create `Input` component
-  - [ ] Variants: default, with icon, with badge, error
-  - [ ] Test: Focus states, error display
-- [ ] Create `Card` component
-  - [ ] Variants: basic, interactive, selected
-  - [ ] Test: Hover lift effect
-- [ ] Create `Badge` component
-  - [ ] Variants: live, draft, archived, type
-  - [ ] Test: Correct colors per variant
-- [ ] Create `StepIndicator` component
-  - [ ] Props: steps[], currentStep, completedSteps[]
-  - [ ] Test: Active/completed/future states
-- [ ] Create `Avatar` component
-  - [ ] Variants: user (initials), agent (icon), with status
-  - [ ] Test: Status dot rendering
+### 1.3 Design System Components (`src/components/ui/`) ✅
+
+#### Core Components
+- [x] `Button` — primary, secondary, ghost, destructive + states (hover, disabled, loading)
+- [x] `Input` — default, with icon, with badge, error state
+- [x] `Card` — basic, interactive (hover), selected (blue accent)
+- [x] `Badge` — live, draft, archived, type
+- [x] `Avatar` — user (initials), agent (icon), with status dot
+
+#### Form Controls
+- [x] `Select` — single select with search
+- [x] `Checkbox` — checked/unchecked/indeterminate
+- [x] `Radio` — radio group
+- [x] `Toggle` — on/off switch
+- [x] `Textarea` — multi-line input
+
+#### Navigation
+- [x] `Tabs` — horizontal tabs with active state
+- [x] `Breadcrumbs` — clickable path navigation
+- [x] `StepIndicator` — numbered steps (active/completed/future)
+- [x] `TopNav` — header bar with back, title, actions
+- [x] `Sidebar` — collapsible with icons/labels
+
+#### Feedback & Overlays
+- [x] `Modal` — dialog with backdrop
+- [x] `Toast` — notification messages
+- [x] `Skeleton` — loading placeholder
+- [x] `Spinner` — loading indicator
+- [x] `EmptyState` — icon + message + CTA
+
+#### Data Display
+- [x] `Divider` — horizontal separator
+- [x] `IconButton` — icon-only button
+- [x] `ChatBubble` — agent (white) and user (blue) variants
 
 ### 1.4 URL Scraper (`src/lib/scraper.ts` + `src/app/api/scrape/route.ts`)
 - [ ] Implement Cheerio-based scraper
