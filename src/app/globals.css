@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+/* ==========================================
+   THE LAB Design System Tokens
+   Based on DESIGN.md (Palantir AIP Style)
+   ========================================== */
+
+:root {
+  /* Brand Colors */
+  --color-primary: #2563EB;        /* Foundry Blue */
+  --color-success: #0F9D58;        /* Success Green */
+  --color-warning: #F59E0B;        /* Warning Amber */
+  --color-error: #EF4444;          /* Error Red */
+
+  /* Neutral Palette */
+  --color-canvas: #F8F9FA;         /* Page background */
+  --color-surface: #FFFFFF;        /* Cards, panels */
+  --color-border: #E5E7EB;         /* Borders, dividers */
+  --color-border-subtle: #F3F4F6;  /* Hover backgrounds */
+
+  /* Text Colors */
+  --color-text-primary: #111827;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-text-inverse: #FFFFFF;
+
+  /* Spacing */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+}
+
+/* Tailwind CSS v4 Theme Configuration */
+@theme inline {
+  /* Colors */
+  --color-primary: var(--color-primary);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
+
+  --color-canvas: var(--color-canvas);
+  --color-surface: var(--color-surface);
+  --color-border: var(--color-border);
+  --color-border-subtle: var(--color-border-subtle);
+
+  --color-foreground: var(--color-text-primary);
+  --color-foreground-secondary: var(--color-text-secondary);
+  --color-foreground-muted: var(--color-text-muted);
+
+  /* Font */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* Base Styles */
+body {
+  background: var(--color-canvas);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Remove dark mode override - single light theme */

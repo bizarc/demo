@@ -1,6 +1,16 @@
 # Agents & Team
 
-This document describes the AI agents and team members contributing to the Funnel Finished project.
+This document describes the AI agents and team members contributing to THE LAB project.
+
+---
+
+## Critical Files
+
+| File | Purpose |
+|------|---------|
+| `task.md` | **Task tracker** — Check before starting work, update after completing tasks |
+| `IMPLEMENTATION_PLAN.md` | Architecture, data models, technical decisions |
+| `DESIGN.md` | Design system tokens, colors, typography, component specs |
 
 ---
 
@@ -47,34 +57,75 @@ This document describes the AI agents and team members contributing to the Funne
 
 ## Workflow
 
-### Design Phase (Current)
-1. **Antigravity** generates design options using Stitch skills
-2. **Team** reviews and selects preferred designs
-3. **Antigravity** creates `DESIGN.md` with approved tokens
+### Before Starting Work
+1. **Check `task.md`** — Identify the next uncompleted task
+2. **Mark task `[/]`** — Indicate work in progress
+3. **Review dependencies** — Ensure prerequisite tasks are complete
 
-### Implementation Phase
-1. **Antigravity** implements core architecture and complex features
-2. **Jules** handles well-scoped feature tasks via GitHub issues
-3. Both agents commit to the shared repository
+### During Development
+1. **Follow `DESIGN.md`** — Use exact colors, fonts, spacing
+2. **Reference `IMPLEMENTATION_PLAN.md`** — Match architecture decisions
+3. **Commit small, focused changes** — One logical change per commit
 
-### Code Review
-- All PRs reviewed before merge
-- Agents can review each other's code
-- Human approval required for critical changes
+### Before Committing
+
+> ⚠️ **MANDATORY VALIDATION** — All code must pass these checks:
+
+```bash
+# 1. Lint check
+npm run lint
+
+# 2. Type check (if configured)
+npm run typecheck
+
+# 3. Run tests
+npm run test
+
+# 4. Build check
+npm run build
+```
+
+**If any check fails:**
+- Fix the issue before committing
+- Do NOT commit with `--no-verify`
+
+### After Completing Work
+1. **Mark task `[x]`** in `task.md`
+2. **Update related documentation** if needed
+3. **Create PR with clear description** linking to completed task
 
 ---
 
-## Communication
+## Code Quality Standards
 
-### Task Assignment
+### Required Before Merge
+- [ ] All lint errors resolved
+- [ ] TypeScript compiles without errors
+- [ ] All tests pass
+- [ ] New features have tests
+- [ ] Follows design system (colors, spacing, components)
+
+### Code Review Checklist
+- [ ] Logic is correct
+- [ ] No security vulnerabilities
+- [ ] Error handling is appropriate
+- [ ] Performance is acceptable
+- [ ] Accessibility standards met
+
+---
+
+## Task Assignment
+
+### For Antigravity
+- Pick tasks from `task.md` marked `[ ]`
+- Prioritize in order (top to bottom within sections)
+- Update task status in `task.md`
+
+### For Jules
 - Create GitHub issues with clear specifications
-- Tag appropriate agent in issue description
+- Reference specific tasks from `task.md`
 - Include acceptance criteria
-
-### Handoffs
-- Use PR descriptions for context
-- Link related issues
-- Document decisions in code comments or docs
+- Tag with `jules` label
 
 ---
 
@@ -87,19 +138,29 @@ This document describes the AI agents and team members contributing to the Funne
 
 ---
 
-## Getting Started
+## Quick Reference
 
-### For Antigravity
-Already configured in this workspace.
+### Design Tokens (from DESIGN.md)
+```
+Primary:     #2563EB (Foundry Blue)
+Success:     #0F9D58 (Green)
+Warning:     #F59E0B (Amber)
+Error:       #EF4444 (Red)
+Background:  #F8F9FA (Canvas)
+Surface:     #FFFFFF (Cards)
+Border:      #E5E7EB
+Text:        #111827 / #6B7280 / #9CA3AF
+Font:        Inter (Sans), JetBrains Mono (Code)
+Radius:      6-8px
+```
 
-### For Jules
-```bash
-# Install (already done)
-npm install -g @google/jules
-
-# Login (already done)
-jules login
-
-# Assign work via GitHub issues
-# Jules will pick up issues and create PRs
+### Project Structure
+```
+src/
+├── app/              # Next.js App Router pages
+├── components/
+│   ├── ui/           # Design system components
+│   ├── lab/          # Demo builder components
+│   └── demo/         # Chat experience components
+└── lib/              # Utilities (scraper, openrouter, prompts)
 ```
