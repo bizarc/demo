@@ -34,15 +34,15 @@
   - [x] Document: `OPENROUTER_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`
 
 ### 1.2 Supabase Setup
-- [ ] Create Supabase project
-- [ ] Create `demos` table
-  - [ ] Schema: id, created_at, expires_at, company_name, industry, website_url, products_services, offers, qualification_criteria, logo_url, primary_color, secondary_color, mission_profile, openrouter_model, system_prompt
-  - [ ] Validate: Run `SELECT * FROM demos LIMIT 1`
-- [ ] Create `rate_limits` config table
-  - [ ] Schema: key, value, description
-  - [ ] Insert defaults: messages_per_demo=50, demos_per_hour=10
-- [ ] Set up Row Level Security (RLS) policies
-- [ ] Generate TypeScript types: `npx supabase gen types typescript`
+- [x] Create Supabase project
+- [x] Create `demos` table
+  - [x] Schema: id, created_at, expires_at, company_name, industry, website_url, products_services, offers, qualification_criteria, logo_url, primary_color, secondary_color, mission_profile, openrouter_model, system_prompt
+  - [x] Validate: Run `SELECT * FROM demos LIMIT 1`
+- [x] Create `rate_limits` config table
+  - [x] Schema: key, value, description
+  - [x] Insert defaults: messages_per_demo=50, demos_per_hour=10
+- [x] Set up Row Level Security (RLS) policies
+- [x] Generate TypeScript types: `npx supabase gen types typescript`
 
 ### 1.3 Design System Components (`src/components/ui/`)
 - [ ] Create `Button` component
