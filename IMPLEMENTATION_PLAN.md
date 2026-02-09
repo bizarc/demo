@@ -67,7 +67,9 @@ Use Stitch to generate multiple design system options:
 | **Backend** | Next.js API Routes | Serverless, periodic usage pattern |
 | **Scraping** | Cheerio + Jina fallback | Free, fast, handles most sites |
 | **AI** | OpenRouter (user-selectable model) | Flexibility, cost control |
-| **Storage** | TBD (in-memory vs. Vercel KV) | Decide before Phase 1 |
+| **Storage** | Supabase (PostgreSQL) | Persistent, real-time capable, generous free tier |
+| **Link Expiration** | 7 days default | Configurable per demo |
+| **Rate Limiting** | Configurable from start | Prevent abuse, control costs |
 
 ---
 
@@ -136,8 +138,23 @@ src/
 
 ---
 
-## Open Questions
+## Decisions Made
 
-1. **Demo Storage**: In-memory (resets on deploy) or persistent (Vercel KV/Supabase)?
-2. **Link Expiration**: 7 days default?
-3. **Usage Limits**: Rate limiting from start?
+| Question | Decision |
+|----------|----------|
+| **Demo Storage** | Supabase (PostgreSQL) |
+| **Link Expiration** | 7 days default (configurable) |
+| **Rate Limiting** | Configurable limits from start |
+
+---
+
+## Rate Limiting Strategy
+
+| Limit Type | Default | Configurable |
+|------------|---------|-------------|
+| **Messages per demo session** | 50 | Yes |
+| **Demos created per hour** | 10 | Yes |
+| **API calls per minute (scraping)** | 5 | Yes |
+| **OpenRouter tokens per demo** | 10,000 | Yes |
+
+Limits stored in Supabase config table for easy adjustment without redeployment.
