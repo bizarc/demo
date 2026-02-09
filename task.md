@@ -79,20 +79,20 @@
 - [x] `IconButton` — icon-only button
 - [x] `ChatBubble` — agent (white) and user (blue) variants
 
-### 1.4 URL Scraper (`src/lib/scraper.ts` + `src/app/api/scrape/route.ts`)
-- [ ] Implement Cheerio-based scraper
-  - [ ] Extract: title, meta description, h1, body text
-  - [ ] Extract: logo (og:image or favicon)
-  - [ ] Extract: Primary colors from CSS/meta
-- [ ] Implement Jina AI fallback
-  - [ ] Use Jina Reader API for JS-heavy sites
-  - [ ] Return structured markdown
-- [ ] Create API route `POST /api/scrape`
-  - [ ] Input: `{ url: string }`
-  - [ ] Output: `{ companyName, industry, products, offers, logoUrl, colors }`
-  - [ ] Test: Scrape example.com successfully
-- [ ] Add rate limiting (5 calls/minute)
-  - [ ] Test: 6th call within 1 minute returns 429
+### 1.4 URL Scraper (`src/lib/scraper.ts` + `src/app/api/scrape/route.ts`) ✅
+- [x] Implement Cheerio-based scraper
+  - [x] Extract: title, meta description, h1, body text
+  - [x] Extract: logo (og:image or favicon)
+  - [x] Extract: Primary colors from CSS/meta
+- [x] Implement Jina AI fallback
+  - [x] Use Jina Reader API for JS-heavy sites
+  - [x] Return structured markdown
+- [x] Create API route `POST /api/scrape`
+  - [x] Input: `{ url: string }`
+  - [x] Output: `{ companyName, industry, products, offers, logoUrl, colors }`
+  - [x] Test: Scrape example.com successfully
+- [x] Add rate limiting (5 calls/minute)
+  - [x] Test: 6th call within 1 minute returns 429
 
 ### 1.5 AI Integration (`src/lib/openrouter.ts` + `src/app/api/chat/route.ts`)
 - [ ] Create OpenRouter client
