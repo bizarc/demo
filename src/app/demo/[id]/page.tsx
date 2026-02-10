@@ -100,6 +100,9 @@ function DemoChat() {
     const handleSend = async (text: string = input) => {
         if (!text.trim() || isSending || !config) return;
 
+        // Use localStorage as source of truth for leadId (avoids race where state is empty on first send)
+        const effectiveLeadId = typeof window !== 'undefined' ? localStorage.getItem(`lead_${demoId}`) : null;
+
         const userMsg: Message = { role: 'user', content: text, created_at: new Date().toISOString() };
         setMessages(prev => [...prev, userMsg]);
         setInput('');
@@ -112,7 +115,7 @@ function DemoChat() {
                 body: JSON.stringify({
                     demoId,
                     message: text,
-                    leadIdentifier: leadId,
+                    leadIdentifier: effectiveLeadId || leadId,
                     // We don't verify history on client for security, but we could send it for fallback
                     // API handles loading history from DB now
                 }),
@@ -140,8 +143,9 @@ function DemoChat() {
                         if (data === '[DONE]') break;
                         try {
                             const parsed = JSON.parse(data);
-                            if (parsed.content) {
-                                assistantMsg.content += parsed.content;
+                            const tokenToAppend = parsed.token ?? parsed.content;
+                            if (tokenToAppend) {
+                                assistantMsg.content += tokenToAppend;
                                 setMessages(prev => {
                                     const newMsgs = [...prev];
                                     newMsgs[newMsgs.length - 1] = { ...assistantMsg };

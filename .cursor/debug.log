@@ -1,0 +1,33 @@
+{"location":"demo/page.tsx:historyLoaded","message":"Chat history loaded","data":{"msgCount":0},"timestamp":1770753558790,"hypothesisId":"H4"}
+{"location":"demo/page.tsx:streamStart","message":"Stream started","data":{"msgIndex":0},"timestamp":1770753576730,"hypothesisId":"H1"}
+{"location":"demo/page.tsx:parsed","message":"SSE parsed","data":{"streamChunkCount":1,"hasContent":false,"hasToken":true,"contentLen":0,"tokenLen":5,"keys":["token","remaining","sessionId"]},"timestamp":1770753576731,"hypothesisId":"H1"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":1,"contentLen":5},"timestamp":1770753576731,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:parsed","message":"SSE parsed","data":{"streamChunkCount":2,"hasContent":false,"hasToken":true,"contentLen":0,"tokenLen":4,"keys":["token","remaining","sessionId"]},"timestamp":1770753576732,"hypothesisId":"H1"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":2,"contentLen":9},"timestamp":1770753576732,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":10,"contentLen":44},"timestamp":1770753577017,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:parsed","message":"SSE parsed","data":{"streamChunkCount":20,"hasContent":false,"hasToken":true,"contentLen":0,"tokenLen":6,"keys":["token","remaining","sessionId"]},"timestamp":1770753577026,"hypothesisId":"H1"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":20,"contentLen":96},"timestamp":1770753577026,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":30,"contentLen":162},"timestamp":1770753577123,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:parsed","message":"SSE parsed","data":{"streamChunkCount":40,"hasContent":false,"hasToken":true,"contentLen":0,"tokenLen":8,"keys":["token","remaining","sessionId"]},"timestamp":1770753577259,"hypothesisId":"H1"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":40,"contentLen":223},"timestamp":1770753577259,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":50,"contentLen":270},"timestamp":1770753577461,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:parsed","message":"SSE parsed","data":{"streamChunkCount":60,"hasContent":false,"hasToken":true,"contentLen":0,"tokenLen":7,"keys":["token","remaining","sessionId"]},"timestamp":1770753577780,"hypothesisId":"H1"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":60,"contentLen":322},"timestamp":1770753577780,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":70,"contentLen":375},"timestamp":1770753578097,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:streamEnd","message":"Stream ended","data":{"streamChunkCount":79,"appendCount":79,"finalContentLen":426},"timestamp":1770753578338,"hypothesisId":"H1"}
+{"location":"demo/page.tsx:streamStart","message":"Stream started","data":{"msgIndex":0},"timestamp":1770753596920,"hypothesisId":"H1"}
+{"location":"demo/page.tsx:parsed","message":"SSE parsed","data":{"streamChunkCount":1,"hasContent":false,"hasToken":true,"contentLen":0,"tokenLen":5,"keys":["token","remaining","sessionId"]},"timestamp":1770753596920,"hypothesisId":"H1"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":2,"contentLen":9},"timestamp":1770753596921,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":1,"contentLen":5},"timestamp":1770753596921,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:parsed","message":"SSE parsed","data":{"streamChunkCount":2,"hasContent":false,"hasToken":true,"contentLen":0,"tokenLen":4,"keys":["token","remaining","sessionId"]},"timestamp":1770753596921,"hypothesisId":"H1"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":10,"contentLen":44},"timestamp":1770753597102,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:parsed","message":"SSE parsed","data":{"streamChunkCount":20,"hasContent":false,"hasToken":true,"contentLen":0,"tokenLen":6,"keys":["token","remaining","sessionId"]},"timestamp":1770753597255,"hypothesisId":"H1"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":20,"contentLen":96},"timestamp":1770753597256,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":30,"contentLen":162},"timestamp":1770753597420,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:parsed","message":"SSE parsed","data":{"streamChunkCount":40,"hasContent":false,"hasToken":true,"contentLen":0,"tokenLen":8,"keys":["token","remaining","sessionId"]},"timestamp":1770753597582,"hypothesisId":"H1"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":40,"contentLen":223},"timestamp":1770753597583,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":50,"contentLen":270},"timestamp":1770753597863,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:parsed","message":"SSE parsed","data":{"streamChunkCount":60,"hasContent":false,"hasToken":true,"contentLen":0,"tokenLen":7,"keys":["token","remaining","sessionId"]},"timestamp":1770753598152,"hypothesisId":"H1"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":60,"contentLen":322},"timestamp":1770753598153,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:appended","message":"Appended to assistantMsg","data":{"appendCount":70,"contentLen":375},"timestamp":1770753598296,"hypothesisId":"H5"}
+{"location":"demo/page.tsx:streamEnd","message":"Stream ended","data":{"streamChunkCount":79,"appendCount":79,"finalContentLen":426},"timestamp":1770753598586,"hypothesisId":"H1"}
