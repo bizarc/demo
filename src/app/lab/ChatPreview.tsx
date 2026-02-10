@@ -39,19 +39,74 @@ export function ChatPreview({ formData }: ChatPreviewProps) {
         if (!input.trim() || loading || !missionProfile) return;
         const userMessage = input.trim();
         setInput('');
-        setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+
+        const updatedMessages: Message[] = [...messages, { role: 'user', content: userMessage }];
+        setMessages(updatedMessages);
         setLoading(true);
 
-        setTimeout(() => {
-            const responses = [
-                `Thanks for your interest in ${formData.companyName || 'our company'}! How can I help you today?`,
-                `That's a great question. Let me tell you more about what we offer.`,
-                `I'd be happy to help you with that. Could you tell me a bit more about your needs?`,
-            ];
-            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-            setMessages(prev => [...prev, { role: 'assistant', content: randomResponse }]);
-            setLoading(false);
-        }, 1000);
+        try {
+            // Build history from previous messages (exclude the initial greeting)
+            const history = updatedMessages
+                .filter((_, i) => i > 0) // skip initial greeting
+                .slice(0, -1) // exclude the message we're about to send
+                .map(m => ({ role: m.role, content: m.content }));
+
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    demoId: 'preview',
+                    message: userMessage,
+                    history,
+                }),
+            });
+
+            if (!res.ok || !res.body) {
+                const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+                setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.error}` }]);
+                setLoading(false);
+                return;
+            }
+
+            // Stream the response
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let assistantContent = '';
+
+            // Add empty assistant message that we'll update
+            setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
+
+                for (const line of lines) {
+                    const data = line.replace('data: ', '');
+                    if (data === '[DONE]') continue;
+
+                    try {
+                        const parsed = JSON.parse(data);
+                        if (parsed.token) {
+                            assistantContent += parsed.token;
+                            setMessages(prev => {
+                                const updated = [...prev];
+                                updated[updated.length - 1] = { role: 'assistant', content: assistantContent };
+                                return updated;
+                            });
+                        }
+                    } catch {
+                        // skip malformed SSE lines
+                    }
+                }
+            }
+        } catch {
+            setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }]);
+        }
+
+        setLoading(false);
     };
 
     if (!missionProfile) {

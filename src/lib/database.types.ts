@@ -86,6 +86,99 @@ export interface Database {
                 }
                 Relationships: []
             }
+            leads: {
+                Row: {
+                    id: string
+                    demo_id: string
+                    identifier: string
+                    identifier_type: 'email' | 'phone' | 'anonymous'
+                    display_name: string | null
+                    created_at: string
+                    last_seen_at: string
+                    metadata: Json
+                }
+                Insert: {
+                    id?: string
+                    demo_id: string
+                    identifier: string
+                    identifier_type: 'email' | 'phone' | 'anonymous'
+                    display_name?: string | null
+                    created_at?: string
+                    last_seen_at?: string
+                    metadata?: Json
+                }
+                Update: {
+                    id?: string
+                    demo_id?: string
+                    identifier?: string
+                    identifier_type?: 'email' | 'phone' | 'anonymous'
+                    display_name?: string | null
+                    created_at?: string
+                    last_seen_at?: string
+                    metadata?: Json
+                }
+                Relationships: []
+            }
+            sessions: {
+                Row: {
+                    id: string
+                    lead_id: string
+                    demo_id: string
+                    channel: 'chat' | 'voice' | 'sms'
+                    created_at: string
+                    ended_at: string | null
+                    metadata: Json
+                }
+                Insert: {
+                    id?: string
+                    lead_id: string
+                    demo_id: string
+                    channel?: 'chat' | 'voice' | 'sms'
+                    created_at?: string
+                    ended_at?: string | null
+                    metadata?: Json
+                }
+                Update: {
+                    id?: string
+                    lead_id?: string
+                    demo_id?: string
+                    channel?: 'chat' | 'voice' | 'sms'
+                    created_at?: string
+                    ended_at?: string | null
+                    metadata?: Json
+                }
+                Relationships: []
+            }
+            messages: {
+                Row: {
+                    id: string
+                    session_id: string
+                    role: 'system' | 'user' | 'assistant'
+                    content: string
+                    created_at: string
+                    token_count: number
+                    metadata: Json
+                }
+                Insert: {
+                    id?: string
+                    session_id: string
+                    role: 'system' | 'user' | 'assistant'
+                    content: string
+                    created_at?: string
+                    token_count?: number
+                    metadata?: Json
+                }
+                Update: {
+                    id?: string
+                    session_id?: string
+                    role?: 'system' | 'user' | 'assistant'
+                    content?: string
+                    created_at?: string
+                    token_count?: number
+                    metadata?: Json
+                }
+                Relationships: []
+            }
         }
         Views: {
             [_ in never]: never
@@ -106,3 +199,9 @@ export interface Database {
 export type Demo = Database['public']['Tables']['demos']['Row'];
 export type DemoInsert = Database['public']['Tables']['demos']['Insert'];
 export type RateLimit = Database['public']['Tables']['rate_limits']['Row'];
+export type Lead = Database['public']['Tables']['leads']['Row'];
+export type LeadInsert = Database['public']['Tables']['leads']['Insert'];
+export type Session = Database['public']['Tables']['sessions']['Row'];
+export type SessionInsert = Database['public']['Tables']['sessions']['Insert'];
+export type Message = Database['public']['Tables']['messages']['Row'];
+export type MessageInsert = Database['public']['Tables']['messages']['Insert'];

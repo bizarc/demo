@@ -49,10 +49,22 @@ Use Stitch to generate multiple design system options:
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│               Demo Experience (External)                    │
-│  ┌───────────────────┐  ┌─────────────────────────────────┐│
-│  │ Branded Chat UI   │←→│ OpenRouter API (Streaming)      ││
-│  └───────────────────┘  └─────────────────────────────────┘│
+│              Demo Experience (External)                     │
+│  ┌──────┐  ┌──────┐  ┌──────┐                              │
+│  │ Chat │  │Voice │  │ SMS  │  ← Channels                  │
+│  └──┬───┘  └──┬───┘  └──┬───┘                              │
+│     └─────────┼─────────┘                                  │
+│               ↓                                            │
+│  ┌─────────────────────────────────────────────┐           │
+│  │ Conversation Engine (sessions + messages)   │           │
+│  │  → Lead identification                      │           │
+│  │  → Unified history across channels          │           │
+│  │  → Token tracking & rate limiting           │           │
+│  └──────────────────┬──────────────────────────┘           │
+│                     ↓                                      │
+│  ┌─────────────────────────────────────────────┐           │
+│  │ OpenRouter API (Streaming)                  │           │
+│  └─────────────────────────────────────────────┘           │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -101,6 +113,49 @@ interface DemoConfig {
 }
 ```
 
+### Conversation Engine (leads, sessions, messages)
+
+Every interaction — chat, voice, SMS — flows through the same conversation engine. A **lead** is a unique person interacting with a demo, identified by phone, email, or anonymous browser fingerprint. Each lead can have multiple **sessions** across channels, and the full history is available to the LLM for context.
+
+```typescript
+interface Lead {
+  id: string;              // UUID
+  demo_id: string;         // FK → demos
+  identifier: string;      // email, phone, or anon cookie
+  identifier_type: 'email' | 'phone' | 'anonymous';
+  display_name?: string;   // extracted from conversation or provided
+  created_at: Date;
+  last_seen_at: Date;
+  metadata: Record<string, unknown>;  // custom attributes
+}
+
+interface Session {
+  id: string;              // UUID
+  lead_id: string;         // FK → leads
+  demo_id: string;         // FK → demos
+  channel: 'chat' | 'voice' | 'sms';
+  created_at: Date;
+  ended_at?: Date;
+  metadata: Record<string, unknown>;  // user agent, device, etc.
+}
+
+interface Message {
+  id: string;              // UUID
+  session_id: string;      // FK → sessions
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+  created_at: Date;
+  token_count: number;
+  metadata: Record<string, unknown>;  // voice duration, STT confidence, etc.
+}
+```
+
+**Key design decisions:**
+- Token tracking moves from in-memory `Map` → `SUM(token_count)` on the `messages` table
+- Chat API loads a lead's full message history (across sessions) to feed the LLM
+- The builder preview uses client-side state only (throwaway, no session needed)
+- Client-facing dashboards can show a unified timeline per lead across all channels
+
 ---
 
 ## Mission Profiles
@@ -120,11 +175,13 @@ interface DemoConfig {
 src/
 ├── app/
 │   ├── lab/page.tsx              # Demo Builder
-│   ├── demo/[id]/page.tsx        # Magic Link page
+│   ├── lab/success/page.tsx      # Magic Link Display
+│   ├── demo/[id]/page.tsx        # Magic Link Chat
 │   └── api/
 │       ├── scrape/route.ts
-│       ├── demo/route.ts
-│       └── chat/route.ts
+│       ├── demo/route.ts         # POST create demo
+│       ├── demo/[id]/route.ts    # GET demo by ID
+│       └── chat/route.ts         # POST chat (session-aware)
 ├── components/
 │   ├── ui/                       # Design system
 │   ├── lab/                      # Demo builder
@@ -132,7 +189,11 @@ src/
 ├── lib/
 │   ├── openrouter.ts
 │   ├── scraper.ts
-│   └── prompts.ts
+│   ├── prompts.ts
+│   ├── supabase.ts
+│   └── database.types.ts
+├── supabase/
+│   └── migrations/
 └── styles/
 ```
 

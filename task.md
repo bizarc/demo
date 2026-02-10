@@ -146,6 +146,24 @@
   - [x] Return demo config (exclude sensitive data)
   - [x] Test: Returns 404 for expired demos
 
+### 1.7a Conversation Engine (leads, sessions, messages)
+- [/] Create Supabase migration for `leads`, `sessions`, `messages` tables
+  - [x] `leads`: id, demo_id, identifier, identifier_type, display_name, metadata
+  - [x] `sessions`: id, lead_id, demo_id, channel, created_at, ended_at, metadata
+  - [x] `messages`: id, session_id, role, content, created_at, token_count, metadata
+  - [x] RLS policies for each table
+  - [x] Indexes on demo_id, lead_id, session_id
+  - [ ] **Run migration in Supabase SQL Editor** (requires login)
+- [x] Update `database.types.ts` with new table types
+- [x] Refactor `POST /api/chat` to be session-aware
+  - [x] Create or find lead by identifier (anonymous cookie for chat)
+  - [x] Create session on first message
+  - [x] Load lead's full message history from DB
+  - [x] Save user + assistant messages after each turn
+  - [x] Move token tracking from in-memory Map → `SUM(token_count)` on messages
+- [x] Fix builder preview to send client-side history (no sessions needed)
+- [ ] Test: Conversation context persists across messages (blocked on migration)
+
 ### 1.8 Magic Link Display (`src/app/lab/success/page.tsx`)
 - [ ] Display generated magic link URL
 - [ ] Implement copy-to-clipboard button
@@ -160,6 +178,10 @@
   - [ ] Handle expired/invalid demos (error page)
 - [ ] Implement branded header
   - [ ] Company logo, name, online status
+- [ ] Implement session-aware chat
+  - [ ] Create lead (anonymous) + session on first visit
+  - [ ] Chat messages saved to DB via conversation engine
+  - [ ] Full history persists across page refreshes
 - [ ] Implement chat message list
   - [ ] Agent bubbles (white, left)
   - [ ] User bubbles (blue, right)
