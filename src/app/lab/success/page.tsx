@@ -10,10 +10,12 @@ function SuccessContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const demoId = searchParams.get('id');
-    const [magicLink, setMagicLink] = useState('');
+    const magicLink = (typeof window !== 'undefined' && demoId)
+        ? `${window.location.origin}/demo/${demoId}`
+        : '';
     const [qrCodeData, setQrCodeData] = useState('');
     const [copied, setCopied] = useState(false);
-    const [demo, setDemo] = useState<any>(null);
+    const [demo, setDemo] = useState<{ company_name?: string } | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -22,11 +24,8 @@ function SuccessContent() {
             return;
         }
 
-        const link = `${window.location.origin}/demo/${demoId}`;
-        setMagicLink(link);
-
         // Generate QR Code
-        QRCode.toDataURL(link, { width: 256, margin: 2 })
+        QRCode.toDataURL(magicLink, { width: 256, margin: 2 })
             .then(setQrCodeData)
             .catch(console.error);
 
@@ -45,7 +44,7 @@ function SuccessContent() {
                 if (data) setDemo(data);
                 setLoading(false);
             });
-    }, [demoId, router]);
+    }, [demoId, magicLink, router]);
 
     const handleCopy = async () => {
         try {
@@ -64,7 +63,7 @@ function SuccessContent() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'var(--color-bg-subtle)'
+                background: 'var(--color-canvas)'
             }}>
                 <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
             </div>
@@ -74,7 +73,7 @@ function SuccessContent() {
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'var(--color-bg-subtle)',
+            background: 'var(--color-canvas)',
             padding: '40px 20px',
             display: 'flex',
             flexDirection: 'column',
@@ -94,7 +93,7 @@ function SuccessContent() {
                     width: '64px',
                     height: '64px',
                     borderRadius: '50%',
-                    background: 'var(--color-success-subtle)',
+                    background: 'var(--color-success-bg)',
                     color: 'var(--color-success)',
                     display: 'flex',
                     alignItems: 'center',
@@ -124,7 +123,7 @@ function SuccessContent() {
 
                 {/* Magic Link Box */}
                 <div style={{
-                    background: 'var(--color-bg-subtle)',
+                    background: 'var(--color-canvas)',
                     borderRadius: '12px',
                     padding: '6px 6px 6px 16px',
                     display: 'flex',
@@ -238,7 +237,7 @@ export default function SuccessPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'var(--color-bg-subtle)'
+                background: 'var(--color-canvas)'
             }}>
                 <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
             </div>

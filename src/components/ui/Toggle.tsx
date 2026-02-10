@@ -34,15 +34,15 @@ const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(
                     className={`
             relative inline-flex flex-shrink-0 ${s.track} rounded-full
             transition-colors duration-200 ease-in-out
-            focus:outline-none focus:ring-2 focus:ring-foundry-blue focus:ring-offset-2
+            focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
             disabled:opacity-50 disabled:cursor-not-allowed
-            ${checked ? 'bg-foundry-blue' : 'bg-gray-200'}
+            ${checked ? 'bg-primary' : 'bg-border'}
           `}
                     {...props}
                 >
                     <span
                         className={`
-              pointer-events-none inline-block ${s.thumb} rounded-full bg-white shadow
+              pointer-events-none inline-block ${s.thumb} rounded-full bg-surface shadow
               transform transition-transform duration-200 ease-in-out
               ${checked ? s.translate : 'translate-x-0.5'}
             `}
@@ -52,12 +52,12 @@ const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(
                 {(label || description) && (
                     <div className="ml-3">
                         {label && (
-                            <span id={`${toggleId}-label`} className="text-sm font-medium text-gray-900">
+                            <span id={`${toggleId}-label`} className="text-sm font-medium text-foreground">
                                 {label}
                             </span>
                         )}
                         {description && (
-                            <p className="text-sm text-gray-500">{description}</p>
+                            <p className="text-sm text-foreground-secondary">{description}</p>
                         )}
                     </div>
                 )}

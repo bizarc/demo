@@ -32,23 +32,23 @@ export function ChatBubble({
                         className={`
               px-4 py-2.5 rounded-2xl text-sm
               ${isAgent
-                                ? 'bg-white border border-gray-200 text-gray-900 rounded-bl-md'
-                                : 'bg-foundry-blue text-white rounded-br-md'
+                                ? 'bg-surface border border-border text-foreground rounded-bl-md'
+                                : 'bg-primary text-white rounded-br-md'
                             }
             `}
                     >
                         {isTyping ? (
                             <div className="flex space-x-1">
-                                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                <span className="w-2 h-2 bg-foreground-muted rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                <span className="w-2 h-2 bg-foreground-muted rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                <span className="w-2 h-2 bg-foreground-muted rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                             </div>
                         ) : (
                             children
                         )}
                     </div>
                     {timestamp && (
-                        <p className={`mt-1 text-xs text-gray-400 ${isAgent ? 'text-left' : 'text-right'}`}>
+                        <p className={`mt-1 text-xs text-foreground-muted ${isAgent ? 'text-left' : 'text-right'}`}>
                             {timestamp}
                         </p>
                     )}

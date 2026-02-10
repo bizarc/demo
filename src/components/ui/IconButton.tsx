@@ -12,9 +12,9 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         const baseStyles = 'inline-flex items-center justify-center rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
         const variants = {
-            default: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500',
-            ghost: 'bg-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:ring-gray-500',
-            primary: 'bg-foundry-blue text-white hover:bg-blue-700 focus:ring-foundry-blue',
+            default: 'bg-surface text-foreground border border-border hover:bg-border-subtle focus:ring-foreground-muted',
+            ghost: 'bg-transparent text-foreground-secondary hover:bg-border-subtle hover:text-foreground focus:ring-foreground-muted',
+            primary: 'bg-primary text-white hover:opacity-90 focus:ring-primary',
         };
 
         const sizes = {

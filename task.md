@@ -184,6 +184,27 @@
 
 ---
 
+## Phase 1.5: Home & Auth (Backlog)
+
+### Home Page
+- [ ] Design home/landing screen (Stitch or DESIGN.md)
+  - Support Funnel Spec v3 use cases: LAB, existing demos, future RADAR/Blueprint/Mission Control
+  - Enable access to existing demos (list, manage, open Magic Link)
+  - Clear entry points for internal ops vs. client portal
+- [ ] Implement home page per design
+  - Replace default Next.js template
+  - Navigation to /lab (Demo Builder)
+  - Demo list / management (when auth exists)
+
+### Authentication
+- [ ] Auth for internal users (Super Admin, Operator)
+  - Required for LAB, RADAR, Mission Control access
+- [ ] Auth for external users (Client Viewer)
+  - Required for Client Portal (read-only metrics, billing)
+- [ ] RBAC: separate internal vs. client workspaces per Funnel Spec
+
+---
+
 ## Phase 2: Polish & Deploy
 
 ### 2.1 Testing

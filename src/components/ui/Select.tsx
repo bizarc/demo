@@ -50,7 +50,7 @@ const Select = forwardRef<HTMLDivElement, SelectProps>(
         return (
             <div ref={ref} className={`w-full ${className}`}>
                 {label && (
-                    <label className="block text-sm font-medium text-gray-900 mb-1.5">{label}</label>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">{label}</label>
                 )}
                 <div ref={containerRef} className="relative">
                     <button
@@ -60,29 +60,29 @@ const Select = forwardRef<HTMLDivElement, SelectProps>(
                         disabled={disabled}
                         className={`
               w-full flex items-center justify-between px-3 py-2.5 text-sm text-left
-              bg-white border rounded-md transition-colors
-              disabled:bg-gray-50 disabled:cursor-not-allowed
-              ${error ? 'border-error-red' : isOpen ? 'border-foundry-blue ring-2 ring-blue-100' : 'border-gray-300'}
+              bg-surface border rounded-md transition-colors
+              disabled:bg-border-subtle disabled:cursor-not-allowed
+              ${error ? 'border-error' : isOpen ? 'border-primary ring-2 ring-primary-subtle' : 'border-border'}
             `}
                     >
-                        <span className={selectedOption ? 'text-gray-900' : 'text-gray-400'}>
+                        <span className={selectedOption ? 'text-foreground' : 'text-foreground-muted'}>
                             {selectedOption?.label || placeholder}
                         </span>
-                        <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className={`w-4 h-4 text-foreground-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
 
                     {isOpen && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                        <div className="absolute z-10 w-full mt-1 bg-surface border border-border rounded-md shadow-lg max-h-60 overflow-auto">
                             {searchable && (
-                                <div className="p-2 border-b border-gray-100">
+                                <div className="p-2 border-b border-border-subtle">
                                     <input
                                         type="text"
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
                                         placeholder="Search..."
-                                        className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:border-foundry-blue"
+                                        className="w-full px-2 py-1.5 text-sm border border-border rounded focus:outline-none focus:border-primary"
                                         autoFocus
                                     />
                                 </div>
@@ -101,7 +101,7 @@ const Select = forwardRef<HTMLDivElement, SelectProps>(
                                     disabled={option.disabled}
                                     className={`
                     w-full px-3 py-2 text-sm text-left transition-colors
-                    ${option.value === value ? 'bg-blue-50 text-foundry-blue' : 'text-gray-900 hover:bg-gray-50'}
+                                    ${option.value === value ? 'bg-primary-highlight text-primary' : 'text-foreground hover:bg-border-subtle'}
                     ${option.disabled ? 'opacity-50 cursor-not-allowed' : ''}
                   `}
                                 >
@@ -109,12 +109,12 @@ const Select = forwardRef<HTMLDivElement, SelectProps>(
                                 </button>
                             ))}
                             {filteredOptions.length === 0 && (
-                                <p className="px-3 py-2 text-sm text-gray-500">No options found</p>
+                                <p className="px-3 py-2 text-sm text-foreground-secondary">No options found</p>
                             )}
                         </div>
                     )}
                 </div>
-                {error && <p className="mt-1.5 text-sm text-error-red">{error}</p>}
+                {error && <p className="mt-1.5 text-sm text-error">{error}</p>}
             </div>
         );
     }

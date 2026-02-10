@@ -85,7 +85,7 @@ async function scrapeWithCheerio(url: string, timeout: number): Promise<ScrapeRe
         const rawText = extractBodyText($);
 
         // Extract products/services from page content
-        const { products, offers } = extractProductsAndOffers($, rawText);
+        const { products, offers } = extractProductsAndOffers($);
 
         // Try to determine industry
         const industry = inferIndustry(rawText, companyName);
@@ -230,7 +230,7 @@ function extractBodyText($: cheerio.CheerioAPI): string {
     return text;
 }
 
-function extractProductsAndOffers($: cheerio.CheerioAPI, rawText: string): { products: string[]; offers: string[] } {
+function extractProductsAndOffers($: cheerio.CheerioAPI): { products: string[]; offers: string[] } {
     const products: string[] = [];
     const offers: string[] = [];
 

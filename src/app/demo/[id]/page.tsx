@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { nanoid } from 'nanoid';
@@ -123,7 +123,7 @@ function DemoChat() {
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
-            let assistantMsg = { role: 'assistant', content: '', created_at: new Date().toISOString() } as Message;
+            const assistantMsg = { role: 'assistant', content: '', created_at: new Date().toISOString() } as Message;
 
             setMessages(prev => [...prev, assistantMsg]);
 
@@ -185,7 +185,7 @@ function DemoChat() {
     }
 
     return (
-        <div className={styles.container} style={{ '--brand-color': config.primary_color } as any}>
+        <div className={styles.container} style={{ '--brand-color': config.primary_color } as React.CSSProperties}>
             {/* Header */}
             <div className={styles.header}>
                 {config.logo_url ? (

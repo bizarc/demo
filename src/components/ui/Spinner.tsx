@@ -14,7 +14,7 @@ const Spinner = forwardRef<SVGSVGElement, SpinnerProps>(
         };
 
         const colors = {
-            primary: 'text-foundry-blue',
+            primary: 'text-primary',
             white: 'text-white',
             gray: 'text-gray-400',
         };

@@ -2,7 +2,6 @@
 // Run with: npx tsx scripts/run-conversation-engine.ts
 
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'fs';
 import { config } from 'dotenv';
 
 config({ path: '.env.local' });

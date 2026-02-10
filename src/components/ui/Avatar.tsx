@@ -17,9 +17,9 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
         };
 
         const statusColors = {
-            online: 'bg-success-green',
-            offline: 'bg-gray-400',
-            busy: 'bg-warning-amber',
+            online: 'bg-success',
+            offline: 'bg-foreground-muted',
+            busy: 'bg-warning',
         };
 
         const statusSizes = {
@@ -40,12 +40,13 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
             ${sizes[size]} 
             rounded-full flex items-center justify-center font-medium
             ${variant === 'agent'
-                            ? 'bg-foundry-blue text-white'
-                            : 'bg-gray-200 text-gray-600'
+                            ? 'bg-primary text-white'
+                            : 'bg-border text-foreground-secondary'
                         }
           `}
                 >
                     {src ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img src={src} alt={name || 'Avatar'} className="w-full h-full rounded-full object-cover" />
                     ) : variant === 'agent' ? (
                         <svg className="w-1/2 h-1/2" fill="currentColor" viewBox="0 0 20 20">
@@ -58,7 +59,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
                 {status && (
                     <span
                         className={`
-              absolute bottom-0 right-0 block rounded-full ring-2 ring-white
+              absolute bottom-0 right-0 block rounded-full ring-2 ring-surface
               ${statusColors[status]} ${statusSizes[size]}
             `}
                     />

@@ -7,12 +7,12 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
     ({ className = '', variant = 'default', padding = 'md', children, ...props }, ref) => {
-        const baseStyles = 'bg-white rounded-lg border';
+        const baseStyles = 'bg-surface rounded-lg border';
 
         const variants = {
-            default: 'border-gray-200',
-            interactive: 'border-gray-200 hover:border-foundry-blue hover:shadow-sm cursor-pointer transition-all',
-            selected: 'border-foundry-blue border-l-4 shadow-sm',
+            default: 'border-border',
+            interactive: 'border-border hover:border-primary hover:shadow-sm cursor-pointer transition-all',
+            selected: 'border-primary border-l-4 shadow-sm',
         };
 
         const paddings = {

@@ -22,8 +22,8 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                         type="checkbox"
                         id={checkboxId}
                         className="
-              w-4 h-4 rounded border-gray-300 text-foundry-blue
-              focus:ring-2 focus:ring-foundry-blue focus:ring-offset-0
+              w-4 h-4 rounded border-border text-primary
+              focus:ring-2 focus:ring-primary focus:ring-offset-0
               disabled:opacity-50 disabled:cursor-not-allowed
               cursor-pointer
             "
@@ -33,12 +33,12 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                 {(label || description) && (
                     <div className="ml-3">
                         {label && (
-                            <label htmlFor={checkboxId} className="text-sm font-medium text-gray-900 cursor-pointer">
+                            <label htmlFor={checkboxId} className="text-sm font-medium text-foreground cursor-pointer">
                                 {label}
                             </label>
                         )}
                         {description && (
-                            <p className="text-sm text-gray-500">{description}</p>
+                            <p className="text-sm text-foreground-secondary">{description}</p>
                         )}
                     </div>
                 )}

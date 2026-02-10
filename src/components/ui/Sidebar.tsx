@@ -43,14 +43,14 @@ export function Sidebar({
     return (
         <aside
             className={`
-        flex flex-col bg-white border-r border-gray-200 h-full transition-all duration-200
+        flex flex-col bg-surface border-r border-border h-full transition-all duration-200
         ${collapsed ? 'w-16' : 'w-64'}
         ${className}
       `}
         >
             {/* Header */}
             {header && !collapsed && (
-                <div className="p-4 border-b border-gray-100">
+                <div className="p-4 border-b border-border-subtle">
                     {header}
                 </div>
             )}
@@ -58,7 +58,7 @@ export function Sidebar({
             {/* Collapse toggle */}
             <button
                 onClick={toggleCollapsed}
-                className="flex items-center justify-center p-2 mx-2 mt-2 text-gray-500 hover:bg-gray-100 rounded-md transition-colors"
+                className="flex items-center justify-center p-2 mx-2 mt-2 text-foreground-secondary hover:bg-border-subtle rounded-md transition-colors"
                 aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
                 <svg
@@ -88,8 +88,8 @@ export function Sidebar({
                 ${collapsed ? 'justify-center p-3' : 'px-3 py-2'}
                 ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 ${isActive
-                                    ? 'bg-blue-50 text-foundry-blue'
-                                    : 'text-gray-700 hover:bg-gray-100'
+                                    ? 'bg-primary-highlight text-primary'
+                                    : 'text-foreground hover:bg-border-subtle'
                                 }
               `}
                             title={collapsed ? item.label : undefined}
@@ -99,7 +99,7 @@ export function Sidebar({
                                 <>
                                     <span className="ml-3 text-sm font-medium">{item.label}</span>
                                     {item.badge && (
-                                        <span className="ml-auto px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
+                                        <span className="ml-auto px-2 py-0.5 text-xs font-medium bg-border-subtle text-foreground-secondary rounded-full">
                                             {item.badge}
                                         </span>
                                     )}
@@ -112,7 +112,7 @@ export function Sidebar({
 
             {/* Footer */}
             {footer && !collapsed && (
-                <div className="p-4 border-t border-gray-100">
+                <div className="p-4 border-t border-border-subtle">
                     {footer}
                 </div>
             )}

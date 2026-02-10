@@ -55,7 +55,7 @@ export function StepIndicator({
                                                 ? 'absolute top-4 left-0 w-full h-0.5 -translate-y-1/2'
                                                 : 'absolute top-0 left-4 w-0.5 h-full -translate-x-1/2'
                                             }
-                      ${state === 'pending' ? 'bg-gray-200' : 'bg-foundry-blue'}
+                      ${state === 'pending' ? 'bg-border' : 'bg-primary'}
                     `}
                                         style={isHorizontal ? { right: '50%', left: 'auto', width: '100%' } : { top: '-100%' }}
                                     />
@@ -69,9 +69,9 @@ export function StepIndicator({
                     relative z-10 flex items-center justify-center w-8 h-8 rounded-full
                     text-sm font-medium transition-colors
                     ${!isClickable ? 'cursor-default' : 'cursor-pointer'}
-                    ${state === 'completed' ? 'bg-foundry-blue text-white' : ''}
-                    ${state === 'active' ? 'bg-foundry-blue text-white ring-4 ring-blue-100' : ''}
-                    ${state === 'pending' ? 'bg-gray-100 text-gray-500 border-2 border-gray-300' : ''}
+                    ${state === 'completed' ? 'bg-primary text-white' : ''}
+                    ${state === 'active' ? 'bg-primary text-white ring-4 ring-primary-subtle' : ''}
+                    ${state === 'pending' ? 'bg-border-subtle text-foreground-muted border-2 border-border' : ''}
                   `}
                                 >
                                     {state === 'completed' ? <CheckIcon /> : index + 1}
@@ -79,11 +79,11 @@ export function StepIndicator({
 
                                 {/* Label */}
                                 <div className={`${isHorizontal ? 'mt-2 text-center' : 'ml-4'}`}>
-                                    <p className={`text-sm font-medium ${state === 'pending' ? 'text-gray-500' : 'text-gray-900'}`}>
+                                    <p className={`text-sm font-medium ${state === 'pending' ? 'text-foreground-muted' : 'text-foreground'}`}>
                                         {step.label}
                                     </p>
                                     {step.description && (
-                                        <p className="text-xs text-gray-500 mt-0.5">{step.description}</p>
+                                        <p className="text-xs text-foreground-secondary mt-0.5">{step.description}</p>
                                     )}
                                 </div>
                             </div>

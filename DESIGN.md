@@ -115,6 +115,25 @@
 | Expired/Archived | `#FEE2E2` | `#991B1B` |
 | Agent Type | `#DBEAFE` | `#1E40AF` |
 
+### Semantic / Derived Tokens
+
+Tokens for common UI patterns. Use these names in implementation.
+
+| Name | Hex | Usage |
+|------|-----|-------|
+| **Success Background** | `#D1FAE5` | Success icons, Live badge background |
+| **Success Text** | `#065F46` | Live badge text |
+| **Error Background** | `#FEE2E2` | Error message backgrounds, Expired badge |
+| **Error Text** | `#991B1B` | Error text, Expired badge text |
+| **Primary Subtle** | `#DBEAFE` | Selected state tint, Agent Type badge |
+| **Primary Subtle Text** | `#1E40AF` | Agent Type badge text, selected labels |
+| **Primary Highlight** | `#EFF6FF` | Active step sidebar background |
+
+**Naming convention for backgrounds:**
+- **Canvas** — Page background
+- **Surface** — Cards, panels, modals
+- **Border Subtle** — Input backgrounds, nested sections, chips, subtle fills
+
 ---
 
 ## 5. Layout Patterns

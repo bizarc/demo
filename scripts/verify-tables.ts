@@ -13,7 +13,7 @@ async function verify() {
     console.log('Verifying Supabase tables...\n');
 
     // Check demos table
-    const { data: demos, error: demosError } = await supabase
+    const { error: demosError } = await supabase
         .from('demos')
         .select('*')
         .limit(1);

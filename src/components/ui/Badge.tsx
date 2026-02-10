@@ -10,11 +10,11 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
         const baseStyles = 'inline-flex items-center font-medium rounded-full';
 
         const variants = {
-            live: 'bg-green-100 text-green-800',
-            draft: 'bg-gray-100 text-gray-600',
-            archived: 'bg-red-100 text-red-800',
-            type: 'bg-blue-100 text-blue-800',
-            default: 'bg-gray-100 text-gray-700',
+            live: 'bg-success-bg text-success-text',
+            draft: 'bg-border-subtle text-foreground-secondary',
+            archived: 'bg-error-bg text-error-text',
+            type: 'bg-primary-subtle text-primary-subtle-text',
+            default: 'bg-border-subtle text-foreground-secondary',
         };
 
         const sizes = {
@@ -29,7 +29,7 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
                 {...props}
             >
                 {variant === 'live' && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-success mr-1.5" />
                 )}
                 {children}
             </span>

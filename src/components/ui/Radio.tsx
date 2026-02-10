@@ -55,8 +55,8 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(
                         onChange={(e) => context?.onChange?.(e.target.value)}
                         disabled={isDisabled}
                         className="
-              w-4 h-4 border-gray-300 text-foundry-blue
-              focus:ring-2 focus:ring-foundry-blue focus:ring-offset-0
+              w-4 h-4 border-border text-primary
+              focus:ring-2 focus:ring-primary focus:ring-offset-0
               disabled:opacity-50 disabled:cursor-not-allowed
               cursor-pointer
             "
@@ -66,12 +66,12 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(
                 {(label || description) && (
                     <div className="ml-3">
                         {label && (
-                            <label htmlFor={radioId} className="text-sm font-medium text-gray-900 cursor-pointer">
+                            <label htmlFor={radioId} className="text-sm font-medium text-foreground cursor-pointer">
                                 {label}
                             </label>
                         )}
                         {description && (
-                            <p className="text-sm text-gray-500">{description}</p>
+                            <p className="text-sm text-foreground-secondary">{description}</p>
                         )}
                     </div>
                 )}

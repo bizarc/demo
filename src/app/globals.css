@@ -2,11 +2,11 @@
 
 /* ==========================================
    THE LAB Design System Tokens
-   Based on DESIGN.md (Palantir AIP Style)
+   Canonical implementation per DESIGN.md
    ========================================== */
 
 :root {
-  /* Brand Colors */
+  /* Brand Colors (DESIGN.md §2) */
   --color-primary: #2563EB;        /* Foundry Blue */
   --color-success: #0F9D58;        /* Success Green */
   --color-warning: #F59E0B;        /* Warning Amber */
@@ -16,7 +16,7 @@
   --color-canvas: #F8F9FA;         /* Page background */
   --color-surface: #FFFFFF;        /* Cards, panels */
   --color-border: #E5E7EB;         /* Borders, dividers */
-  --color-border-subtle: #F3F4F6;  /* Hover backgrounds */
+  --color-border-subtle: #F3F4F6;  /* Hover backgrounds, input fills, nested sections */
 
   /* Text Colors */
   --color-text-primary: #111827;
@@ -24,7 +24,16 @@
   --color-text-muted: #9CA3AF;
   --color-text-inverse: #FFFFFF;
 
-  /* Spacing */
+  /* Semantic / Derived Tokens (DESIGN.md Badges & Pills) */
+  --color-success-bg: #D1FAE5;
+  --color-success-text: #065F46;
+  --color-error-bg: #FEE2E2;
+  --color-error-text: #991B1B;
+  --color-primary-subtle: #DBEAFE;
+  --color-primary-subtle-text: #1E40AF;
+  --color-primary-highlight: #EFF6FF;
+
+  /* Spacing / Radius */
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
@@ -33,17 +42,24 @@
 
 /* Tailwind CSS v4 Theme Configuration */
 @theme inline {
-  /* Colors */
+  /* Brand & neutrals */
   --color-primary: var(--color-primary);
   --color-success: var(--color-success);
   --color-warning: var(--color-warning);
   --color-error: var(--color-error);
-
   --color-canvas: var(--color-canvas);
   --color-surface: var(--color-surface);
   --color-border: var(--color-border);
   --color-border-subtle: var(--color-border-subtle);
 
+  /* Semantic */
+  --color-success-bg: var(--color-success-bg);
+  --color-error-bg: var(--color-error-bg);
+  --color-primary-subtle: var(--color-primary-subtle);
+  --color-primary-subtle-text: var(--color-primary-subtle-text);
+  --color-primary-highlight: var(--color-primary-highlight);
+
+  /* Foreground aliases */
   --color-foreground: var(--color-text-primary);
   --color-foreground-secondary: var(--color-text-secondary);
   --color-foreground-muted: var(--color-text-muted);

@@ -35,8 +35,6 @@ async function runSchema() {
         const { error } = await supabase.rpc('exec_sql', { sql: statement + ';' });
 
         if (error) {
-            // Try direct query for DDL statements
-            const { error: queryError } = await supabase.from('_').select().limit(0);
             console.log('Note: DDL statements may need to be run in SQL Editor');
         }
     }
@@ -44,7 +42,7 @@ async function runSchema() {
     // Verify tables exist by querying them
     console.log('\n\nVerifying tables...');
 
-    const { data: demos, error: demosError } = await supabase
+    const { error: demosError } = await supabase
         .from('demos')
         .select('*')
         .limit(1);
