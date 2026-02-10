@@ -79,7 +79,7 @@ export function SummaryStep({ formData, onBack }: SummaryStepProps) {
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Failed to create demo');
-            router.push(`/demo/${data.id}/success`);
+            router.push(`/lab/success?id=${data.id}`);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to create demo');
         } finally {

@@ -343,3 +343,36 @@ export async function POST(request: NextRequest) {
         return Response.json({ error: message }, { status: 500 });
     }
 }
+
+export async function GET(request: NextRequest) {
+    const searchParams = request.nextUrl.searchParams;
+    const demoId = searchParams.get('demoId');
+    const leadIdentifier = searchParams.get('leadIdentifier');
+
+    if (!demoId || !leadIdentifier) {
+        return Response.json({ error: 'Missing demoId or leadIdentifier' }, { status: 400 });
+    }
+
+    const supabase = createServerClient();
+
+    try {
+        // Find lead
+        const { data: lead } = await supabase
+            .from('leads')
+            .select('id')
+            .eq('demo_id', demoId)
+            .eq('identifier', leadIdentifier)
+            .single();
+
+        if (!lead) {
+            return Response.json({ messages: [] });
+        }
+
+        // Get history
+        const history = await loadLeadHistory(supabase, lead.id);
+        return Response.json({ messages: history });
+    } catch (error) {
+        console.error('Fetch history error:', error);
+        return Response.json({ error: 'Failed to fetch history' }, { status: 500 });
+    }
+}

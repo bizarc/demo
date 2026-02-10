@@ -164,14 +164,45 @@
 - [x] Fix builder preview to send client-side history (no sessions needed)
 - [ ] Test: Conversation context persists across messages (blocked on migration)
 
-### 1.8 Magic Link Display (`src/app/lab/success/page.tsx`)
-- [ ] Display generated magic link URL
-- [ ] Implement copy-to-clipboard button
-  - [ ] Show "Copied!" toast on success
-- [ ] Generate QR code (use `qrcode` library)
-  - [ ] Download QR as PNG button
-- [ ] Display demo details summary
-- [ ] "Create Another" and "Edit Demo" buttons
+### 1.8 Magic Link Display (`src/app/lab/success/page.tsx`) ✅
+- [x] Display generated magic link URL
+- [x] Implement copy-to-clipboard button
+  - [x] Show "Copied!" toast on success
+- [x] Generate QR code (use `qrcode` library)
+  - [x] Download QR as PNG button
+- [x] Display demo details summary
+- [x] "Create Another" and "Edit Demo" buttons
+
+### 1.9 Magic Link Chat (`src/app/demo/[id]/page.tsx`) ✅
+- [x] Fetch demo config on load
+  - [x] Handle expired/invalid demos (error page)
+- [x] Implement branded header
+  - [x] Company logo, name, online status
+- [x] Implement session-aware chat
+  - [x] Create lead (anonymous) + session on first visit
+  - [x] Chat messages saved to DB via conversation engine
+  - [x] Full history persists across page refreshes
+- [x] Implement chat message list
+  - [x] Agent bubbles (white, left)
+  - [x] User bubbles (blue, right)
+  - [x] Timestamps
+- [x] Implement suggested prompts
+  - [x] Horizontal scrollable pills
+  - [x] Click to send message
+- [x] Implement message input
+  - [x] Text field + send button
+  - [x] Streaming response display
+- [x] Apply brand colors from demo config
+  - [ ] Agent bubbles (white, left)
+  - [ ] User bubbles (blue, right)
+  - [ ] Timestamps
+- [ ] Implement suggested prompts
+  - [ ] Horizontal scrollable pills
+  - [ ] Click to send message
+- [ ] Implement message input
+  - [ ] Text field + send button
+  - [ ] Streaming response display
+- [ ] Apply brand colors from demo config
 
 ### 1.9 Magic Link Chat (`src/app/demo/[id]/page.tsx`)
 - [ ] Fetch demo config on load
