@@ -203,13 +203,17 @@ export async function POST(request: NextRequest) {
             return Response.json({ error: 'Demo not found' }, { status: 404 });
         }
 
-        // Check if demo is expired
-        if (demo.expires_at && new Date(demo.expires_at) < new Date()) {
+        const isDraft = demo.status === 'draft';
+
+        // Check if demo is expired (skip for drafts — they have no expiration)
+        if (!isDraft && demo.expires_at && new Date(demo.expires_at) < new Date()) {
             return Response.json({ error: 'Demo has expired' }, { status: 410 });
         }
 
-        // Check token limit
-        const { allowed, remaining } = await checkTokenLimit(supabase, demoId);
+        // Check token limit (skip for draft previews)
+        const { allowed, remaining } = isDraft
+            ? { allowed: true, remaining: TOKEN_LIMIT }
+            : await checkTokenLimit(supabase, demoId);
         if (!allowed) {
             return Response.json(
                 { error: 'Token limit exceeded for this demo session' },
@@ -218,23 +222,37 @@ export async function POST(request: NextRequest) {
         }
 
         // Build system prompt
-        const systemPrompt = demo.system_prompt || buildSystemPrompt(
-            demo.mission_profile as MissionProfile,
-            {
-                companyName: demo.company_name,
+        // For drafts, generate on-the-fly from current data; for active demos, use stored prompt
+        let systemPrompt: string;
+        if (demo.system_prompt) {
+            systemPrompt = demo.system_prompt;
+        } else if (demo.mission_profile) {
+            // Map DB enum back to full profile ID for prompt building
+            const DB_TO_PROFILE: Record<string, MissionProfile> = {
+                reactivation: 'database-reactivation',
+                nurture: 'inbound-nurture',
+                service: 'customer-service',
+                review: 'review-generation',
+            };
+            const fullProfile = DB_TO_PROFILE[demo.mission_profile] || 'inbound-nurture';
+            systemPrompt = buildSystemPrompt(fullProfile, {
+                companyName: demo.company_name || 'Company',
                 industry: demo.industry,
-                products: demo.products_services,
-                offers: demo.offers,
+                products: demo.products_services || [],
+                offers: demo.offers || [],
                 qualificationCriteria: demo.qualification_criteria?.join(', '),
-            }
-        );
+            });
+        } else {
+            // Fallback for drafts without a mission profile
+            systemPrompt = `You are a helpful AI assistant for ${demo.company_name || 'a company'}. Be professional and helpful.`;
+        }
 
         // Determine message history
         let conversationHistory: { role: 'user' | 'assistant'; content: string }[];
         let sessionId: string | null = existingSessionId || null;
 
-        if (leadIdentifier) {
-            // Session-aware mode: find/create lead + session, load from DB
+        if (leadIdentifier && !isDraft) {
+            // Session-aware mode: find/create lead + session, load from DB (skip for drafts)
             try {
                 const lead = await findOrCreateLead(supabase, demoId, leadIdentifier);
                 const session = await findOrCreateSession(supabase, lead.id, demoId);
@@ -310,8 +328,8 @@ export async function POST(request: NextRequest) {
                         controller.enqueue(encoder.encode(`data: ${data}\n\n`));
                     }
 
-                    // Save assistant response to DB if session-aware
-                    if (sessionId && leadIdentifier) {
+                    // Save assistant response to DB if session-aware (skip for drafts)
+                    if (sessionId && leadIdentifier && !isDraft) {
                         try {
                             await saveMessage(supabase, sessionId, 'assistant', fullResponse, outputTokens);
                         } catch {

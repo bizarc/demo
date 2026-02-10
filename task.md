@@ -184,7 +184,57 @@
 
 ---
 
-## Phase 1.5: Home & Auth (Backlog)
+## Phase 1.5: Draft Autosave, Live Preview & LAB Home ✅
+
+### 1.5.1 Database Migration (Draft Support)
+- [x] Add `status`, `created_by`, `updated_at`, `deleted_at`, `current_step` columns to demos
+- [x] Relax NOT NULL constraints for partial draft saves
+- [x] Update RLS policies to exclude soft-deleted rows
+- [x] Add indexes on `status`, `created_by`, `deleted_at`
+- [x] Add `updated_at` trigger
+
+### 1.5.2 Demo API (Draft CRUD)
+- [x] POST /api/demo: support `status: 'draft'` (partial save, no validation)
+- [x] PATCH /api/demo/[id]: autosave endpoint (partial updates, activation flow)
+- [x] DELETE /api/demo/[id]: soft delete (with hard delete option `?hard=true`)
+- [x] GET /api/demo: list demos by `created_by`, filterable by status
+
+### 1.5.3 Chat API (Draft Support)
+- [x] Skip expiration check when `status === 'draft'`
+- [x] Skip token limit check for draft previews
+- [x] Skip lead/session/message persistence for draft chats
+- [x] Generate system prompt on-the-fly from draft data
+
+### 1.5.4 Autosave Hook
+- [x] `useAutosave` hook: debounced save (1s), immediate on step change
+- [x] Draft creation after step 1 completion
+- [x] Activation flow (draft → active with system prompt + expiration)
+- [x] Autosave status indicator in sidebar
+
+### 1.5.5 LAB Routing
+- [x] `/lab` = LAB Home (demo list)
+- [x] `/lab/new` = New demo builder
+- [x] `/lab/[id]` = Resume/edit existing draft
+- [x] URL updates from `/lab/new` → `/lab/[id]` after draft creation
+
+### 1.5.6 LAB Home Page
+- [x] Demo list grouped/filterable by status (draft, active, expired, blueprint)
+- [x] Status badges, relative timestamps, mission profile labels
+- [x] Actions: Resume (draft), Open/Copy Link (active), Delete (all)
+- [x] Empty state with CTA to create new demo
+
+### 1.5.7 Live Preview (ChatPreview)
+- [x] Placeholder on steps 1-4: "Complete all steps to preview your agent"
+- [x] Active ChatPreview on step 5 using real draft UUID from DB
+- [x] No `previewConfig` or `demoId: 'preview'` — API reads from DB
+
+### 1.5.8 Temporary User Scoping
+- [x] `creator_id` in localStorage for draft ownership (pre-auth)
+- [x] GET /api/demo filtered by `created_by`
+
+---
+
+## Phase 1.6: Home & Auth (Backlog)
 
 ### Home Page
 - [ ] Design home/landing screen (Stitch or DESIGN.md)
@@ -202,6 +252,11 @@
 - [ ] Auth for external users (Client Viewer)
   - Required for Client Portal (read-only metrics, billing)
 - [ ] RBAC: separate internal vs. client workspaces per Funnel Spec
+
+### Backlog Items
+- [ ] Optimistic locking for concurrent draft edits
+- [ ] Push to BLUEPRINT action (set `status = 'blueprint'`, trigger BLUEPRINT flow)
+- [ ] Audit trail for demo state transitions
 
 ---
 

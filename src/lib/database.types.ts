@@ -10,6 +10,7 @@ export type Json =
     | Json[]
 
 export type MissionProfile = 'reactivation' | 'nurture' | 'service' | 'review';
+export type DemoStatus = 'draft' | 'active' | 'expired' | 'blueprint';
 
 export interface Database {
     public: {
@@ -18,53 +19,68 @@ export interface Database {
                 Row: {
                     id: string
                     created_at: string
-                    expires_at: string
-                    company_name: string
+                    expires_at: string | null
+                    company_name: string | null
                     industry: string | null
-                    website_url: string
+                    website_url: string | null
                     products_services: string[]
                     offers: string[]
                     qualification_criteria: string[]
                     logo_url: string | null
                     primary_color: string
                     secondary_color: string
-                    mission_profile: MissionProfile
-                    openrouter_model: string
-                    system_prompt: string
+                    mission_profile: MissionProfile | null
+                    openrouter_model: string | null
+                    system_prompt: string | null
+                    status: DemoStatus
+                    created_by: string | null
+                    updated_at: string
+                    deleted_at: string | null
+                    current_step: string | null
                 }
                 Insert: {
                     id?: string
                     created_at?: string
-                    expires_at: string
-                    company_name: string
+                    expires_at?: string | null
+                    company_name?: string | null
                     industry?: string | null
-                    website_url: string
+                    website_url?: string | null
                     products_services?: string[]
                     offers?: string[]
                     qualification_criteria?: string[]
                     logo_url?: string | null
                     primary_color?: string
                     secondary_color?: string
-                    mission_profile: MissionProfile
-                    openrouter_model?: string
-                    system_prompt: string
+                    mission_profile?: MissionProfile | null
+                    openrouter_model?: string | null
+                    system_prompt?: string | null
+                    status?: DemoStatus
+                    created_by?: string | null
+                    updated_at?: string
+                    deleted_at?: string | null
+                    current_step?: string | null
                 }
                 Update: {
                     id?: string
                     created_at?: string
-                    expires_at?: string
-                    company_name?: string
+                    expires_at?: string | null
+                    company_name?: string | null
                     industry?: string | null
-                    website_url?: string
+                    website_url?: string | null
                     products_services?: string[]
                     offers?: string[]
                     qualification_criteria?: string[]
                     logo_url?: string | null
                     primary_color?: string
                     secondary_color?: string
-                    mission_profile?: MissionProfile
-                    openrouter_model?: string
-                    system_prompt?: string
+                    mission_profile?: MissionProfile | null
+                    openrouter_model?: string | null
+                    system_prompt?: string | null
+                    status?: DemoStatus
+                    created_by?: string | null
+                    updated_at?: string
+                    deleted_at?: string | null
+                    current_step?: string | null
                 }
                 Relationships: []
             }
@@ -198,6 +214,7 @@ export interface Database {
 // Convenience types
 export type Demo = Database['public']['Tables']['demos']['Row'];
 export type DemoInsert = Database['public']['Tables']['demos']['Insert'];
+export type DemoUpdate = Database['public']['Tables']['demos']['Update'];
 export type RateLimit = Database['public']['Tables']['rate_limits']['Row'];
 export type Lead = Database['public']['Tables']['leads']['Row'];
 export type LeadInsert = Database['public']['Tables']['leads']['Insert'];

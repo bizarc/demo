@@ -5,6 +5,9 @@ import { DemoFormData } from './DemoBuilder';
 import { MISSION_PROFILES, MissionProfile } from '@/lib/prompts';
 
 interface ChatPreviewProps {
+    /** The real draft UUID from the database */
+    demoId: string;
+    /** Form data for display (company name, brand color, etc.) */
     formData: DemoFormData;
 }
 
@@ -19,7 +22,7 @@ function getInitialMessages(profile: MissionProfile | null): Message[] {
     return [{ role: 'assistant', content: config.suggestedPrompts[0] }];
 }
 
-export function ChatPreview({ formData }: ChatPreviewProps) {
+export function ChatPreview({ demoId, formData }: ChatPreviewProps) {
     const [messages, setMessages] = useState<Message[]>(() =>
         getInitialMessages(formData.missionProfile)
     );
@@ -36,7 +39,7 @@ export function ChatPreview({ formData }: ChatPreviewProps) {
     }, [messages]);
 
     const handleSend = async () => {
-        if (!input.trim() || loading || !missionProfile) return;
+        if (!input.trim() || loading) return;
         const userMessage = input.trim();
         setInput('');
 
@@ -47,17 +50,18 @@ export function ChatPreview({ formData }: ChatPreviewProps) {
         try {
             // Build history from previous messages (exclude the initial greeting)
             const history = updatedMessages
-                .filter((_, i) => i > 0) // skip initial greeting
-                .slice(0, -1) // exclude the message we're about to send
+                .filter((_, i) => i > 0)
+                .slice(0, -1)
                 .map(m => ({ role: m.role, content: m.content }));
 
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    demoId: 'preview',
+                    demoId, // real draft UUID — API loads from DB
                     message: userMessage,
                     history,
+                    // No leadIdentifier — preview mode (no persistence)
                 }),
             });
 
@@ -73,7 +77,6 @@ export function ChatPreview({ formData }: ChatPreviewProps) {
             const decoder = new TextDecoder();
             let assistantContent = '';
 
-            // Add empty assistant message that we'll update
             setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
             while (true) {
@@ -114,14 +117,11 @@ export function ChatPreview({ formData }: ChatPreviewProps) {
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <div style={{ padding: '16px', borderBottom: '1px solid var(--color-border)' }}>
                     <h3 style={{ fontSize: '16px', fontWeight: 500, color: 'var(--color-text-primary)' }}>Live preview</h3>
-                    <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>Select a mission profile to see a preview</p>
+                    <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>Configuration incomplete</p>
                 </div>
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
                     <div style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 12px' }}>
-                            <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        <p style={{ fontSize: '14px' }}>Chat preview will appear here</p>
+                        <p style={{ fontSize: '14px' }}>Save your configuration to enable preview.</p>
                     </div>
                 </div>
             </div>
@@ -158,7 +158,7 @@ export function ChatPreview({ formData }: ChatPreviewProps) {
                             {formData.companyName || 'AI Assistant'}
                         </div>
                         <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-                            {missionProfile.name}
+                            {missionProfile.name} &middot; Preview
                         </div>
                     </div>
                     <div style={{

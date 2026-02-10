@@ -210,7 +210,7 @@ function SuccessContent() {
                         </a>
 
                         <Link
-                            href="/lab"
+                            href="/lab/new"
                             style={{
                                 display: 'block',
                                 color: 'var(--color-text-secondary)',
@@ -221,6 +221,18 @@ function SuccessContent() {
                             }}
                         >
                             Create another demo
+                        </Link>
+                        <Link
+                            href="/lab"
+                            style={{
+                                display: 'block',
+                                color: 'var(--color-text-muted)',
+                                padding: '4px 24px',
+                                textDecoration: 'none',
+                                fontSize: '13px',
+                            }}
+                        >
+                            Back to LAB
                         </Link>
                     </div>
                 </div>

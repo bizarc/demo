@@ -12,6 +12,8 @@ const ICON_MAP: Record<string, LucideIcon> = { RotateCcw, Sprout, Headset, Star 
 interface SummaryStepProps {
     formData: DemoFormData;
     onBack: () => void;
+    /** Activate the draft (transition to active). If not provided, falls back to legacy POST. */
+    onActivate?: () => Promise<{ id: string; magic_link: string; expires_at: string } | null>;
 }
 
 const rowStyle: React.CSSProperties = {
@@ -46,7 +48,7 @@ const btnBase: React.CSSProperties = {
     transition: 'background 150ms',
 };
 
-export function SummaryStep({ formData, onBack }: SummaryStepProps) {
+export function SummaryStep({ formData, onBack, onActivate }: SummaryStepProps) {
     const router = useRouter();
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -61,25 +63,35 @@ export function SummaryStep({ formData, onBack }: SummaryStepProps) {
         setCreating(true);
         setError(null);
         try {
-            const response = await fetch('/api/demo', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    mission_profile: formData.missionProfile,
-                    company_name: formData.companyName,
-                    industry: formData.industry,
-                    website_url: formData.websiteUrl,
-                    products_services: formData.productsServices,
-                    offers: formData.offers,
-                    qualification_criteria: formData.qualificationCriteria,
-                    logo_url: formData.logoUrl,
-                    primary_color: formData.primaryColor,
-                    openrouter_model: formData.model,
-                }),
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Failed to create demo');
-            router.push(`/lab/success?id=${data.id}`);
+            if (onActivate) {
+                // New flow: activate the existing draft
+                const result = await onActivate();
+                if (!result) {
+                    throw new Error('Failed to activate demo');
+                }
+                // Navigation is handled by the parent via onActivate
+            } else {
+                // Legacy fallback: direct POST
+                const response = await fetch('/api/demo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mission_profile: formData.missionProfile,
+                        company_name: formData.companyName,
+                        industry: formData.industry,
+                        website_url: formData.websiteUrl,
+                        products_services: formData.productsServices,
+                        offers: formData.offers,
+                        qualification_criteria: formData.qualificationCriteria,
+                        logo_url: formData.logoUrl,
+                        primary_color: formData.primaryColor,
+                        openrouter_model: formData.model,
+                    }),
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Failed to create demo');
+                router.push(`/lab/success?id=${data.id}`);
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to create demo');
         } finally {
@@ -160,10 +172,10 @@ export function SummaryStep({ formData, onBack }: SummaryStepProps) {
             {error && (
                 <div style={{
                     padding: '12px 16px',
-                    background: '#FEF2F2',
+                    background: 'var(--color-error-bg)',
                     border: '1px solid #FECACA',
                     borderRadius: '6px',
-                    color: '#991B1B',
+                    color: 'var(--color-error-text)',
                     fontSize: '14px',
                     marginBottom: '24px',
                 }}>
