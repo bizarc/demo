@@ -134,17 +134,17 @@
   - [x] "Create Demo" saves to Supabase
   - [x] Redirect to Magic Link Display
 
-### 1.7 Demo API (`src/app/api/demo/route.ts`)
-- [ ] Implement `POST /api/demo` - Create demo
-  - [ ] Validate all required fields
-  - [ ] Generate unique ID (nanoid)
-  - [ ] Set expiration (7 days default)
-  - [ ] Save to Supabase
-  - [ ] Test: Creates demo and returns ID
-- [ ] Implement `GET /api/demo/[id]` - Get demo
-  - [ ] Check expiration
-  - [ ] Return demo config (exclude sensitive data)
-  - [ ] Test: Returns 404 for expired demos
+### 1.7 Demo API (`src/app/api/demo/route.ts`) ✅
+- [x] Implement `POST /api/demo` - Create demo
+  - [x] Validate all required fields
+  - [x] Generate unique ID (Supabase UUID)
+  - [x] Set expiration (7 days default)
+  - [x] Save to Supabase
+  - [x] Test: Creates demo and returns ID
+- [x] Implement `GET /api/demo/[id]` - Get demo
+  - [x] Check expiration
+  - [x] Return demo config (exclude sensitive data)
+  - [x] Test: Returns 404 for expired demos
 
 ### 1.8 Magic Link Display (`src/app/lab/success/page.tsx`)
 - [ ] Display generated magic link URL

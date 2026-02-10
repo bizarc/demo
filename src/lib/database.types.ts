@@ -66,6 +66,7 @@ export interface Database {
                     openrouter_model?: string
                     system_prompt?: string
                 }
+                Relationships: []
             }
             rate_limits: {
                 Row: {
@@ -83,7 +84,20 @@ export interface Database {
                     value?: number
                     description?: string | null
                 }
+                Relationships: []
             }
+        }
+        Views: {
+            [_ in never]: never
+        }
+        Functions: {
+            [_ in never]: never
+        }
+        Enums: {
+            [_ in never]: never
+        }
+        CompositeTypes: {
+            [_ in never]: never
         }
     }
 }
