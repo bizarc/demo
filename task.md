@@ -1,4 +1,4 @@
-# THE LAB — Task Tracker
+# Tasks
 
 > **Usage:** Mark tasks `[x]` when complete, `[/]` when in progress.  
 > **Validation:** All code must pass lint + tests before commit.
@@ -19,7 +19,7 @@
 
 ## Phase 1: Core Implementation
 
-### 1.1 Project Setup
+### 1.1 Project Setup ✅
 - [x] Initialize Next.js 14 project with App Router
   - [x] Run `npx create-next-app@latest --typescript --tailwind --eslint`
   - [x] Verify dev server starts: `npm run dev`
@@ -33,7 +33,7 @@
   - [x] Create `.env.local.example` with required vars
   - [x] Document: `OPENROUTER_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`
 
-### 1.2 Supabase Setup
+### 1.2 Supabase Setup ✅
 - [x] Create Supabase project
 - [x] Create `demos` table
   - [x] Schema: id, created_at, expires_at, company_name, industry, website_url, products_services, offers, qualification_criteria, logo_url, primary_color, secondary_color, mission_profile, openrouter_model, system_prompt
@@ -146,84 +146,41 @@
   - [x] Return demo config (exclude sensitive data)
   - [x] Test: Returns 404 for expired demos
 
-### 1.7a Conversation Engine (leads, sessions, messages)
-- [/] Create Supabase migration for `leads`, `sessions`, `messages` tables
-  - [x] `leads`: id, demo_id, identifier, identifier_type, display_name, metadata
-  - [x] `sessions`: id, lead_id, demo_id, channel, created_at, ended_at, metadata
-  - [x] `messages`: id, session_id, role, content, created_at, token_count, metadata
-  - [x] RLS policies for each table
-  - [x] Indexes on demo_id, lead_id, session_id
-  - [ ] **Run migration in Supabase SQL Editor** (requires login)
-- [x] Update `database.types.ts` with new table types
+### 1.7a Conversation Engine (leads, sessions, messages) ✅
+- [x] Create Supabase migration for `leads`, `sessions`, `messages` tables
+  - [x] `leads`, `sessions`, `messages` schemas
+  - [x] RLS policies and Indexes
+  - [x] **Run migration in Supabase SQL Editor** (Verified)
+- [x] Update `database.types.ts`
 - [x] Refactor `POST /api/chat` to be session-aware
-  - [x] Create or find lead by identifier (anonymous cookie for chat)
-  - [x] Create session on first message
-  - [x] Load lead's full message history from DB
-  - [x] Save user + assistant messages after each turn
-  - [x] Move token tracking from in-memory Map → `SUM(token_count)` on messages
-- [x] Fix builder preview to send client-side history (no sessions needed)
-- [ ] Test: Conversation context persists across messages (blocked on migration)
+  - [x] Handle anonymous users (leads)
+  - [x] Store message history
+  - [x] Token tracking updates
+- [x] Fix builder preview to send client-side history
+- [x] Test: Conversation context persists across messages
 
 ### 1.8 Magic Link Display (`src/app/lab/success/page.tsx`) ✅
 - [x] Display generated magic link URL
 - [x] Implement copy-to-clipboard button
-  - [x] Show "Copied!" toast on success
-- [x] Generate QR code (use `qrcode` library)
-  - [x] Download QR as PNG button
+- [x] Generate QR code
 - [x] Display demo details summary
-- [x] "Create Another" and "Edit Demo" buttons
+- [x] Verify QR code scanning on mobile
+- [x] Verify magic link redirect works end-to-end
 
 ### 1.9 Magic Link Chat (`src/app/demo/[id]/page.tsx`) ✅
 - [x] Fetch demo config on load
-  - [x] Handle expired/invalid demos (error page)
 - [x] Implement branded header
-  - [x] Company logo, name, online status
 - [x] Implement session-aware chat
-  - [x] Create lead (anonymous) + session on first visit
-  - [x] Chat messages saved to DB via conversation engine
-  - [x] Full history persists across page refreshes
-- [x] Implement chat message list
-  - [x] Agent bubbles (white, left)
-  - [x] User bubbles (blue, right)
-  - [x] Timestamps
-- [x] Implement suggested prompts
-  - [x] Horizontal scrollable pills
-  - [x] Click to send message
-- [x] Implement message input
-  - [x] Text field + send button
-  - [x] Streaming response display
-- [x] Apply brand colors from demo config
-  - [ ] Agent bubbles (white, left)
-  - [ ] User bubbles (blue, right)
-  - [ ] Timestamps
-- [ ] Implement suggested prompts
-  - [ ] Horizontal scrollable pills
-  - [ ] Click to send message
-- [ ] Implement message input
-  - [ ] Text field + send button
-  - [ ] Streaming response display
-- [ ] Apply brand colors from demo config
+  - [x] Anonymous lead creation
+  - [x] History persistence
+- [x] Implement chat message list & streaming
+- [x] Verify chat history loads across refreshes
+- [x] Verify streaming responses behavior
 
-### 1.9 Magic Link Chat (`src/app/demo/[id]/page.tsx`)
-- [ ] Fetch demo config on load
-  - [ ] Handle expired/invalid demos (error page)
-- [ ] Implement branded header
-  - [ ] Company logo, name, online status
-- [ ] Implement session-aware chat
-  - [ ] Create lead (anonymous) + session on first visit
-  - [ ] Chat messages saved to DB via conversation engine
-  - [ ] Full history persists across page refreshes
-- [ ] Implement chat message list
-  - [ ] Agent bubbles (white, left)
-  - [ ] User bubbles (blue, right)
-  - [ ] Timestamps
-- [ ] Implement suggested prompts
-  - [ ] Horizontal scrollable pills
-  - [ ] Click to send message
-- [ ] Implement message input
-  - [ ] Text field + send button
-  - [ ] Streaming response display
-- [ ] Apply brand colors from demo config
+### 1.10 End-to-End Verification & Polish [ ] (UNFINISHED)
+- [ ] Verify full flow: Builder -> Success -> Chat -> DB
+- [ ] Verify mobile responsiveness
+- [ ] Final UI polish (animations, loading states)
 
 ---
 

@@ -27,7 +27,8 @@ interface DemoConfig {
 
 function DemoChat() {
     const params = useParams();
-    const demoId = params.id as string;
+    const demoIdRaw = params.id;
+    const demoId = Array.isArray(demoIdRaw) ? demoIdRaw[0] : demoIdRaw;
 
     // State
     const [config, setConfig] = useState<DemoConfig | null>(null);
