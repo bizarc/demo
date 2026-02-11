@@ -125,7 +125,7 @@ export default function LabHomePage() {
                 borderBottom: '1px solid var(--color-border)',
                 padding: '24px 32px',
             }}>
-                <div style={{
+                <div className="lab-header-inner" style={{
                     maxWidth: '1200px',
                     margin: '0 auto',
                     display: 'flex',
@@ -271,6 +271,7 @@ export default function LabHomePage() {
                             return (
                                 <div
                                     key={demo.id}
+                                    className="lab-demo-row"
                                     style={{
                                         background: 'var(--color-surface)',
                                         border: '1px solid var(--color-border)',
@@ -338,7 +339,7 @@ export default function LabHomePage() {
                                     </div>
 
                                     {/* Actions */}
-                                    <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                                    <div className="lab-demo-actions" style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                                         {demo.status === 'draft' && (
                                             <ActionButton
                                                 label="Resume"

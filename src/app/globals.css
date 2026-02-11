@@ -80,3 +80,66 @@ body {
 }
 
 /* Remove dark mode override - single light theme */
+
+/* Focus ring utility */
+*:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Smooth page-level transitions */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* Loading pulse utility */
+.animate-pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ==========================================
+   Responsive Utilities
+   ========================================== */
+
+/* Mobile-first adjustments for LAB home demo rows */
+@media (max-width: 640px) {
+    .lab-demo-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+
+    .lab-demo-actions {
+        width: 100%;
+        justify-content: flex-start !important;
+        flex-wrap: wrap;
+        padding-top: 8px;
+        border-top: 1px solid var(--color-border-subtle);
+        margin-top: 8px;
+    }
+
+    .lab-header-inner {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 16px;
+    }
+
+    .success-content-grid {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 24px !important;
+    }
+
+    .success-card {
+        padding: 24px !important;
+    }
+}

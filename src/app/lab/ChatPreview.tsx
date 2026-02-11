@@ -197,13 +197,33 @@ export function ChatPreview({ demoId, formData }: ChatPreviewProps) {
                 {loading && (
                     <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
                         <div style={{
-                            padding: '10px 14px',
+                            padding: '12px 18px',
                             borderRadius: '12px 12px 12px 2px',
                             background: 'var(--color-border-subtle)',
-                            color: 'var(--color-text-muted)',
-                            fontSize: '14px',
+                            display: 'flex',
+                            gap: '4px',
+                            alignItems: 'center',
                         }}>
-                            Typing...
+                            {[0, 1, 2].map(i => (
+                                <span
+                                    key={i}
+                                    style={{
+                                        width: '6px',
+                                        height: '6px',
+                                        borderRadius: '50%',
+                                        background: 'var(--color-text-muted)',
+                                        display: 'inline-block',
+                                        animation: `typingBounce 1.4s infinite ease-in-out both`,
+                                        animationDelay: `${-0.32 + i * 0.16}s`,
+                                    }}
+                                />
+                            ))}
+                            <style>{`
+                                @keyframes typingBounce {
+                                    0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+                                    40% { transform: scale(1); opacity: 1; }
+                                }
+                            `}</style>
                         </div>
                     </div>
                 )}

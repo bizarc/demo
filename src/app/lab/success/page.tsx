@@ -79,7 +79,7 @@ function SuccessContent() {
             flexDirection: 'column',
             alignItems: 'center',
         }}>
-            <div style={{
+            <div className="success-card" style={{
                 background: '#FFFFFF',
                 borderRadius: '16px',
                 padding: '40px',
@@ -162,7 +162,7 @@ function SuccessContent() {
                     </button>
                 </div>
 
-                <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', alignItems: 'flex-start' }}>
+                <div className="success-content-grid" style={{ display: 'flex', gap: '40px', justifyContent: 'center', alignItems: 'flex-start' }}>
                     {/* QR Code */}
                     {qrCodeData && (
                         <div style={{ textAlign: 'center' }}>

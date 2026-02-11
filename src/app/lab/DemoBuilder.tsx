@@ -11,6 +11,7 @@ import { ChatPreview } from './ChatPreview';
 import { MissionProfile } from '@/lib/prompts';
 import { ScrapeResult } from '@/lib/scraper';
 import { useAutosave } from '@/lib/useAutosave';
+import styles from './builder.module.css';
 
 export interface DemoFormData {
     missionProfile: MissionProfile | null;
@@ -258,17 +259,38 @@ export function DemoBuilder({ initialDraftId, initialFormData, initialStep }: De
     };
 
     return (
-        <div style={{ display: 'flex', height: '100vh', background: 'var(--color-canvas)' }}>
+        <div className={styles.layout}>
+            {/* Mobile: Step indicator bar (hidden on desktop via CSS) */}
+            <div className={styles.mobileHeader}>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                    Step {currentIndex + 1} of {STEPS.length}
+                </span>
+                <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>
+                    {STEPS[currentIndex]?.label}
+                </span>
+                {/* Step dots */}
+                <div style={{ display: 'flex', gap: '6px' }}>
+                    {STEPS.map((step, idx) => (
+                        <div
+                            key={step.id}
+                            style={{
+                                width: '8px',
+                                height: '8px',
+                                borderRadius: '50%',
+                                background: idx === currentIndex
+                                    ? 'var(--color-primary)'
+                                    : completedSteps.includes(step.id)
+                                        ? 'var(--color-success)'
+                                        : 'var(--color-border)',
+                                transition: 'background 150ms',
+                            }}
+                        />
+                    ))}
+                </div>
+            </div>
+
             {/* Left: Step Indicator Sidebar */}
-            <div style={{
-                width: '240px',
-                background: 'var(--color-surface)',
-                borderRight: '1px solid var(--color-border)',
-                padding: '24px',
-                flexShrink: 0,
-                display: 'flex',
-                flexDirection: 'column',
-            }}>
+            <div className={styles.sidebar}>
                 <div style={{ marginBottom: '32px' }}>
                     <h1 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
                         Create demo
@@ -369,21 +391,14 @@ export function DemoBuilder({ initialDraftId, initialFormData, initialStep }: De
             </div>
 
             {/* Center: Configuration Form */}
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-                <div style={{ maxWidth: '640px', margin: '0 auto', padding: '32px' }}>
+            <div className={styles.center}>
+                <div className={styles.centerInner}>
                     {renderStep()}
                 </div>
             </div>
 
             {/* Right: Live Chat Preview */}
-            <div style={{
-                width: '384px',
-                background: 'var(--color-surface)',
-                borderLeft: '1px solid var(--color-border)',
-                flexShrink: 0,
-                display: 'flex',
-                flexDirection: 'column',
-            }}>
+            <div className={styles.preview}>
                 {currentStep === 'summary' && draftId ? (
                     <ChatPreview demoId={draftId} formData={formData} />
                 ) : (

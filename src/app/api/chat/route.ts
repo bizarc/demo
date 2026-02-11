@@ -283,7 +283,7 @@ export async function POST(request: NextRequest) {
         const messages: ChatMessage[] = [
             { role: 'system', content: systemPrompt },
             ...conversationHistory,
-            ...(leadIdentifier ? [] : [{ role: 'user' as const, content: message }]),
+            { role: 'user' as const, content: message },
         ];
 
         // Estimate input tokens

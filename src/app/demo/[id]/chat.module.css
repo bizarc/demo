@@ -238,3 +238,34 @@
     text-align: center;
     background: var(--color-canvas);
 }
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+    .header {
+        padding: 12px 16px;
+    }
+
+    .chatArea {
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .message {
+        max-width: 90%;
+        font-size: 14px;
+        padding: 10px 14px;
+    }
+
+    .inputArea {
+        padding: 12px 16px;
+    }
+
+    .suggestions {
+        padding: 0 16px 8px;
+    }
+
+    .suggestionChip {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+}
