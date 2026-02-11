@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect } from 'storybook/test';
 import { Input } from '../Input';
 import { Search, Mail } from 'lucide-react';
 
@@ -24,6 +25,12 @@ export const Default: Story = {
 
 export const WithLabel: Story = {
     args: { label: 'Email address', placeholder: 'you@example.com' },
+    play: async ({ canvas, userEvent }) => {
+        const input = canvas.getByLabelText('Email address');
+        await expect(input).toBeInTheDocument();
+        await userEvent.type(input, 'test@example.com');
+        await expect(input).toHaveValue('test@example.com');
+    },
 };
 
 export const WithHelperText: Story = {
@@ -32,6 +39,11 @@ export const WithHelperText: Story = {
 
 export const WithError: Story = {
     args: { label: 'Email', placeholder: 'you@example.com', error: 'Please enter a valid email address', defaultValue: 'invalid' },
+    play: async ({ canvas }) => {
+        const input = canvas.getByLabelText('Email');
+        await expect(input).toHaveAttribute('aria-invalid', 'true');
+        await expect(canvas.getByText('Please enter a valid email address')).toBeInTheDocument();
+    },
 };
 
 export const WithLeftIcon: Story = {

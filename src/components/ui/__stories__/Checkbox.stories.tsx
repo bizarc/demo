@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect } from 'storybook/test';
 import { Checkbox } from '../Checkbox';
 
 const meta = {
@@ -18,6 +19,18 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
     args: { label: 'Accept terms and conditions' },
+    play: async ({ canvas, userEvent }) => {
+        const checkbox = canvas.getByRole('checkbox');
+        await expect(checkbox).not.toBeChecked();
+
+        // Check it
+        await userEvent.click(checkbox);
+        await expect(checkbox).toBeChecked();
+
+        // Uncheck it
+        await userEvent.click(checkbox);
+        await expect(checkbox).not.toBeChecked();
+    },
 };
 
 export const WithDescription: Story = {

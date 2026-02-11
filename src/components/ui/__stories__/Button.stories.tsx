@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect, fn } from 'storybook/test';
 import { Button } from '../Button';
 
 const meta = {
@@ -23,7 +24,14 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
-    args: { children: 'Primary Button', variant: 'primary' },
+    args: { children: 'Primary Button', variant: 'primary', onClick: fn() },
+    play: async ({ canvas, userEvent, args }) => {
+        const button = canvas.getByRole('button', { name: 'Primary Button' });
+        await expect(button).toBeInTheDocument();
+        await expect(button).toBeEnabled();
+        await userEvent.click(button);
+        await expect(args.onClick).toHaveBeenCalledOnce();
+    },
 };
 
 export const Secondary: Story = {
@@ -47,11 +55,23 @@ export const Large: Story = {
 };
 
 export const Loading: Story = {
-    args: { children: 'Saving...', loading: true },
+    args: { children: 'Saving...', loading: true, onClick: fn() },
+    play: async ({ canvas, userEvent, args }) => {
+        const button = canvas.getByRole('button', { name: 'Saving...' });
+        await expect(button).toBeDisabled();
+        await userEvent.click(button);
+        await expect(args.onClick).not.toHaveBeenCalled();
+    },
 };
 
 export const Disabled: Story = {
-    args: { children: 'Disabled', disabled: true },
+    args: { children: 'Disabled', disabled: true, onClick: fn() },
+    play: async ({ canvas, userEvent, args }) => {
+        const button = canvas.getByRole('button', { name: 'Disabled' });
+        await expect(button).toBeDisabled();
+        await userEvent.click(button);
+        await expect(args.onClick).not.toHaveBeenCalled();
+    },
 };
 
 export const AllVariants: Story = {

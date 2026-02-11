@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect } from 'storybook/test';
 import { useState } from 'react';
 import { Tabs, TabList, Tab, TabPanel } from '../Tabs';
 
@@ -37,6 +38,22 @@ export const Default: Story = {
                 </TabPanel>
             </Tabs>
         );
+    },
+    play: async ({ canvas, userEvent }) => {
+        // Initially on Overview
+        await expect(canvas.getByText('Overview content')).toBeInTheDocument();
+
+        // Click Analytics tab
+        await userEvent.click(canvas.getByText('Analytics'));
+        await expect(canvas.getByText('Analytics dashboard')).toBeInTheDocument();
+
+        // Click Settings tab
+        await userEvent.click(canvas.getByText('Settings'));
+        await expect(canvas.getByText('Settings panel')).toBeInTheDocument();
+
+        // Go back to Overview
+        await userEvent.click(canvas.getByText('Overview'));
+        await expect(canvas.getByText('Overview content')).toBeInTheDocument();
     },
 };
 

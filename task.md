@@ -241,7 +241,7 @@
   - [x] Install and configure Storybook for Next.js + Tailwind CSS v4
   - [x] Write stories for all design system components (`src/components/ui/`)
   - [x] Document component variants, states, and design tokens
-  - [ ] Add interaction tests to key stories (Button, Input, Modal, etc.)
+  - [x] Add interaction tests to key stories (Button, Input, Modal, Select, Toggle, Checkbox, Tabs)
 - [x] Set up Vitest + React Testing Library (replaces Jest — already bundled with Storybook)
   - [x] Configure unit test project with jsdom environment
   - [x] Unit tests for utility functions (`src/lib/prompts`, `src/lib/creatorId`)

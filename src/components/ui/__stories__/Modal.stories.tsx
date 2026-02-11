@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect } from 'storybook/test';
+import { screen } from 'storybook/test';
 import { useState } from 'react';
 import { Modal } from '../Modal';
 import { Button } from '../Button';
@@ -44,6 +46,21 @@ export const Default: Story = {
                 </Modal>
             </>
         );
+    },
+    play: async ({ canvas, userEvent }) => {
+        // Open the modal
+        await userEvent.click(canvas.getByRole('button', { name: 'Open Modal' }));
+
+        // Verify modal appeared (dialog is rendered outside canvas, so use screen)
+        const dialog = screen.getByRole('dialog');
+        await expect(dialog).toBeVisible();
+        await expect(screen.getByText('Delete Demo')).toBeInTheDocument();
+
+        // Close via Cancel button
+        await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+        // Verify modal is gone
+        await expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     },
 };
 

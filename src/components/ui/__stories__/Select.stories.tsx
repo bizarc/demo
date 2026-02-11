@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect } from 'storybook/test';
 import { useState } from 'react';
 import { Select } from '../Select';
 
@@ -57,5 +58,19 @@ export const Controlled: Story = {
                 </p>
             </div>
         );
+    },
+    play: async ({ canvas, userEvent }) => {
+        // Initially shows React selected
+        await expect(canvas.getByText('React')).toBeInTheDocument();
+        await expect(canvas.getByText('Selected: react')).toBeInTheDocument();
+
+        // Open dropdown
+        await userEvent.click(canvas.getByText('React'));
+
+        // Select Vue
+        await userEvent.click(canvas.getByText('Vue'));
+
+        // Verify selection changed
+        await expect(canvas.getByText('Selected: vue')).toBeInTheDocument();
     },
 };

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect } from 'storybook/test';
 import { useState } from 'react';
 import { Toggle } from '../Toggle';
 
@@ -47,5 +48,17 @@ export const Controlled: Story = {
                 onChange={setChecked}
             />
         );
+    },
+    play: async ({ canvas, userEvent }) => {
+        // Initially off
+        await expect(canvas.getByText('Manual saving only')).toBeInTheDocument();
+
+        // Toggle on
+        await userEvent.click(canvas.getByRole('button'));
+        await expect(canvas.getByText('Drafts are saved automatically')).toBeInTheDocument();
+
+        // Toggle off again
+        await userEvent.click(canvas.getByRole('button'));
+        await expect(canvas.getByText('Manual saving only')).toBeInTheDocument();
     },
 };
