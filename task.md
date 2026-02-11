@@ -234,32 +234,6 @@
 
 ---
 
-## Phase 1.6: Home & Auth (Backlog)
-
-### Home Page
-- [ ] Design home/landing screen (Stitch or DESIGN.md)
-  - Support Funnel Spec v3 use cases: LAB, existing demos, future RADAR/Blueprint/Mission Control
-  - Enable access to existing demos (list, manage, open Magic Link)
-  - Clear entry points for internal ops vs. client portal
-- [ ] Implement home page per design
-  - Replace default Next.js template
-  - Navigation to /lab (Demo Builder)
-  - Demo list / management (when auth exists)
-
-### Authentication
-- [ ] Auth for internal users (Super Admin, Operator)
-  - Required for LAB, RADAR, Mission Control access
-- [ ] Auth for external users (Client Viewer)
-  - Required for Client Portal (read-only metrics, billing)
-- [ ] RBAC: separate internal vs. client workspaces per Funnel Spec
-
-### Backlog Items
-- [ ] Optimistic locking for concurrent draft edits
-- [ ] Push to BLUEPRINT action (set `status = 'blueprint'`, trigger BLUEPRINT flow)
-- [ ] Audit trail for demo state transitions
-
----
-
 ## Phase 2: Polish & Deploy
 
 ### 2.1 Testing
@@ -299,6 +273,83 @@
 - [ ] Test production build: `npm run build`
 - [ ] Deploy to production
 - [ ] Smoke test all critical paths
+
+---
+
+## Phase 3: Platform Expansion & Intelligence
+
+> **Scope:** Features under consideration for LAB demo functionality, BLUEPRINT production flows, or both. Each item requires research and design before implementation.
+
+### 3.1 Home & Auth
+
+#### Home Page
+- [ ] Design home/landing screen (Stitch or DESIGN.md)
+  - Support Funnel Spec v3 use cases: LAB, existing demos, future RADAR/Blueprint/Mission Control
+  - Enable access to existing demos (list, manage, open Magic Link)
+  - Clear entry points for internal ops vs. client portal
+- [ ] Implement home page per design
+  - Replace default Next.js template
+  - Navigation to /lab (Demo Builder)
+  - Demo list / management (when auth exists)
+
+#### Authentication & RBAC
+- [ ] Auth for internal users (Super Admin, Operator)
+  - Required for LAB, RADAR, Mission Control access
+- [ ] Auth for external users (Client Viewer)
+  - Required for Client Portal (read-only metrics, billing)
+- [ ] RBAC: separate internal vs. client workspaces per Funnel Spec
+
+#### Data Integrity
+- [ ] Optimistic locking for concurrent draft edits
+- [ ] Audit trail for demo state transitions
+- [ ] Push to BLUEPRINT action (set `status = 'blueprint'`, trigger BLUEPRINT flow)
+
+### 3.2 Research Skill (Company Intelligence)
+- [ ] Research & design: AI-powered company research via Perplexity (OpenRouter)
+  - Determine scope: auto-run during builder flow vs. on-demand operator tool
+  - Define output structure (company summary, competitors, market position, offerings)
+- [ ] Implement research API route using Perplexity model via OpenRouter
+- [ ] Integrate research output into builder context (Step 3) to enrich agent knowledge
+- [ ] Evaluate applicability to BLUEPRINT (deeper research for production agents)
+
+### 3.3 Improved Scraping & Context Generation
+- [ ] Research & design: enhanced scraping strategy
+  - Multi-page crawling (sitemap, linked pages)
+  - Structured extraction of products, services, pricing, FAQs
+  - Image/logo detection improvements and brand color extraction
+- [ ] Implement improved scraper with richer context output
+- [ ] Auto-generate structured context from scrape results (products, offers, qualifications)
+- [ ] Evaluate combining research skill (3.2) with scrape data for comprehensive context
+
+### 3.4 Advanced Prompt Engineering (Missions x Channels)
+- [ ] Research & design: detailed prompts per mission x channel matrix
+  - Missions: Reactivation, Nurture, Service, Review
+  - Channels: SMS, Voice, Website Chat, Messenger
+  - Define tone, length, CTA style, and compliance considerations per channel
+- [ ] Implement channel-aware prompt templates
+- [ ] Add channel selection to builder flow (Step 1 or new step)
+- [ ] Test and iterate prompt quality across all mission/channel combinations
+- [ ] Evaluate: demo-only feature vs. BLUEPRINT production requirement
+
+### 3.5 Knowledge Bases (RAG)
+- [ ] Research & design: RAG architecture for mission-specific knowledge
+  - Use cases: product catalogs, FAQ databases, service menus, review templates
+  - Evaluate vector DB options (Supabase pgvector, Pinecone, etc.)
+  - Define upload/ingestion flow for operators
+- [ ] Implement knowledge base CRUD (create, upload documents, manage)
+- [ ] Implement retrieval pipeline (embedding, search, context injection)
+- [ ] Integrate knowledge base selection into builder flow
+- [ ] Evaluate: demo-only (limited docs) vs. BLUEPRINT (full catalog support)
+
+### 3.6 Voice AI Demos
+- [ ] Research & design: Voice AI demo architecture per mission
+  - Evaluate providers (ElevenLabs, OpenAI TTS/STT, Deepgram, etc.)
+  - Define voice agent UX (browser-based, phone call, or both)
+  - Map voice-specific prompt requirements per mission
+- [ ] Implement voice demo page (`/demo/[id]/voice` or separate flow)
+- [ ] Integrate with existing demo config (brand, context, mission profile)
+- [ ] Add voice demo option to builder flow (Step 5 or post-creation)
+- [ ] Evaluate: demo-only showcase vs. BLUEPRINT production voice agents
 
 ---
 
