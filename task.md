@@ -236,13 +236,23 @@
 
 ## Phase 2: Polish & Deploy
 
-### 2.1 Testing
-- [ ] Set up Jest + React Testing Library
-- [ ] Unit tests for all UI components
+### 2.1 Testing & Component Documentation
+- [x] Set up Storybook
+  - [x] Install and configure Storybook for Next.js + Tailwind CSS v4
+  - [x] Write stories for all design system components (`src/components/ui/`)
+  - [x] Document component variants, states, and design tokens
+  - [ ] Add interaction tests to key stories (Button, Input, Modal, etc.)
+- [x] Set up Vitest + React Testing Library (replaces Jest — already bundled with Storybook)
+  - [x] Configure unit test project with jsdom environment
+  - [x] Unit tests for utility functions (`src/lib/prompts`, `src/lib/creatorId`)
+  - [x] Unit tests for UI components (Button, Input, Badge)
 - [ ] Integration tests for API routes
+  - [ ] `/api/demo` (create, list, update, delete)
+  - [ ] `/api/chat` (streaming, history, token limits)
+  - [ ] `/api/scrape` (scraping, rate limiting)
 - [ ] E2E tests with Playwright
-  - [ ] Test: Create demo flow
-  - [ ] Test: Chat experience
+  - [ ] Test: Create demo flow (builder → success → magic link)
+  - [ ] Test: Chat experience (streaming, history persistence)
   - [ ] Test: Expired demo handling
 
 ### 2.2 Error Handling
