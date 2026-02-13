@@ -263,10 +263,10 @@
 - [x] Implement retry logic for API calls
 
 ### 2.3 Performance
-- [ ] Optimize images (next/image)
-- [ ] Implement skeleton loaders
-- [ ] Add loading states to all buttons
-- [ ] Measure and optimize Core Web Vitals
+- [x] Optimize images (next/image)
+- [x] Implement skeleton loaders
+- [x] Add loading states to all buttons
+- [x] Measure and optimize Core Web Vitals
 
 ### 2.4 Security
 - [ ] Validate all user inputs

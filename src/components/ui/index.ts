@@ -59,8 +59,11 @@ export type { ModalProps } from './Modal';
 export { ToastProvider, useToast, ToastItem } from './Toast';
 export type { Toast, ToastItemProps } from './Toast';
 
-export { Skeleton, SkeletonCard, SkeletonAvatar } from './Skeleton';
+export { Skeleton, SkeletonCard, SkeletonAvatar, SkeletonDemoRow, SkeletonChatPage, SkeletonSuccessCard } from './Skeleton';
 export type { SkeletonProps } from './Skeleton';
+
+export { OptimizedImage } from './OptimizedImage';
+export type { OptimizedImageProps } from './OptimizedImage';
 
 export { Spinner } from './Spinner';
 export type { SpinnerProps } from './Spinner';

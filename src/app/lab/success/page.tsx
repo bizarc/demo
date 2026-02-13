@@ -5,6 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import QRCode from 'qrcode';
 import Link from 'next/link';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { SkeletonSuccessCard } from '@/components/ui/Skeleton';
 
 function SuccessContent() {
     const searchParams = useSearchParams();
@@ -63,9 +65,10 @@ function SuccessContent() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'var(--color-canvas)'
+                background: 'var(--color-canvas)',
+                padding: '40px 20px',
             }}>
-                <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
+                <SkeletonSuccessCard />
             </div>
         );
     }
@@ -174,8 +177,7 @@ function SuccessContent() {
                                 marginBottom: '12px',
                                 display: 'inline-block',
                             }}>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={qrCodeData} alt="Demo QR Code" width="160" height="160" />
+                                <OptimizedImage src={qrCodeData} alt="Demo QR Code" width={160} height={160} />
                             </div>
                             <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>Scan to test on mobile</p>
                         </div>
@@ -249,9 +251,10 @@ export default function SuccessPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'var(--color-canvas)'
+                background: 'var(--color-canvas)',
+                padding: '40px 20px',
             }}>
-                <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
+                <SkeletonSuccessCard />
             </div>
         }>
             <SuccessContent />

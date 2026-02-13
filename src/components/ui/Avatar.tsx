@@ -1,4 +1,5 @@
 import { HTMLAttributes, forwardRef } from 'react';
+import Image from 'next/image';
 
 export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
     name?: string;
@@ -38,16 +39,18 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
                 <div
                     className={`
             ${sizes[size]} 
-            rounded-full flex items-center justify-center font-medium
-            ${variant === 'agent'
+            rounded-full flex items-center justify-center font-medium overflow-hidden
+            ${src ? 'relative' : ''}
+            ${!src && variant === 'agent'
                             ? 'bg-primary text-white'
-                            : 'bg-border text-foreground-secondary'
+                            : !src
+                                ? 'bg-border text-foreground-secondary'
+                                : ''
                         }
           `}
                 >
                     {src ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={src} alt={name || 'Avatar'} className="w-full h-full rounded-full object-cover" />
+                        <Image src={src} alt={name || 'Avatar'} fill className="object-cover" unoptimized sizes="32px" />
                     ) : variant === 'agent' ? (
                         <svg className="w-1/2 h-1/2" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z" />

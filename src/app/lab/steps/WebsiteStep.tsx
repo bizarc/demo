@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { ScrapeResult } from '@/lib/scraper';
 import { useToast } from '@/components/ui/Toast';
 import { fetchWithRetry } from '@/lib/fetchWithRetry';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { Button } from '@/components/ui/Button';
 
 interface WebsiteStepProps {
     url: string;
@@ -101,19 +103,9 @@ export function WebsiteStep({
                     )}
                 </div>
                 <div style={{ paddingTop: '26px' }}>
-                    <button
-                        onClick={handleScrape}
-                        disabled={loading || !url.trim() || !isValidUrl(url)}
-                        style={{
-                            ...btnBase,
-                            background: 'var(--color-primary)',
-                            color: '#FFFFFF',
-                            opacity: (loading || !url.trim() || !isValidUrl(url)) ? 0.5 : 1,
-                            cursor: (loading || !url.trim() || !isValidUrl(url)) ? 'not-allowed' : 'pointer',
-                        }}
-                    >
+                    <Button onClick={handleScrape} disabled={!url.trim() || !isValidUrl(url)} loading={loading}>
                         {loading ? 'Analyzing...' : 'Analyze'}
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -159,8 +151,7 @@ export function WebsiteStep({
                         {scrapeResult.logoUrl && (
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                                 <span style={{ color: 'var(--color-text-secondary)', width: '120px', flexShrink: 0 }}>Logo:</span>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={scrapeResult.logoUrl} alt="Logo" style={{ height: '32px', width: 'auto' }} />
+                                <OptimizedImage src={scrapeResult.logoUrl} alt="Logo" width={32} height={32} style={{ objectFit: 'contain' }} />
                             </div>
                         )}
                     </div>

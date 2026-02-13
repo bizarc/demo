@@ -8,6 +8,8 @@ import { DemoFormData } from '../DemoBuilder';
 import { MISSION_PROFILES } from '@/lib/prompts';
 import { AVAILABLE_MODELS } from '@/lib/openrouter';
 import { RotateCcw, Sprout, Headset, Star, LucideIcon } from 'lucide-react';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { Button } from '@/components/ui/Button';
 
 const ICON_MAP: Record<string, LucideIcon> = { RotateCcw, Sprout, Headset, Star };
 
@@ -124,8 +126,7 @@ export function SummaryStep({ formData, onBack, onActivate }: SummaryStepProps) 
                 {(formData.logoUrl || formData.companyName) && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid var(--color-border)' }}>
                         {formData.logoUrl && (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img src={formData.logoUrl} alt="Logo" style={{ height: '40px', width: 'auto', borderRadius: '6px' }} />
+                            <OptimizedImage src={formData.logoUrl} alt="Logo" width={40} height={40} style={{ borderRadius: '6px', objectFit: 'contain' }} />
                         )}
                         <div>
                             <div style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
@@ -193,24 +194,19 @@ export function SummaryStep({ formData, onBack, onActivate }: SummaryStepProps) 
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 19l-7-7 7-7" /></svg>
                     Back
                 </button>
-                <button
+                <Button
                     onClick={handleCreate}
                     disabled={creating}
-                    style={{
-                        ...btnBase,
-                        background: 'var(--color-success)',
-                        color: '#FFFFFF',
-                        opacity: creating ? 0.7 : 1,
-                        cursor: creating ? 'not-allowed' : 'pointer',
-                        padding: '12px 28px',
-                        fontSize: '15px',
-                    }}
+                    loading={creating}
+                    className="!bg-[var(--color-success)] hover:!opacity-90 !px-7 !py-3 !text-[15px]"
                 >
-                    {creating ? 'Creating...' : 'Create demo'}
-                    {!creating && (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                    {creating ? 'Creating...' : (
+                        <>
+                            Create demo
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 4 }}><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                        </>
                     )}
-                </button>
+                </Button>
             </div>
         </div>
     );

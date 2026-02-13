@@ -6,6 +6,8 @@ import { createClient } from '@supabase/supabase-js';
 import { nanoid } from 'nanoid';
 import { Send, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { SkeletonChatPage } from '@/components/ui/Skeleton';
 import styles from './chat.module.css';
 
 interface Message {
@@ -184,10 +186,7 @@ function DemoChat() {
     };
 
     if (isLoading || !config) {
-        return <div className={styles.loadingScreen}>
-            <div className={styles.statusDot} style={{ width: 12, height: 12, animation: 'pulse 1s infinite' }} />
-            Loading demo environment...
-        </div>;
+        return <SkeletonChatPage />;
     }
 
     return (
@@ -195,8 +194,7 @@ function DemoChat() {
             {/* Header */}
             <div className={styles.header}>
                 {config.logo_url ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={config.logo_url} alt="Logo" className={styles.logo} />
+                    <OptimizedImage src={config.logo_url} alt="Logo" width={40} height={40} className={styles.logo} />
                 ) : (
                     <div className={styles.logo} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Sparkles size={20} color={config.primary_color} />
@@ -275,8 +273,16 @@ function DemoChat() {
                         className={styles.sendButton}
                         onClick={() => handleSend()}
                         disabled={!input.trim() || isSending}
+                        aria-busy={isSending}
                     >
-                        <Send size={20} />
+                        {isSending ? (
+                            <svg className="animate-spin" width={20} height={20} viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                        ) : (
+                            <Send size={20} />
+                        )}
                     </button>
                 </div>
                 <div style={{ textAlign: 'center', marginTop: 8, fontSize: 11, color: '#9CA3AF' }}>

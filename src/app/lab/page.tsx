@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { getCreatorId } from '@/lib/creatorId';
 import { useToast } from '@/components/ui/Toast';
 import { fetchWithRetry } from '@/lib/fetchWithRetry';
+import { SkeletonDemoRow } from '@/components/ui/Skeleton';
 
 interface DemoListItem {
     id: string;
@@ -198,17 +199,10 @@ export default function LabHomePage() {
 
                 {/* Loading */}
                 {loading && (
-                    <div style={{ textAlign: 'center', padding: '64px 0' }}>
-                        <div style={{
-                            width: '32px', height: '32px',
-                            border: '3px solid var(--color-border)',
-                            borderTopColor: 'var(--color-primary)',
-                            borderRadius: '50%',
-                            animation: 'spin 0.8s linear infinite',
-                            margin: '0 auto 12px',
-                        }} />
-                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>Loading demos...</p>
-                        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {[1, 2, 3, 4].map((i) => (
+                            <SkeletonDemoRow key={i} />
+                        ))}
                     </div>
                 )}
 
@@ -367,10 +361,11 @@ export default function LabHomePage() {
                                             </>
                                         )}
                                         <ActionButton
-                                            label="Delete"
+                                            label={isDeleting ? 'Deleting...' : 'Delete'}
                                             onClick={() => handleDelete(demo.id)}
                                             destructive
                                             disabled={isDeleting}
+                                            loading={isDeleting}
                                         />
                                     </div>
                                 </div>
@@ -438,17 +433,19 @@ function ActionButton({
     primary,
     destructive,
     disabled,
+    loading,
 }: {
     label: string;
     onClick: () => void;
     primary?: boolean;
     destructive?: boolean;
     disabled?: boolean;
+    loading?: boolean;
 }) {
     return (
         <button
             onClick={onClick}
-            disabled={disabled}
+            disabled={disabled || loading}
             style={{
                 padding: '6px 14px',
                 fontSize: '13px',
@@ -465,11 +462,21 @@ function ActionButton({
                     : destructive
                         ? 'var(--color-error)'
                         : 'var(--color-text-secondary)',
-                cursor: disabled ? 'not-allowed' : 'pointer',
-                opacity: disabled ? 0.5 : 1,
+                cursor: disabled || loading ? 'not-allowed' : 'pointer',
+                opacity: disabled || loading ? 0.5 : 1,
                 transition: 'all 150ms',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
             }}
         >
+            {loading && (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="animate-spin" style={{ flexShrink: 0 }}>
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+            )}
             {label}
         </button>
     );
