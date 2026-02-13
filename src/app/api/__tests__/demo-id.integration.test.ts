@@ -16,8 +16,10 @@ vi.mock('@/lib/supabase', () => ({
     })),
 }));
 
+const validUuid = 'a24a6ea4-ce75-4665-a070-57453082c256';
+
 describe('GET /api/demo/[id]', () => {
-    const demoId = 'existing-demo-uuid';
+    const demoId = validUuid;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -43,7 +45,7 @@ describe('GET /api/demo/[id]', () => {
         const res = await GET(req, { params: Promise.resolve({ id: '' }) });
         const data = await res.json();
         expect(res.status).toBe(400);
-        expect(data.error).toContain('Demo ID is required');
+        expect(data.error).toContain('Invalid demo ID');
     });
 
     it('returns demo when found and not expired', async () => {
@@ -64,8 +66,8 @@ describe('GET /api/demo/[id]', () => {
             single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } }),
         });
 
-        const req = createMockRequest('http://localhost/api/demo/non-existent');
-        const res = await GET(req, { params: Promise.resolve({ id: 'non-existent' }) });
+        const req = createMockRequest(`http://localhost/api/demo/00000000-0000-0000-0000-000000000001`);
+        const res = await GET(req, { params: Promise.resolve({ id: '00000000-0000-0000-0000-000000000001' }) });
         const data = await res.json();
 
         expect(res.status).toBe(404);
@@ -99,7 +101,7 @@ describe('GET /api/demo/[id]', () => {
 });
 
 describe('PATCH /api/demo/[id]', () => {
-    const demoId = 'draft-demo-uuid';
+    const demoId = validUuid;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -113,7 +115,7 @@ describe('PATCH /api/demo/[id]', () => {
         const res = await PATCH(req, { params: Promise.resolve({ id: '' }) });
         const data = await res.json();
         expect(res.status).toBe(400);
-        expect(data.error).toContain('Demo ID is required');
+        expect(data.error).toContain('Invalid demo ID');
     });
 
     it('updates draft with partial data', async () => {
@@ -156,7 +158,7 @@ describe('PATCH /api/demo/[id]', () => {
 });
 
 describe('DELETE /api/demo/[id]', () => {
-    const demoId = 'demo-to-delete';
+    const demoId = validUuid;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -167,7 +169,7 @@ describe('DELETE /api/demo/[id]', () => {
         const res = await DELETE(req, { params: Promise.resolve({ id: '' }) });
         const data = await res.json();
         expect(res.status).toBe(400);
-        expect(data.error).toContain('Demo ID is required');
+        expect(data.error).toContain('Invalid demo ID');
     });
 
     it('soft deletes by default', async () => {

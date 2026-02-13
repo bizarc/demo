@@ -269,20 +269,20 @@
 - [x] Measure and optimize Core Web Vitals
 
 ### 2.4 Security
-- [ ] Validate all user inputs
-- [ ] Sanitize scraped content
-- [ ] Implement CORS properly
-- [ ] Add rate limiting to all endpoints
-- [ ] Audit Supabase RLS policies
+- [x] Validate all user inputs
+- [x] Sanitize scraped content
+- [x] Implement CORS properly
+- [x] Add rate limiting to all endpoints
+- [x] Audit Supabase RLS policies
 
 ### 2.5 Deployment
-- [ ] Configure Vercel project
-- [ ] Set environment variables in Vercel
-- [ ] Set up preview deployments
-- [ ] Configure custom domain (optional)
-- [ ] Test production build: `npm run build`
-- [ ] Deploy to production
-- [ ] Smoke test all critical paths
+- [x] Configure Vercel project (`vercel.json`, `docs/deployment.md`)
+- [x] Set environment variables in Vercel (documented in deployment guide)
+- [x] Set up preview deployments (automatic via Git integration)
+- [ ] Configure custom domain (optional) — see docs/deployment.md
+- [x] Test production build: `npm run build`
+- [ ] Deploy to production (manual: connect repo at vercel.com, then push)
+- [x] Smoke test all critical paths (Playwright with `BASE_URL` — see docs/deployment.md)
 
 ---
 

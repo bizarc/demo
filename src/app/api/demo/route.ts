@@ -3,6 +3,14 @@ import { createServerClient } from '@/lib/supabase';
 import { buildSystemPrompt, MissionProfile, MISSION_PROFILES } from '@/lib/prompts';
 
 import { MissionProfile as DbMissionProfile } from '@/lib/database.types';
+import {
+    validateUrl,
+    isValidHexColor,
+    sanitizeString,
+    sanitizeStringArray,
+    LIMITS,
+} from '@/lib/validation';
+import { getClientIp, checkRateLimit, DEMO_LIMIT } from '@/lib/rateLimit';
 
 const VALID_PROFILES = Object.keys(MISSION_PROFILES) as MissionProfile[];
 
@@ -16,6 +24,15 @@ const PROFILE_TO_DB: Record<MissionProfile, DbMissionProfile> = {
 
 export async function POST(request: NextRequest) {
     try {
+        const ip = getClientIp(request);
+        const { allowed } = checkRateLimit(`demo:${ip}`, DEMO_LIMIT);
+        if (!allowed) {
+            return NextResponse.json(
+                { error: 'Rate limit exceeded. Try again later.' },
+                { status: 429 }
+            );
+        }
+
         const body = await request.json();
         const {
             status = 'active', // 'draft' or 'active'
@@ -34,11 +51,8 @@ export async function POST(request: NextRequest) {
             created_by,
         } = body;
 
-        // Convert comma-separated strings to arrays for DB
-        const toArray = (val: string | string[] | undefined): string[] => {
-            if (!val) return [];
-            if (Array.isArray(val)) return val;
-            return val.split(',').map((s: string) => s.trim()).filter(Boolean);
+        const toArray = (val: string | string[] | undefined, maxItems = LIMITS.productsServicesItems): string[] => {
+            return sanitizeStringArray(val, maxItems, LIMITS.itemLength);
         };
 
         const supabase = createServerClient();
@@ -49,25 +63,39 @@ export async function POST(request: NextRequest) {
                 ? PROFILE_TO_DB[mission_profile as MissionProfile]
                 : null;
 
+            // Validate website_url if provided
+            let safeWebsiteUrl: string | null = null;
+            if (website_url) {
+                const urlResult = validateUrl(website_url);
+                if (!urlResult.valid) {
+                    return NextResponse.json({ error: urlResult.error }, { status: 400 });
+                }
+                safeWebsiteUrl = urlResult.url;
+            }
+
             const { data, error: insertError } = await supabase
                 .from('demos')
                 .insert({
                     status: 'draft',
-                    company_name: company_name || null,
-                    industry: industry || null,
-                    website_url: website_url || null,
+                    company_name: sanitizeString(company_name, LIMITS.companyName) || null,
+                    industry: sanitizeString(industry, LIMITS.industry) || null,
+                    website_url: safeWebsiteUrl,
                     products_services: toArray(products_services),
                     offers: toArray(offers),
                     qualification_criteria: toArray(qualification_criteria),
-                    logo_url: logo_url || null,
-                    primary_color: primary_color || '#2563EB',
-                    secondary_color: secondary_color || '#FFFFFF',
+                    logo_url: (() => {
+                        if (!logo_url) return null;
+                        const r = validateUrl(logo_url);
+                        return r.valid ? r.url : null;
+                    })(),
+                    primary_color: (primary_color && isValidHexColor(primary_color)) ? primary_color : '#2563EB',
+                    secondary_color: (secondary_color && isValidHexColor(secondary_color)) ? secondary_color : '#FFFFFF',
                     mission_profile: dbMissionProfile,
-                    openrouter_model: openrouter_model || null,
+                    openrouter_model: sanitizeString(openrouter_model, LIMITS.openrouterModel) || null,
                     system_prompt: null,
                     expires_at: null,
-                    current_step: current_step || 'mission',
-                    created_by: created_by || null,
+                    current_step: sanitizeString(current_step, LIMITS.currentStep) || 'mission',
+                    created_by: sanitizeString(created_by, LIMITS.creatorId) || null,
                 })
                 .select('id')
                 .single();
@@ -102,6 +130,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Validate website_url for active demos
+        const websiteUrlResult = validateUrl(website_url);
+        const safeWebsiteUrl = websiteUrlResult.valid ? websiteUrlResult.url : '';
+
         // Build system prompt
         const system_prompt = buildSystemPrompt(mission_profile as MissionProfile, {
             companyName: company_name,
@@ -117,21 +149,25 @@ export async function POST(request: NextRequest) {
         const { data, error: insertError } = await supabase
             .from('demos')
             .insert({
-                company_name,
-                industry: industry || null,
-                website_url: website_url || '',
+                company_name: sanitizeString(company_name, LIMITS.companyName),
+                industry: sanitizeString(industry, LIMITS.industry) || null,
+                website_url: safeWebsiteUrl,
                 products_services: toArray(products_services),
                 offers: toArray(offers),
-                qualification_criteria: toArray(qualification_criteria),
-                logo_url: logo_url || null,
-                primary_color: primary_color || '#2563EB',
-                secondary_color: secondary_color || '#FFFFFF',
+                qualification_criteria: toArray(qualification_criteria, LIMITS.qualificationItems),
+                logo_url: (() => {
+                    if (!logo_url) return null;
+                    const r = validateUrl(logo_url);
+                    return r.valid ? r.url : null;
+                })(),
+                primary_color: (primary_color && isValidHexColor(primary_color)) ? primary_color : '#2563EB',
+                secondary_color: (secondary_color && isValidHexColor(secondary_color)) ? secondary_color : '#FFFFFF',
                 mission_profile: PROFILE_TO_DB[mission_profile as MissionProfile],
-                openrouter_model: openrouter_model || 'openai/gpt-4o-mini',
+                openrouter_model: sanitizeString(openrouter_model, LIMITS.openrouterModel) || 'openai/gpt-4o-mini',
                 system_prompt,
                 expires_at,
                 status: 'active',
-                created_by: created_by || null,
+                created_by: sanitizeString(created_by, LIMITS.creatorId) || null,
                 current_step: 'summary',
             })
             .select('id')
@@ -164,8 +200,18 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
     try {
+        const ip = getClientIp(request);
+        const { allowed } = checkRateLimit(`demo:${ip}`, DEMO_LIMIT);
+        if (!allowed) {
+            return NextResponse.json(
+                { error: 'Rate limit exceeded. Try again later.' },
+                { status: 429 }
+            );
+        }
+
         const { searchParams } = request.nextUrl;
-        const createdBy = searchParams.get('created_by');
+        const createdByRaw = searchParams.get('created_by');
+        const createdBy = sanitizeString(createdByRaw, LIMITS.creatorId);
 
         if (!createdBy) {
             return NextResponse.json(

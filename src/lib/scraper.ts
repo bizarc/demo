@@ -1,4 +1,10 @@
 import * as cheerio from 'cheerio';
+import {
+    sanitizeScrapedText,
+    sanitizeTextField,
+    sanitizeScrapedUrl,
+    sanitizeStringArray,
+} from './sanitize';
 
 export interface ScrapeResult {
     companyName: string;
@@ -91,15 +97,17 @@ async function scrapeWithCheerio(url: string, timeout: number): Promise<ScrapeRe
         const industry = inferIndustry(rawText, companyName);
 
         return {
-            companyName,
-            industry,
-            products,
-            offers,
-            logoUrl,
-            primaryColor,
+            companyName: sanitizeTextField(companyName, 500),
+            industry: industry ? sanitizeTextField(industry, 200) : null,
+            products: sanitizeStringArray(products, 5, 200),
+            offers: sanitizeStringArray(offers, 3, 200),
+            logoUrl: sanitizeScrapedUrl(logoUrl),
+            primaryColor: primaryColor ? sanitizeTextField(primaryColor, 20) : null,
             websiteUrl: url,
-            description: metaDescription || h1 || null,
-            rawText: rawText.slice(0, 5000), // Limit raw text length
+            description: metaDescription || h1
+                ? sanitizeScrapedText(metaDescription || h1, 500)
+                : null,
+            rawText: sanitizeScrapedText(rawText, 5000),
         };
     } finally {
         clearTimeout(timeoutId);
@@ -130,16 +138,29 @@ async function scrapeWithJina(url: string): Promise<ScrapeResult> {
     const lines = content.split('\n');
     const title = lines[0]?.replace(/^#\s*/, '').trim() || 'Unknown';
 
+    const products = sanitizeStringArray(
+        extractKeywords(content, ['product', 'service', 'solution', 'offer']),
+        5,
+        200
+    );
+    const offers = sanitizeStringArray(
+        extractKeywords(content, ['deal', 'discount', 'free', 'trial', 'demo']),
+        3,
+        200
+    );
     return {
-        companyName: title,
-        industry: inferIndustry(content, title),
-        products: extractKeywords(content, ['product', 'service', 'solution', 'offer']),
-        offers: extractKeywords(content, ['deal', 'discount', 'free', 'trial', 'demo']),
+        companyName: sanitizeTextField(title, 500),
+        industry: (() => {
+            const ind = inferIndustry(content, title);
+            return ind ? sanitizeTextField(ind, 200) : null;
+        })(),
+        products,
+        offers,
         logoUrl: null, // Jina doesn't provide logo
         primaryColor: null, // Jina doesn't provide colors
         websiteUrl: url,
-        description: lines.slice(0, 3).join(' ').slice(0, 200),
-        rawText: content.slice(0, 5000),
+        description: sanitizeScrapedText(lines.slice(0, 3).join(' '), 200),
+        rawText: sanitizeScrapedText(content, 5000),
     };
 }
 

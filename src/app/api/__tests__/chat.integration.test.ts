@@ -19,6 +19,9 @@ vi.mock('@/lib/openrouter', () => ({
     },
 }));
 
+const validDemoId = 'a24a6ea4-ce75-4665-a070-57453082c256';
+const validLeadId = 'V1StGXR8_Z5jdHJ8k2'; // nanoid-style, 18 chars
+
 describe('POST /api/chat', () => {
     const baseUrl = 'http://localhost/api/chat';
 
@@ -54,13 +57,13 @@ describe('POST /api/chat', () => {
         const data = await res.json();
 
         expect(res.status).toBe(400);
-        expect(data.error).toContain('demoId is required');
+        expect(data.error).toContain('demoId');
     });
 
     it('returns 400 when message is missing', async () => {
         const req = createMockRequest(baseUrl, {
             method: 'POST',
-            body: { demoId: 'demo-1' },
+            body: { demoId: validDemoId },
         });
 
         const res = await POST(req);
@@ -82,7 +85,7 @@ describe('POST /api/chat', () => {
 
         const req = createMockRequest(baseUrl, {
             method: 'POST',
-            body: { demoId: 'non-existent', message: 'Hello' },
+            body: { demoId: '00000000-0000-0000-0000-000000000001', message: 'Hello' },
         });
 
         const res = await POST(req);
@@ -95,7 +98,7 @@ describe('POST /api/chat', () => {
     it('returns 503 when OpenRouter is not configured', async () => {
         const req = createMockRequest(baseUrl, {
             method: 'POST',
-            body: { demoId: 'demo-1', message: 'Hello' },
+            body: { demoId: validDemoId, message: 'Hello' },
         });
 
         const res = await POST(req);
@@ -123,7 +126,7 @@ describe('GET /api/chat', () => {
         const data = await res.json();
 
         expect(res.status).toBe(400);
-        expect(data.error).toContain('Missing demoId or leadIdentifier');
+        expect(data.error).toMatch(/demoId|leadIdentifier|invalid/i);
     });
 
     it('returns messages for valid params', async () => {
@@ -153,7 +156,7 @@ describe('GET /api/chat', () => {
             .mockReturnValueOnce(messagesChain);
 
         const req = createMockRequest(
-            'http://localhost/api/chat?demoId=demo-1&leadIdentifier=lead-abc'
+            `http://localhost/api/chat?demoId=${validDemoId}&leadIdentifier=${validLeadId}`
         );
         const res = await GET(req);
         const data = await res.json();
@@ -174,7 +177,7 @@ describe('GET /api/chat', () => {
         });
 
         const req = createMockRequest(
-            'http://localhost/api/chat?demoId=demo-1&leadIdentifier=unknown-lead'
+            `http://localhost/api/chat?demoId=${validDemoId}&leadIdentifier=${validLeadId}`
         );
         const res = await GET(req);
         const data = await res.json();

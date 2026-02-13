@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { getOpenRouterClient, ChatMessage, OpenRouterClient } from '@/lib/openrouter';
 import { buildSystemPrompt, MissionProfile } from '@/lib/prompts';
 import { createServerClient } from '@/lib/supabase';
+import { isValidUuid, isValidLeadIdentifier, sanitizeString, LIMITS } from '@/lib/validation';
+import { getClientIp, checkRateLimit, CHAT_LIMIT } from '@/lib/rateLimit';
 
 const TOKEN_LIMIT = 10000;
 const MAX_HISTORY_MESSAGES = 50; // Cap history sent to LLM
@@ -170,6 +172,15 @@ async function saveMessage(
 
 export async function POST(request: NextRequest) {
     try {
+        const ip = getClientIp(request);
+        const { allowed } = checkRateLimit(`chat:${ip}`, CHAT_LIMIT);
+        if (!allowed) {
+            return Response.json(
+                { error: 'Rate limit exceeded. Try again in a moment.' },
+                { status: 429 }
+            );
+        }
+
         const body = await request.json();
         const {
             demoId,
@@ -181,13 +192,17 @@ export async function POST(request: NextRequest) {
             sessionId: existingSessionId,
         } = body;
 
-        // Validate required fields
-        if (!demoId || typeof demoId !== 'string') {
-            return Response.json({ error: 'demoId is required' }, { status: 400 });
+        if (!demoId || !isValidUuid(demoId)) {
+            return Response.json({ error: 'demoId is required and must be a valid UUID' }, { status: 400 });
         }
 
-        if (!message || typeof message !== 'string') {
+        const sanitizedMessage = sanitizeString(message, LIMITS.messageContent);
+        if (!sanitizedMessage) {
             return Response.json({ error: 'message is required' }, { status: 400 });
+        }
+
+        if (leadIdentifier && !isValidLeadIdentifier(leadIdentifier)) {
+            return Response.json({ error: 'Invalid lead identifier' }, { status: 400 });
         }
 
         const supabase = createServerClient();
@@ -211,10 +226,10 @@ export async function POST(request: NextRequest) {
         }
 
         // Check token limit (skip for draft previews)
-        const { allowed, remaining } = isDraft
+        const { allowed: tokenAllowed, remaining } = isDraft
             ? { allowed: true, remaining: TOKEN_LIMIT }
             : await checkTokenLimit(supabase, demoId);
-        if (!allowed) {
+        if (!tokenAllowed) {
             return Response.json(
                 { error: 'Token limit exceeded for this demo session' },
                 { status: 429 }
@@ -262,8 +277,8 @@ export async function POST(request: NextRequest) {
                 conversationHistory = await loadLeadHistory(supabase, lead.id);
 
                 // Save the incoming user message
-                const userTokens = OpenRouterClient.estimateTokens(message);
-                await saveMessage(supabase, sessionId, 'user', message, userTokens);
+                const userTokens = OpenRouterClient.estimateTokens(sanitizedMessage);
+                await saveMessage(supabase, sessionId, 'user', sanitizedMessage, userTokens);
             } catch {
                 // If conversation engine tables don't exist, fall back to client-side
                 conversationHistory = history.map((msg: { role: string; content: string }) => ({
@@ -273,17 +288,20 @@ export async function POST(request: NextRequest) {
             }
         } else {
             // Client-side mode (builder preview): use history from request body
-            conversationHistory = history.map((msg: { role: string; content: string }) => ({
-                role: msg.role as 'user' | 'assistant',
-                content: msg.content,
-            }));
+            conversationHistory = (Array.isArray(history) ? history : [])
+                .slice(0, LIMITS.historyMessages)
+                .map((msg: { role?: string; content?: string }) => ({
+                    role: (msg.role === 'assistant' ? 'assistant' : 'user') as 'user' | 'assistant',
+                    content: sanitizeString(msg.content, LIMITS.messageContent),
+                }))
+                .filter((m) => m.content);
         }
 
         // Build messages array for LLM
         const messages: ChatMessage[] = [
             { role: 'system', content: systemPrompt },
             ...conversationHistory,
-            { role: 'user' as const, content: message },
+            { role: 'user' as const, content: sanitizedMessage },
         ];
 
         // Estimate input tokens
@@ -363,12 +381,21 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+    const ip = getClientIp(request);
+    const { allowed } = checkRateLimit(`chat:${ip}`, CHAT_LIMIT);
+    if (!allowed) {
+        return Response.json(
+            { error: 'Rate limit exceeded. Try again in a moment.' },
+            { status: 429 }
+        );
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const demoId = searchParams.get('demoId');
     const leadIdentifier = searchParams.get('leadIdentifier');
 
-    if (!demoId || !leadIdentifier) {
-        return Response.json({ error: 'Missing demoId or leadIdentifier' }, { status: 400 });
+    if (!demoId || !isValidUuid(demoId) || !leadIdentifier || !isValidLeadIdentifier(leadIdentifier)) {
+        return Response.json({ error: 'Missing or invalid demoId and leadIdentifier' }, { status: 400 });
     }
 
     const supabase = createServerClient();

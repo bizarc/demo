@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
 import { buildSystemPrompt, MissionProfile, MISSION_PROFILES } from '@/lib/prompts';
 import { MissionProfile as DbMissionProfile } from '@/lib/database.types';
+import {
+    isValidUuid,
+    validateUrl,
+    isValidHexColor,
+    sanitizeString,
+    sanitizeStringArray,
+    LIMITS,
+} from '@/lib/validation';
+import { getClientIp, checkRateLimit, DEMO_LIMIT } from '@/lib/rateLimit';
 
 const VALID_PROFILES = Object.keys(MISSION_PROFILES) as MissionProfile[];
 
@@ -13,13 +22,22 @@ const PROFILE_TO_DB: Record<MissionProfile, DbMissionProfile> = {
 };
 
 export async function GET(
-    _request: NextRequest,
+    request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
 
-    if (!id) {
-        return NextResponse.json({ error: 'Demo ID is required' }, { status: 400 });
+    if (!id || !isValidUuid(id)) {
+        return NextResponse.json({ error: 'Invalid demo ID' }, { status: 400 });
+    }
+
+    const ip = getClientIp(request);
+    const { allowed } = checkRateLimit(`demo:${ip}`, DEMO_LIMIT);
+    if (!allowed) {
+        return NextResponse.json(
+            { error: 'Rate limit exceeded. Try again later.' },
+            { status: 429 }
+        );
     }
 
     try {
@@ -80,8 +98,17 @@ export async function PATCH(
 ) {
     const { id } = await params;
 
-    if (!id) {
-        return NextResponse.json({ error: 'Demo ID is required' }, { status: 400 });
+    if (!id || !isValidUuid(id)) {
+        return NextResponse.json({ error: 'Invalid demo ID' }, { status: 400 });
+    }
+
+    const ip = getClientIp(request);
+    const { allowed } = checkRateLimit(`demo:${ip}`, DEMO_LIMIT);
+    if (!allowed) {
+        return NextResponse.json(
+            { error: 'Rate limit exceeded. Try again later.' },
+            { status: 429 }
+        );
     }
 
     try {
@@ -100,28 +127,29 @@ export async function PATCH(
             return NextResponse.json({ error: 'Demo not found' }, { status: 404 });
         }
 
-        // Convert comma-separated strings to arrays
-        const toArray = (val: string | string[] | undefined): string[] | undefined => {
-            if (val === undefined) return undefined;
-            if (!val) return [];
-            if (Array.isArray(val)) return val;
-            return val.split(',').map((s: string) => s.trim()).filter(Boolean);
-        };
+        const toArray = (val: string | string[] | undefined) =>
+            val === undefined ? undefined : sanitizeStringArray(val, LIMITS.productsServicesItems, LIMITS.itemLength);
 
         // Build update payload (only include fields that are provided)
         const updatePayload: Record<string, unknown> = {};
 
-        if (body.company_name !== undefined) updatePayload.company_name = body.company_name || null;
-        if (body.industry !== undefined) updatePayload.industry = body.industry || null;
-        if (body.website_url !== undefined) updatePayload.website_url = body.website_url || null;
+        if (body.company_name !== undefined) updatePayload.company_name = sanitizeString(body.company_name, LIMITS.companyName) || null;
+        if (body.industry !== undefined) updatePayload.industry = sanitizeString(body.industry, LIMITS.industry) || null;
+        if (body.website_url !== undefined) {
+            const urlResult = validateUrl(body.website_url);
+            updatePayload.website_url = urlResult.valid ? urlResult.url : null;
+        }
         if (body.products_services !== undefined) updatePayload.products_services = toArray(body.products_services);
         if (body.offers !== undefined) updatePayload.offers = toArray(body.offers);
         if (body.qualification_criteria !== undefined) updatePayload.qualification_criteria = toArray(body.qualification_criteria);
-        if (body.logo_url !== undefined) updatePayload.logo_url = body.logo_url || null;
-        if (body.primary_color !== undefined) updatePayload.primary_color = body.primary_color;
-        if (body.secondary_color !== undefined) updatePayload.secondary_color = body.secondary_color;
-        if (body.openrouter_model !== undefined) updatePayload.openrouter_model = body.openrouter_model || null;
-        if (body.current_step !== undefined) updatePayload.current_step = body.current_step;
+        if (body.logo_url !== undefined) {
+            const r = validateUrl(body.logo_url);
+            updatePayload.logo_url = r.valid ? r.url : null;
+        }
+        if (body.primary_color !== undefined) updatePayload.primary_color = (body.primary_color && isValidHexColor(body.primary_color)) ? body.primary_color : null;
+        if (body.secondary_color !== undefined) updatePayload.secondary_color = (body.secondary_color && isValidHexColor(body.secondary_color)) ? body.secondary_color : null;
+        if (body.openrouter_model !== undefined) updatePayload.openrouter_model = sanitizeString(body.openrouter_model, LIMITS.openrouterModel) || null;
+        if (body.current_step !== undefined) updatePayload.current_step = sanitizeString(body.current_step, LIMITS.currentStep) || null;
 
         // Handle mission_profile conversion
         if (body.mission_profile !== undefined) {
@@ -232,8 +260,17 @@ export async function DELETE(
 ) {
     const { id } = await params;
 
-    if (!id) {
-        return NextResponse.json({ error: 'Demo ID is required' }, { status: 400 });
+    if (!id || !isValidUuid(id)) {
+        return NextResponse.json({ error: 'Invalid demo ID' }, { status: 400 });
+    }
+
+    const ip = getClientIp(request);
+    const { allowed } = checkRateLimit(`demo:${ip}`, DEMO_LIMIT);
+    if (!allowed) {
+        return NextResponse.json(
+            { error: 'Rate limit exceeded. Try again later.' },
+            { status: 429 }
+        );
     }
 
     try {

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { POST } from '../scrape/route';
 import { createMockRequest } from './helpers';
 
@@ -30,6 +30,17 @@ describe('POST /api/scrape', () => {
 
         expect(res.status).toBe(400);
         expect(data.error).toContain('URL is required');
+    });
+
+    it('returns 400 for localhost/private URLs (SSRF protection)', async () => {
+        const req = createMockRequest(baseUrl, {
+            method: 'POST',
+            body: { url: 'http://localhost/admin' },
+        });
+        const res = await POST(req);
+        const data = await res.json();
+        expect(res.status).toBe(400);
+        expect(data.error).toMatch(/private|localhost|not allowed/i);
     });
 
     it('returns 400 for invalid URL format', async () => {
