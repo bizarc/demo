@@ -219,6 +219,7 @@ export function DemoBuilder({ initialDraftId, initialFormData, initialStep }: De
                                 industry: result.industry || '',
                                 productsServices: result.products.join(', '),
                                 offers: result.offers.join(', '),
+                                qualificationCriteria: result.qualifications?.join(', ') || '',
                                 logoUrl: result.logoUrl || '',
                                 primaryColor: result.primaryColor || '#2563EB',
                             });

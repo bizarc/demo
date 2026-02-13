@@ -199,11 +199,18 @@ data: [DONE]
   "industry": "Technology",
   "products": ["Product A", "Product B"],
   "offers": ["Free trial"],
+  "qualifications": ["Ideal for enterprise customers", "Budget-conscious organizations"],
   "logoUrl": "https://example.com/logo.png",
   "primaryColor": "#FF5733",
+  "secondaryColor": "#10B981",
+  "websiteUrl": "https://example.com",
   "description": "Company description..."
 }
 ```
+
+**Fields:**
+- `qualifications` — Auto-extracted qualification criteria (heuristics)
+- `secondaryColor` — Secondary/accent color from CSS when detected
 
 **Rate limit:** 5 requests per minute
 

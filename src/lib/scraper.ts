@@ -11,8 +11,11 @@ export interface ScrapeResult {
     industry: string | null;
     products: string[];
     offers: string[];
+    /** Auto-generated qualification criteria (heuristics from page content) */
+    qualifications: string[];
     logoUrl: string | null;
     primaryColor: string | null;
+    secondaryColor: string | null;
     websiteUrl: string;
     description: string | null;
     rawText: string;
@@ -93,6 +96,12 @@ async function scrapeWithCheerio(url: string, timeout: number): Promise<ScrapeRe
         // Extract products/services from page content
         const { products, offers } = extractProductsAndOffers($);
 
+        // Extract qualification criteria (heuristics)
+        const qualifications = extractQualifications(rawText);
+
+        // Extract secondary color from CSS
+        const secondaryColor = extractSecondaryColor($);
+
         // Try to determine industry
         const industry = inferIndustry(rawText, companyName);
 
@@ -100,9 +109,11 @@ async function scrapeWithCheerio(url: string, timeout: number): Promise<ScrapeRe
             companyName: sanitizeTextField(companyName, 500),
             industry: industry ? sanitizeTextField(industry, 200) : null,
             products: sanitizeStringArray(products, 5, 200),
-            offers: sanitizeStringArray(offers, 3, 200),
+            offers: sanitizeStringArray(offers, 5, 200),
+            qualifications: sanitizeStringArray(qualifications, 5, 200),
             logoUrl: sanitizeScrapedUrl(logoUrl),
             primaryColor: primaryColor ? sanitizeTextField(primaryColor, 20) : null,
+            secondaryColor: secondaryColor ? sanitizeTextField(secondaryColor, 20) : null,
             websiteUrl: url,
             description: metaDescription || h1
                 ? sanitizeScrapedText(metaDescription || h1, 500)
@@ -144,10 +155,12 @@ async function scrapeWithJina(url: string): Promise<ScrapeResult> {
         200
     );
     const offers = sanitizeStringArray(
-        extractKeywords(content, ['deal', 'discount', 'free', 'trial', 'demo']),
-        3,
+        extractKeywords(content, ['deal', 'discount', 'free', 'trial', 'demo', 'limited', 'savings']),
+        5,
         200
     );
+    const qualifications = sanitizeStringArray(extractQualifications(content), 5, 200);
+
     return {
         companyName: sanitizeTextField(title, 500),
         industry: (() => {
@@ -156,8 +169,10 @@ async function scrapeWithJina(url: string): Promise<ScrapeResult> {
         })(),
         products,
         offers,
+        qualifications,
         logoUrl: null, // Jina doesn't provide logo
         primaryColor: null, // Jina doesn't provide colors
+        secondaryColor: null, // Jina doesn't provide colors
         websiteUrl: url,
         description: sanitizeScrapedText(lines.slice(0, 3).join(' '), 200),
         rawText: sanitizeScrapedText(content, 5000),
@@ -254,41 +269,134 @@ function extractBodyText($: cheerio.CheerioAPI): string {
 function extractProductsAndOffers($: cheerio.CheerioAPI): { products: string[]; offers: string[] } {
     const products: string[] = [];
     const offers: string[] = [];
+    const seenP = new Set<string>();
+    const seenO = new Set<string>();
 
-    // Look for product/service sections
+    const addProduct = (s: string) => {
+        const key = s.trim().toLowerCase().slice(0, 80);
+        if (key && key.length > 3 && !seenP.has(key)) {
+            seenP.add(key);
+            products.push(s.trim());
+        }
+    };
+    const addOffer = (s: string) => {
+        const key = s.trim().toLowerCase().slice(0, 80);
+        if (key && key.length > 3 && !seenO.has(key)) {
+            seenO.add(key);
+            offers.push(s.trim());
+        }
+    };
+
+    // Look for product/service sections (headings + following content)
     $('h2, h3, h4').each((_, el) => {
         const text = $(el).text().toLowerCase();
-        if (text.includes('product') || text.includes('service') || text.includes('solution')) {
+        if (text.includes('product') || text.includes('service') || text.includes('solution') || text.includes('what we')) {
             const nextText = $(el).next().text().trim();
-            if (nextText && nextText.length < 200) {
-                products.push(nextText);
-            }
+            if (nextText && nextText.length < 200) addProduct(nextText);
         }
-        if (text.includes('offer') || text.includes('deal') || text.includes('pricing')) {
+        if (text.includes('offer') || text.includes('deal') || text.includes('pricing') || text.includes('promo')) {
             const nextText = $(el).next().text().trim();
-            if (nextText && nextText.length < 200) {
-                offers.push(nextText);
-            }
+            if (nextText && nextText.length < 200) addOffer(nextText);
         }
     });
 
-    // Extract from structured data
-    const jsonLd = $('script[type="application/ld+json"]').first().html();
-    if (jsonLd) {
+    // Extract from nav links (Products, Services, Solutions)
+    $('nav a, header a, .nav a, .header a, [role="navigation"] a').each((_, el) => {
+        const text = $(el).text().trim();
+        if (!text || text.length > 50) return;
+        const lower = text.toLowerCase();
+        if (lower.includes('product') || lower.includes('service') || lower.includes('solution') || lower === 'pricing') {
+            addProduct(text);
+        }
+        if (lower.includes('deal') || lower.includes('offer') || lower.includes('free trial') || lower.includes('demo')) {
+            addOffer(text);
+        }
+    });
+
+    // Extract from JSON-LD
+    $('script[type="application/ld+json"]').each((_, el) => {
+        const html = $(el).html();
+        if (!html) return;
         try {
-            const data = JSON.parse(jsonLd);
-            if (data.offers) {
-                offers.push(typeof data.offers === 'string' ? data.offers : JSON.stringify(data.offers));
+            const data = typeof html === 'string' ? JSON.parse(html) : null;
+            if (!data) return;
+            const items = Array.isArray(data) ? data : [data];
+            for (const item of items) {
+                if (item['@type'] === 'Product' && item.name) addProduct(String(item.name));
+                if (item['@type'] === 'Service' && item.name) addProduct(String(item.name));
+                if (item.offers) {
+                    const off = item.offers;
+                    const arr = Array.isArray(off) ? off : [off];
+                    for (const o of arr) {
+                        if (o.price || o.priceSpecification?.price) {
+                            addOffer(String(o.price ?? o.priceSpecification?.price ?? JSON.stringify(o)));
+                        }
+                    }
+                }
             }
         } catch {
-            // Ignore
+            // Ignore parse errors
+        }
+    });
+
+    return {
+        products: products.slice(0, 8),
+        offers: offers.slice(0, 5),
+    };
+}
+
+/** Extract qualification criteria from page text using heuristics */
+function extractQualifications(text: string): string[] {
+    const results: string[] = [];
+
+    const patterns = [
+        /\b(ideal (?:for|customer|candidate)s?[^.]{5,120})/gi,
+        /\b(qualified (?:leads?|customers?|buyers?)[^.]{5,100})/gi,
+        /\b(enterprise(?:\s+(?:customers?|clients?|organizations?))?[^.]{5,80})/gi,
+        /\b(budget[^.]{5,80})/gi,
+        /\b(decision[- ]?makers?[^.]{5,80})/gi,
+        /\b(b2b[^.]{5,80})/gi,
+        /\b(contact us (?:for|to|if)[^.]{5,100})/gi,
+        /\b(eligib(?:le|ility)[^.]{5,80})/gi,
+];
+
+    for (const re of patterns) {
+        const matches = text.matchAll(re);
+        for (const m of matches) {
+            const s = m[1]?.trim().replace(/\s+/g, ' ');
+            if (s && s.length >= 15 && s.length <= 150) {
+                results.push(s);
+            }
         }
     }
 
-    return {
-        products: products.slice(0, 5),
-        offers: offers.slice(0, 3)
-    };
+    return [...new Set(results)].slice(0, 5);
+}
+
+/** Extract secondary/accent color from CSS custom properties and inline styles */
+function extractSecondaryColor($: cheerio.CheerioAPI): string | null {
+    // Inline styles on header/nav - look for --accent, --secondary, --brand
+    const inlineStyles: string[] = [];
+    $('header, nav, .header, .nav, [role="banner"]').each((_, el) => {
+        const style = $(el).attr('style');
+        if (style) inlineStyles.push(style);
+    });
+
+    const cssText = inlineStyles.join(' ');
+    const hexMatches = cssText.match(/#[0-9a-fA-F]{3,8}\b/g);
+    if (hexMatches) {
+        // Filter out grays and very light/dark
+        const candidates = hexMatches.filter((h) => {
+            const r = parseInt(h.slice(1, 3), 16);
+            const g = parseInt(h.slice(3, 5) || '0', 16);
+            const b = parseInt(h.slice(5, 7) || '0', 16);
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            return luminance > 0.15 && luminance < 0.9 && (r !== g || g !== b);
+        });
+        if (candidates.length > 0) return candidates[0];
+    }
+
+    return null;
 }
 
 function extractKeywords(text: string, keywords: string[]): string[] {

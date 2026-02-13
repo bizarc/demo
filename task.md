@@ -323,13 +323,13 @@
 - [ ] Evaluate applicability to BLUEPRINT (deeper research for production agents)
 
 ### 3.3 Improved Scraping & Context Generation
-- [ ] Research & design: enhanced scraping strategy
+- [x] Research & design: enhanced scraping strategy
   - Multi-page crawling (sitemap, linked pages)
   - Structured extraction of products, services, pricing, FAQs
   - Image/logo detection improvements and brand color extraction
-- [ ] Implement improved scraper with richer context output
-- [ ] Auto-generate structured context from scrape results (products, offers, qualifications)
-- [ ] Evaluate combining research skill (3.2) with scrape data for comprehensive context
+- [x] Implement improved scraper with richer context output
+- [x] Auto-generate structured context from scrape results (products, offers, qualifications)
+- [x] Evaluate combining research skill (3.2) with scrape data for comprehensive context
 
 ### 3.4 Advanced Prompt Engineering (Missions x Channels)
 - [ ] Research & design: detailed prompts per mission x channel matrix

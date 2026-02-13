@@ -8,8 +8,10 @@ vi.mock('@/lib/scraper', () => ({
         industry: 'Technology',
         products: ['Product A', 'Product B'],
         offers: ['Free trial'],
+        qualifications: ['Ideal for enterprise customers', 'Budget-conscious organizations'],
         logoUrl: 'https://example.com/logo.png',
         primaryColor: '#2563EB',
+        secondaryColor: null,
         websiteUrl: 'https://example.com',
         description: 'Example description',
         rawText: 'Example raw text',
@@ -72,6 +74,7 @@ describe('POST /api/scrape', () => {
         expect(data.data.industry).toBe('Technology');
         expect(data.data.products).toEqual(['Product A', 'Product B']);
         expect(data.data.offers).toEqual(['Free trial']);
+        expect(data.data.qualifications).toEqual(['Ideal for enterprise customers', 'Budget-conscious organizations']);
         expect(data.data.logoUrl).toBe('https://example.com/logo.png');
     });
 
