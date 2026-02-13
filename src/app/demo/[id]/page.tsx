@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { nanoid } from 'nanoid';
 import { Send, Sparkles } from 'lucide-react';
@@ -27,6 +27,7 @@ interface DemoConfig {
 
 function DemoChat() {
     const params = useParams();
+    const router = useRouter();
     const demoIdRaw = params.id;
     const demoId = Array.isArray(demoIdRaw) ? demoIdRaw[0] : demoIdRaw;
 
@@ -36,7 +37,6 @@ function DemoChat() {
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isSending, setIsSending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [leadId, setLeadId] = useState<string>('');
 
     // Refs
@@ -61,15 +61,20 @@ function DemoChat() {
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
         );
 
-        supabase
-            .from('demos')
-            .select('*')
-            .eq('id', demoId)
-            .single()
-            .then(async ({ data, error }) => {
+        void (async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('demos')
+                    .select('*')
+                    .eq('id', demoId)
+                    .single();
+
                 if (error || !data) {
-                    setError('Demo not found or expired');
-                    setIsLoading(false);
+                    router.replace('/demo/expired');
+                    return;
+                }
+                if (data.expires_at && new Date(data.expires_at) < new Date()) {
+                    router.replace('/demo/expired');
                     return;
                 }
                 setConfig(data);
@@ -86,8 +91,12 @@ function DemoChat() {
                 } catch (e) {
                     console.error('Failed to load history', e);
                 }
+            } catch {
+                router.replace('/demo/expired');
+            } finally {
                 setIsLoading(false);
-            });
+            }
+        })();
 
     }, [demoId]);
 
@@ -173,13 +182,6 @@ function DemoChat() {
             handleSend();
         }
     };
-
-    if (error) {
-        return <div className={styles.errorScreen}>
-            <h2>Unable to load demo</h2>
-            <p>{error}</p>
-        </div>;
-    }
 
     if (isLoading || !config) {
         return <div className={styles.loadingScreen}>

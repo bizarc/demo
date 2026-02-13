@@ -246,21 +246,21 @@
   - [x] Configure unit test project with jsdom environment
   - [x] Unit tests for utility functions (`src/lib/prompts`, `src/lib/creatorId`)
   - [x] Unit tests for UI components (Button, Input, Badge)
-- [ ] Integration tests for API routes
-  - [ ] `/api/demo` (create, list, update, delete)
-  - [ ] `/api/chat` (streaming, history, token limits)
-  - [ ] `/api/scrape` (scraping, rate limiting)
-- [ ] E2E tests with Playwright
-  - [ ] Test: Create demo flow (builder → success → magic link)
-  - [ ] Test: Chat experience (streaming, history persistence)
-  - [ ] Test: Expired demo handling
+- [x] Integration tests for API routes
+  - [x] `/api/demo` (create, list, update, delete)
+  - [x] `/api/chat` (streaming, history, token limits)
+  - [x] `/api/scrape` (scraping, rate limiting)
+- [x] E2E tests with Playwright
+  - [x] Test: Create demo flow (builder → success → magic link)
+  - [x] Test: Chat experience (streaming, history persistence)
+  - [x] Test: Expired demo handling
 
 ### 2.2 Error Handling
-- [ ] Create error boundary component
-- [ ] Create 404 page
-- [ ] Create expired demo page
-- [ ] Add toast notifications for errors
-- [ ] Implement retry logic for API calls
+- [x] Create error boundary component
+- [x] Create 404 page
+- [x] Create expired demo page
+- [x] Add toast notifications for errors
+- [x] Implement retry logic for API calls
 
 ### 2.3 Performance
 - [ ] Optimize images (next/image)

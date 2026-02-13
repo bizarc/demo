@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { ScrapeResult } from '@/lib/scraper';
+import { useToast } from '@/components/ui/Toast';
+import { fetchWithRetry } from '@/lib/fetchWithRetry';
 
 interface WebsiteStepProps {
     url: string;
@@ -33,6 +35,7 @@ export function WebsiteStep({
     onNext,
     onBack,
 }: WebsiteStepProps) {
+    const { addToast } = useToast();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +44,7 @@ export function WebsiteStep({
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/scrape', {
+            const response = await fetchWithRetry('/api/scrape', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: url.trim() }),
@@ -50,7 +53,9 @@ export function WebsiteStep({
             if (!response.ok) throw new Error(data.error || 'Failed to scrape website');
             onScrapeComplete(data.data);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to scrape website');
+            const msg = err instanceof Error ? err.message : 'Failed to scrape website';
+            setError(msg);
+            addToast({ title: 'Scrape failed', description: msg, variant: 'error' });
         } finally {
             setLoading(false);
         }

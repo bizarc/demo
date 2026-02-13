@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getCreatorId } from '@/lib/creatorId';
+import { useToast } from '@/components/ui/Toast';
+import { fetchWithRetry } from '@/lib/fetchWithRetry';
 
 interface DemoListItem {
     id: string;
@@ -52,6 +54,7 @@ function formatRelativeTime(dateStr: string): string {
 
 export default function LabHomePage() {
     const router = useRouter();
+    const { addToast } = useToast();
     const [demos, setDemos] = useState<DemoListItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -66,13 +69,15 @@ export default function LabHomePage() {
             const params = new URLSearchParams({ created_by: creatorId });
             if (statusFilter) params.append('status', statusFilter);
 
-            const res = await fetch(`/api/demo?${params}`);
+            const res = await fetchWithRetry(`/api/demo?${params}`);
             const data = await res.json();
 
             if (!res.ok) throw new Error(data.error || 'Failed to load demos');
             setDemos(data.demos || []);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load demos');
+            const msg = err instanceof Error ? err.message : 'Failed to load demos';
+            setError(msg);
+            addToast({ title: 'Failed to load demos', description: msg, variant: 'error' });
         } finally {
             setLoading(false);
         }
@@ -86,11 +91,12 @@ export default function LabHomePage() {
         if (!confirm('Delete this demo? It can be recovered later.')) return;
         setDeletingId(id);
         try {
-            const res = await fetch(`/api/demo/${id}`, { method: 'DELETE' });
+            const res = await fetchWithRetry(`/api/demo/${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Failed to delete');
             setDemos(prev => prev.filter(d => d.id !== id));
         } catch (err) {
-            console.error('Delete failed:', err);
+            const msg = err instanceof Error ? err.message : 'Failed to delete';
+            addToast({ title: 'Delete failed', description: msg, variant: 'error' });
         } finally {
             setDeletingId(null);
         }

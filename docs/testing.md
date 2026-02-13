@@ -124,8 +124,33 @@ Current test counts:
 | Storybook stories | 65+ |
 | Interaction tests | 7 components |
 
+## API Integration Tests
+
+Integration tests for API routes live in `src/app/api/__tests__/`:
+
+| File | Coverage |
+|------|----------|
+| `demo.integration.test.ts` | POST/GET /api/demo (create draft/active, list) |
+| `demo-id.integration.test.ts` | GET/PATCH/DELETE /api/demo/[id] |
+| `chat.integration.test.ts` | POST/GET /api/chat (validation, 404, 503) |
+| `scrape.integration.test.ts` | POST /api/scrape (validation, rate limit) |
+
+## E2E Tests (Playwright)
+
+E2E tests live in `e2e/` and use `@playwright/test`:
+
+```bash
+npm run test:e2e
+```
+
+| File | Coverage |
+|------|----------|
+| `demo-flow.spec.ts` | Builder → success → magic link |
+| `chat-experience.spec.ts` | Chat load, streaming, expired handling |
+| `expired-demo.spec.ts` | Expired demo error states |
+
+**Note:** E2E tests require a running dev server (`npm run dev`) or use the `webServer` config to start one. Run with `npx playwright test` for full output.
+
 ## Future Testing
 
-- **Integration tests** for API routes (`/api/demo`, `/api/chat`, `/api/scrape`)
-- **E2E tests** with Playwright for full user flows
 - **Visual regression** with Chromatic (optional)

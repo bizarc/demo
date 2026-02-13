@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/Toast';
+import { fetchWithRetry } from '@/lib/fetchWithRetry';
 import { DemoFormData } from '../DemoBuilder';
 import { MISSION_PROFILES } from '@/lib/prompts';
 import { AVAILABLE_MODELS } from '@/lib/openrouter';
@@ -50,6 +52,7 @@ const btnBase: React.CSSProperties = {
 
 export function SummaryStep({ formData, onBack, onActivate }: SummaryStepProps) {
     const router = useRouter();
+    const { addToast } = useToast();
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -72,7 +75,7 @@ export function SummaryStep({ formData, onBack, onActivate }: SummaryStepProps) 
                 // Navigation is handled by the parent via onActivate
             } else {
                 // Legacy fallback: direct POST
-                const response = await fetch('/api/demo', {
+                const response = await fetchWithRetry('/api/demo', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -93,7 +96,9 @@ export function SummaryStep({ formData, onBack, onActivate }: SummaryStepProps) 
                 router.push(`/lab/success?id=${data.id}`);
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to create demo');
+            const msg = err instanceof Error ? err.message : 'Failed to create demo';
+            setError(msg);
+            addToast({ title: 'Create failed', description: msg, variant: 'error' });
         } finally {
             setCreating(false);
         }

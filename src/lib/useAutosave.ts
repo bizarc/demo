@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getCreatorId } from './creatorId';
+import { fetchWithRetry } from './fetchWithRetry';
 
 interface AutosaveFormData {
     missionProfile: string | null;
@@ -102,7 +103,7 @@ export function useAutosave(options: UseAutosaveOptions = {}): UseAutosaveReturn
                 created_by: creatorId,
             };
 
-            const res = await fetch('/api/demo', {
+            const res = await fetchWithRetry('/api/demo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -153,7 +154,7 @@ export function useAutosave(options: UseAutosaveOptions = {}): UseAutosaveReturn
 
         try {
             const payload = buildPayload(formData, currentStep);
-            const res = await fetch(`/api/demo/${id}`, {
+            const res = await fetchWithRetry(`/api/demo/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -214,7 +215,7 @@ export function useAutosave(options: UseAutosaveOptions = {}): UseAutosaveReturn
                 status: 'active',
             };
 
-            const res = await fetch(`/api/demo/${id}`, {
+            const res = await fetchWithRetry(`/api/demo/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
