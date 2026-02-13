@@ -33,7 +33,7 @@ export function TopNav({
     className = '',
 }: TopNavProps) {
     return (
-        <header className={`bg-white border-b border-gray-200 ${className}`}>
+        <header className={`bg-surface border-b border-border ${className}`}>
             <div className="px-4 py-3">
                 {/* Back navigation */}
                 {(backHref || onBack) && (
@@ -41,7 +41,7 @@ export function TopNav({
                         {backHref ? (
                             <a
                                 href={backHref}
-                                className="flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                                className="flex items-center text-sm text-foreground-secondary hover:text-foreground transition-colors"
                             >
                                 <BackArrow />
                                 {backLabel}
@@ -49,7 +49,7 @@ export function TopNav({
                         ) : (
                             <button
                                 onClick={onBack}
-                                className="flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                                className="flex items-center text-sm text-foreground-secondary hover:text-foreground transition-colors"
                             >
                                 <BackArrow />
                                 {backLabel}
@@ -64,11 +64,11 @@ export function TopNav({
                         {avatar}
                         <div>
                             <div className="flex items-center space-x-2">
-                                <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
+                                <h1 className="text-lg font-semibold text-foreground">{title}</h1>
                                 {status && <Badge variant={status}>{status}</Badge>}
                             </div>
                             {subtitle && (
-                                <p className="text-sm text-gray-500">{subtitle}</p>
+                                <p className="text-sm text-foreground-secondary">{subtitle}</p>
                             )}
                         </div>
                     </div>

@@ -1,64 +1,152 @@
-import Image from "next/image";
+import Link from 'next/link';
+import { FlaskConical, Radar, BookOpen, Gauge } from 'lucide-react';
+import { RecentDemos } from '@/components/home/HomePageContent';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/Card';
+import { TopNav } from '@/components/ui/TopNav';
+import { Divider } from '@/components/ui/Divider';
 
-export default function Home() {
+/**
+ * Home / Landing Page — Funnel Finished Platform
+ *
+ * Per Funnel Spec v3: Clear entry points for:
+ * - Internal Ops (Command Deck): LAB, RADAR, BLUEPRINT, MISSION CONTROL
+ * - Client Portal (Scoreboard): Coming soon
+ *
+ * Uses only components from src/components/ui and design system styles.
+ */
+export default function HomePage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen bg-canvas">
+      <TopNav
+        title="Funnel Finished"
+        subtitle="AI-powered marketing delivery"
+      />
+
+      <main className="mx-auto max-w-6xl px-6 py-10">
+        {/* Hero — Display 36px per DESIGN.md */}
+        <section className="mb-12">
+          <h2 className="mb-2 text-4xl font-semibold leading-tight tracking-tight text-foreground">
+            Welcome to the Command Deck
+          </h2>
+          <p className="mb-8 max-w-2xl text-sm font-normal leading-normal text-foreground-secondary">
+            Internal operations hub for prospecting, building demos, and managing
+            live agent infrastructure.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+        </section>
+
+        {/* Internal Ops — Module Cards */}
+        <section className="mb-12">
+          <h3 className="mb-4 text-xl font-medium text-foreground">
+            Internal ops
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Link href="/lab">
+              <Card
+                variant="interactive"
+                padding="lg"
+                className="h-full transition-all hover:shadow-sm"
+              >
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-primary [&_svg]:text-white">
+                  <FlaskConical size={20} strokeWidth={2} />
+                </div>
+                <h4 className="mb-1 text-base font-medium text-foreground">THE LAB</h4>
+                <p className="text-sm text-foreground-secondary">
+                  Build demos, scrape sites, generate Magic Links for prospects
+                </p>
+                <div className="mt-3">
+                  <Badge variant="live" size="sm">
+                    Active
+                  </Badge>
+                </div>
+              </Card>
+            </Link>
+
+            <Card variant="default" padding="lg" className="h-full opacity-75">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-border-subtle">
+                <Radar size={20} strokeWidth={2} className="text-foreground-secondary" />
+              </div>
+              <h4 className="mb-1 text-base font-medium text-foreground">RADAR</h4>
+              <p className="text-sm text-foreground-secondary">
+                Prospecting, target acquisition, campaign signals
+              </p>
+              <Badge variant="draft" size="sm" className="mt-3">
+                Coming soon
+              </Badge>
+            </Card>
+
+            <Card variant="default" padding="lg" className="h-full opacity-75">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-border-subtle">
+                <BookOpen size={20} strokeWidth={2} className="text-foreground-secondary" />
+              </div>
+              <h4 className="mb-1 text-base font-medium text-foreground">BLUEPRINT</h4>
+              <p className="text-sm text-foreground-secondary">
+                Mission profiles, The Vault, logic mapping
+              </p>
+              <Badge variant="draft" size="sm" className="mt-3">
+                Coming soon
+              </Badge>
+            </Card>
+
+            <Card variant="default" padding="lg" className="h-full opacity-75">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-border-subtle">
+                <Gauge size={20} strokeWidth={2} className="text-foreground-secondary" />
+              </div>
+              <h4 className="mb-1 text-base font-medium text-foreground">
+                Mission Control
+              </h4>
+              <p className="text-sm text-foreground-secondary">
+                Data Airlock, pilot execution, kill switch
+              </p>
+              <Badge variant="draft" size="sm" className="mt-3">
+                Coming soon
+              </Badge>
+            </Card>
+          </div>
+        </section>
+
+        {/* Client Portal */}
+        <section className="mb-12">
+          <h3 className="mb-4 text-xl font-medium text-foreground">
+            Client Portal
+          </h3>
+          <Card variant="default" padding="lg">
+            <p className="text-sm text-foreground-secondary">
+              Streamlined dashboard for clients to view metrics, ROI, and
+              conversation logs. White-label Scoreboard experience.
+            </p>
+            <Badge variant="draft" size="sm" className="mt-3">
+              Coming soon
+            </Badge>
+          </Card>
+        </section>
+
+        {/* Recent demos + Quick actions */}
+        <section>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-xl font-medium text-foreground">
+              Your demos
+            </h3>
+            <Link href="/lab">
+              <Button variant="primary" size="md">
+                Open THE LAB
+              </Button>
+            </Link>
+          </div>
+          <Card variant="default" padding="lg">
+            <RecentDemos />
+            <div className="mt-4 pt-4">
+              <Divider className="my-0" />
+              <Link
+                href="/lab"
+                className="mt-4 block text-sm font-normal text-primary hover:underline"
+              >
+                Manage all demos →
+              </Link>
+            </div>
+          </Card>
+        </section>
       </main>
     </div>
   );

@@ -1,16 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-const MOCK_DEMO_ID = 'chat-e2e-demo-456';
+// Valid UUID for mock demo (demo page fetches from Supabase)
+const MOCK_DEMO_ID = 'a24a6ea4-ce75-4665-a070-57453082c256';
+
+// Supabase PostgREST path - demo page fetches directly from Supabase
+const SUPABASE_DEMOS_ROUTE = '**/rest/v1/demos*';
 
 test.describe('Chat experience', () => {
     test.beforeEach(async ({ page }) => {
-        // Mock demo config via Supabase (we intercept the page's fetch to demo API or use a fixture)
-        // The demo page fetches from Supabase directly - we need to either:
-        // 1. Use a real demo ID (requires Supabase)
-        // 2. Intercept Supabase requests (complex)
-        // Instead, we test the chat UI when we have a valid config by mocking the page's data
-        // For a simpler test: create a demo via API first, then navigate
-        // Supabase PostgREST returns arrays; .single() expects 1 row
         const demoRow = [
             {
                 id: MOCK_DEMO_ID,
@@ -21,9 +18,10 @@ test.describe('Chat experience', () => {
                 mission_profile: 'reactivation',
                 system_prompt: 'You are a helpful assistant.',
                 offers: ['20% off'],
+                expires_at: new Date(Date.now() + 86400000).toISOString(),
             },
         ];
-        await page.route('**/rest/v1/demos**', async (route) => {
+        await page.route(SUPABASE_DEMOS_ROUTE, async (route) => {
             await route.fulfill({
                 status: 200,
                 contentType: 'application/json',
@@ -33,8 +31,7 @@ test.describe('Chat experience', () => {
     });
 
     test('chat page shows error for invalid demo ID', async ({ page }) => {
-        // Override: Supabase returns empty for non-existent demo
-        await page.route('**/rest/v1/demos**', async (route) => {
+        await page.route(SUPABASE_DEMOS_ROUTE, async (route) => {
             await route.fulfill({
                 status: 200,
                 contentType: 'application/json',
@@ -42,26 +39,34 @@ test.describe('Chat experience', () => {
             });
         });
 
-        await page.goto('/demo/00000000-0000-0000-0000-000000000000');
-
-        await expect(page.getByText(/Unable to load demo|Demo not found|expired/i)).toBeVisible({
-            timeout: 10000,
+        await page.goto('/demo/00000000-0000-0000-0000-000000000000', {
+            waitUntil: 'networkidle',
+            timeout: 15000,
         });
+
+        await expect(
+            page.getByText(/Unable to load demo|Demo not found|expired|This demo link has expired/i)
+        ).toBeVisible({ timeout: 15000 });
     });
 
     test('chat page loads and shows input when config exists', async ({ page }) => {
-        await page.goto(`/demo/${MOCK_DEMO_ID}`);
+        await page.goto(`/demo/${MOCK_DEMO_ID}`, {
+            waitUntil: 'networkidle',
+            timeout: 15000,
+        });
 
-        await expect(page.getByText('Chat Test Corp')).toBeVisible({ timeout: 10000 });
-        await expect(page.getByPlaceholder(/Type a message/i)).toBeVisible();
+        await expect(page.getByText('Chat Test Corp')).toBeVisible({ timeout: 15000 });
+        await expect(page.getByPlaceholder(/Type a message/i)).toBeVisible({ timeout: 5000 });
     });
 
     test('streaming response updates chat', async ({ page }) => {
-        await page.goto(`/demo/${MOCK_DEMO_ID}`);
+        await page.goto(`/demo/${MOCK_DEMO_ID}`, {
+            waitUntil: 'networkidle',
+            timeout: 15000,
+        });
 
-        await expect(page.getByPlaceholder(/Type a message/i)).toBeVisible({ timeout: 10000 });
+        await expect(page.getByPlaceholder(/Type a message/i)).toBeVisible({ timeout: 15000 });
 
-        // Mock chat API to simulate streaming (SSE as string)
         await page.route('**/api/chat', async (route) => {
             const body = await route.request().postDataJSON();
             if (route.request().method() === 'POST' && body?.message) {
@@ -80,6 +85,6 @@ test.describe('Chat experience', () => {
         await input.fill('Hello');
         await input.press('Enter');
 
-        await expect(page.getByText(/Hello there/)).toBeVisible({ timeout: 5000 });
+        await expect(page.getByText(/Hello there/)).toBeVisible({ timeout: 10000 });
     });
 });

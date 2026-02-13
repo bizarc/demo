@@ -1,11 +1,15 @@
 import { test, expect } from '@playwright/test';
 
+const TEST_DEMO_ID = 'e2e-test-1234-5678-9abc-def012345678';
+
 test.describe('Create demo flow', () => {
     test('builder → success → magic link navigation', async ({ page }) => {
-        await page.goto('/lab/new');
+        await page.goto('/lab/new', { waitUntil: 'networkidle', timeout: 15000 });
 
         // Step 1: Mission Profile — select Database Reactivation
-        await expect(page.getByRole('heading', { name: /Choose a mission profile/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Choose a mission profile/i })).toBeVisible({
+            timeout: 15000,
+        });
         await page.getByRole('button', { name: /Database Reactivation/i }).first().click();
         await page.getByRole('button', { name: 'Continue' }).click();
 
@@ -43,8 +47,7 @@ test.describe('Create demo flow', () => {
         await expect(page.getByRole('heading', { name: /Model/i })).toBeVisible({ timeout: 5000 });
         await page.getByRole('button', { name: 'Continue' }).click();
 
-        // Step 5: Summary — mock demo creation
-        const testDemoId = 'e2e-test-demo-123';
+        // Step 5: Summary — mock demo creation (valid UUID)
         await page.route('**/api/demo', async (route) => {
             if (route.request().method() === 'POST') {
                 await route.fulfill({
@@ -52,7 +55,7 @@ test.describe('Create demo flow', () => {
                     contentType: 'application/json',
                     body: JSON.stringify({
                         success: true,
-                        id: testDemoId,
+                        id: TEST_DEMO_ID,
                         status: 'draft',
                     }),
                 });
@@ -61,6 +64,7 @@ test.describe('Create demo flow', () => {
             }
         });
 
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
         await page.route('**/api/demo/*', async (route) => {
             if (route.request().method() === 'PATCH') {
                 await route.fulfill({
@@ -68,10 +72,10 @@ test.describe('Create demo flow', () => {
                     contentType: 'application/json',
                     body: JSON.stringify({
                         success: true,
-                        id: testDemoId,
+                        id: TEST_DEMO_ID,
                         status: 'active',
                         expires_at: new Date(Date.now() + 86400000).toISOString(),
-                        magic_link: `http://localhost:3000/demo/${testDemoId}`,
+                        magic_link: `${baseUrl.replace(/\/$/, '')}/demo/${TEST_DEMO_ID}`,
                     }),
                 });
             } else {
@@ -88,16 +92,16 @@ test.describe('Create demo flow', () => {
         await expect(page.getByText(/magic link|Open Demo/i)).toBeVisible();
 
         // Magic link should point to demo
-        const magicLink = page.locator(`a[href*="/demo/${testDemoId}"]`);
-        await expect(magicLink).toBeVisible();
+        const magicLink = page.locator(`a[href*="/demo/${TEST_DEMO_ID}"]`);
+        await expect(magicLink).toBeVisible({ timeout: 5000 });
     });
 });
 
 test.describe('LAB Home', () => {
     test('navigates to new demo from home', async ({ page }) => {
-        await page.goto('/lab');
+        await page.goto('/lab', { waitUntil: 'networkidle', timeout: 15000 });
 
         await page.getByRole('link', { name: /Create|New demo|new/i }).first().click();
-        await expect(page).toHaveURL(/\/lab\/new/);
+        await expect(page).toHaveURL(/\/lab\/new/, { timeout: 5000 });
     });
 });

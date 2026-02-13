@@ -279,9 +279,9 @@
 - [x] Configure Vercel project (`vercel.json`, `docs/deployment.md`)
 - [x] Set environment variables in Vercel (documented in deployment guide)
 - [x] Set up preview deployments (automatic via Git integration)
-- [ ] Configure custom domain (optional) — see docs/deployment.md
+- [n/a] Configure custom domain (optional) — see docs/deployment.md
 - [x] Test production build: `npm run build`
-- [ ] Deploy to production (manual: connect repo at vercel.com, then push)
+- [x] Deploy to production (manual: connect repo at vercel.com, then push)
 - [x] Smoke test all critical paths (Playwright with `BASE_URL` — see docs/deployment.md)
 
 ---
@@ -293,11 +293,11 @@
 ### 3.1 Home & Auth
 
 #### Home Page
-- [ ] Design home/landing screen (Stitch or DESIGN.md)
+- [x] Design home/landing screen (Stitch or DESIGN.md)
   - Support Funnel Spec v3 use cases: LAB, existing demos, future RADAR/Blueprint/Mission Control
   - Enable access to existing demos (list, manage, open Magic Link)
   - Clear entry points for internal ops vs. client portal
-- [ ] Implement home page per design
+- [x] Implement home page per design
   - Replace default Next.js template
   - Navigation to /lab (Demo Builder)
   - Demo list / management (when auth exists)

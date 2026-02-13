@@ -10,9 +10,9 @@ const Divider = forwardRef<HTMLHRElement, DividerProps>(
         if (label) {
             return (
                 <div className={`flex items-center ${className}`}>
-                    <hr ref={ref} className="flex-1 border-t border-gray-200" {...props} />
-                    <span className="px-3 text-sm text-gray-500">{label}</span>
-                    <hr className="flex-1 border-t border-gray-200" />
+                    <hr ref={ref} className="flex-1 border-t border-border" {...props} />
+                    <span className="px-3 text-sm text-foreground-secondary">{label}</span>
+                    <hr className="flex-1 border-t border-border" />
                 </div>
             );
         }
@@ -21,7 +21,7 @@ const Divider = forwardRef<HTMLHRElement, DividerProps>(
             return (
                 <div
                     ref={ref as React.Ref<HTMLDivElement>}
-                    className={`w-px bg-gray-200 self-stretch ${className}`}
+                    className={`w-px bg-border self-stretch ${className}`}
                     role="separator"
                     aria-orientation="vertical"
                     {...(props as HTMLAttributes<HTMLDivElement>)}
@@ -32,7 +32,7 @@ const Divider = forwardRef<HTMLHRElement, DividerProps>(
         return (
             <hr
                 ref={ref}
-                className={`border-t border-gray-200 ${className}`}
+                className={`border-t border-border ${className}`}
                 role="separator"
                 aria-orientation="horizontal"
                 {...props}

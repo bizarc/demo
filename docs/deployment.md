@@ -41,12 +41,18 @@ Add these in **Vercel Dashboard** → Project → **Settings** → **Environment
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anonymous key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key (server-side) |
-| `NEXT_PUBLIC_APP_URL` | Yes (prod) | Full app URL, e.g. `https://the-lab.vercel.app` |
+| `NEXT_PUBLIC_APP_URL` | After 1st deploy | Your deployed URL (see workflow below) |
 | `JINA_API_KEY` | No | Jina AI key for fallback scraping |
 
-**Important:** Set `NEXT_PUBLIC_APP_URL` to your production URL so magic links and CORS work correctly.
+### First-time workflow (you don't know the URL yet)
 
-Apply to: **Production**, **Preview**, and **Development** as needed.
+1. **Add the other env vars** (OpenRouter, Supabase) before or during the first deploy.
+2. **Deploy** — Vercel assigns a URL (e.g. `https://the-lab-abc123.vercel.app`).
+3. **Copy the URL** from the deployment success page or **Settings** → **Domains**.
+4. **Add** `NEXT_PUBLIC_APP_URL` = your deployed URL (e.g. `https://the-lab.vercel.app`).
+5. **Redeploy** — Vercel will trigger a new build, or push a small change to trigger one.
+
+Magic links and CORS will work correctly after step 5. Until then, magic links may point to localhost.
 
 ---
 
