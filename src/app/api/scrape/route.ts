@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { scrapeWebsite, ScrapeResult } from '@/lib/scraper';
 import { validateUrl } from '@/lib/validation';
 import { getClientIp, checkRateLimit, SCRAPE_LIMIT } from '@/lib/rateLimit';
+import { requireAuth } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
     try {
+        const authResult = await requireAuth();
+        if (authResult instanceof Response) return authResult;
+
         const ip = getClientIp(request);
         const { allowed } = checkRateLimit(`scrape:${ip}`, SCRAPE_LIMIT);
         if (!allowed) {

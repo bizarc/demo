@@ -10,6 +10,10 @@ const mockEq = vi.fn();
 const mockIs = vi.fn();
 const mockOrder = vi.fn();
 
+vi.mock('@/lib/auth', () => ({
+    requireAuth: vi.fn().mockResolvedValue({ userId: null }),
+    getProfileRole: vi.fn().mockResolvedValue('operator'),
+}));
 vi.mock('@/lib/supabase', () => ({
     createServerClient: vi.fn(() => ({
         from: mockFrom,
@@ -139,21 +143,23 @@ describe('GET /api/demo', () => {
     beforeEach(() => {
         vi.clearAllMocks();
 
+        const mockOrderResult = {
+            data: [
+                {
+                    id: 'demo-1',
+                    company_name: 'Acme',
+                    status: 'active',
+                    mission_profile: 'reactivation',
+                },
+            ],
+            error: null,
+        };
+        const mockEqChain = vi.fn().mockResolvedValue(mockOrderResult);
+        const mockOrderChain = vi.fn().mockReturnValue({ eq: mockEqChain });
+        const mockIsChain = vi.fn().mockReturnValue({ order: mockOrderChain });
+        const mockSelectChain = vi.fn().mockReturnValue({ is: mockIsChain });
         mockFrom.mockReturnValue({
-            select: vi.fn().mockReturnThis(),
-            eq: vi.fn().mockReturnThis(),
-            is: vi.fn().mockReturnThis(),
-            order: vi.fn().mockResolvedValue({
-                data: [
-                    {
-                        id: 'demo-1',
-                        company_name: 'Acme',
-                        status: 'active',
-                        mission_profile: 'reactivation',
-                    },
-                ],
-                error: null,
-            }),
+            select: mockSelectChain,
         });
     });
 

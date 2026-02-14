@@ -303,24 +303,32 @@
   - Demo list / management (when auth exists)
 
 #### Authentication & RBAC
-- [ ] Auth for internal users (Super Admin, Operator)
-  - Required for LAB, RADAR, Mission Control access
+- [x] Auth for internal users (Super Admin, Operator)
+  - Supabase Auth (email/password), login page, /lab route guards, API requireAuth
+  - Profiles + workspaces migration; AUTH_DISABLED for dev/E2E
 - [ ] Auth for external users (Client Viewer)
   - Required for Client Portal (read-only metrics, billing)
 - [ ] RBAC: separate internal vs. client workspaces per Funnel Spec
+  - Migration has profiles.role + workspace_id; full enforcement pending
 
 #### Data Integrity
-- [ ] Optimistic locking for concurrent draft edits
-- [ ] Audit trail for demo state transitions
-- [ ] Push to BLUEPRINT action (set `status = 'blueprint'`, trigger BLUEPRINT flow)
+- [x] Optimistic locking for concurrent draft edits
+  - Added `version` column, PATCH enforces version match, returns 409 on conflict
+- [x] Audit trail for demo state transitions
+  - `demo_audit_log` table + trigger on status change
+- [x] Push to BLUEPRINT action (set `status = 'blueprint'`, trigger BLUEPRINT flow)
+  - PATCH status=blueprint from active; LAB home "Push to BLUEPRINT" button
 
 ### 3.2 Research Skill (Company Intelligence)
-- [ ] Research & design: AI-powered company research via Perplexity (OpenRouter)
-  - Determine scope: auto-run during builder flow vs. on-demand operator tool
-  - Define output structure (company summary, competitors, market position, offerings)
-- [ ] Implement research API route using Perplexity model via OpenRouter
-- [ ] Integrate research output into builder context (Step 3) to enrich agent knowledge
-- [ ] Evaluate applicability to BLUEPRINT (deeper research for production agents)
+- [x] Research & design: AI-powered company research via Perplexity (OpenRouter)
+  - Scope: RECON-first (workspace-scoped), on-demand via LAB builder
+  - Output: summary, offerings, competitors, market_position, qualification_notes
+- [x] Implement RECON research API routes using Perplexity model via OpenRouter
+  - POST /api/research, GET /api/research; stores in research_records; graceful fallback when tables missing
+- [ ] Integrate RECON research output into RADAR campaign context
+- [x] Integrate RECON research output into LAB builder context (Step 3) to enrich agent knowledge
+  - "Run AI Research" button in ContextStep; merges offerings, market_position, qualification_notes
+- [ ] Integrate RECON research consumption into BLUEPRINT (production-approved by default)
 
 ### 3.3 Improved Scraping & Context Generation
 - [x] Research & design: enhanced scraping strategy
@@ -331,14 +339,14 @@
 - [x] Auto-generate structured context from scrape results (products, offers, qualifications)
 - [x] Evaluate combining research skill (3.2) with scrape data for comprehensive context
 
-### 3.4 Advanced Prompt Engineering (Missions x Channels)
-- [ ] Research & design: detailed prompts per mission x channel matrix
+### 3.4 Advanced Prompt Engineering (Missions x Channels) ✅
+- [x] Research & design: detailed prompts per mission x channel matrix
   - Missions: Reactivation, Nurture, Service, Review
-  - Channels: SMS, Voice, Website Chat, Messenger
+  - Channels: SMS, Voice, Website Chat, Messenger, Email
   - Define tone, length, CTA style, and compliance considerations per channel
-- [ ] Implement channel-aware prompt templates
-- [ ] Add channel selection to builder flow (Step 1 or new step)
-- [ ] Test and iterate prompt quality across all mission/channel combinations
+- [x] Implement channel-aware prompt templates
+- [x] Add channel selection to builder flow (Step 1)
+- [x] Test and iterate prompt quality across mission/channel combinations
 - [ ] Evaluate: demo-only feature vs. BLUEPRINT production requirement
 
 ### 3.5 Knowledge Bases (RAG)
@@ -350,6 +358,16 @@
 - [x] Implement retrieval pipeline (embedding, search, context injection)
 - [x] Integrate knowledge base selection into builder flow
 - [x] Evaluate: demo-only (limited docs) vs. BLUEPRINT (full catalog support)
+
+### 3.7 RECON (Shared Intelligence Module)
+- [x] Decide shared intelligence ownership model: RECON as workspace-scoped module
+- [x] Update roadmap/spec/architecture/docs to align on RECON ownership and contracts
+- [x] Create `docs/research-skill-design.md` with schema, lifecycle, and module consumption rules
+- [x] Design workspace-scoped RECON data model (research + knowledge assets + link tables)
+  - `docs/recon-design.md` consolidates model, lifecycle, contracts, migration path
+- [x] Design asset lifecycle/promotion states (`draft` -> `validated` -> `production_approved`)
+- [x] Define RADAR/LAB/BLUEPRINT read-write contract as implementation acceptance criteria
+- [x] Plan migration path from demo-scoped KB ownership to RECON-scoped reusable assets
 
 ### 3.6 Voice AI Demos
 - [ ] Research & design: Voice AI demo architecture per mission
@@ -366,8 +384,10 @@
 ## Validation Checklist
 
 Before any commit:
-- [ ] `npm run lint` passes
-- [ ] `npm run typecheck` passes (if configured)
-- [ ] `npm run test` passes
+- [x] `npm run lint` passes (warnings only; no errors)
+- [x] `npm run typecheck` passes (if configured)
+- [x] `npm run test` passes
+- [x] `npm run build` passes
+- [ ] `npm run test:e2e` passes (requires dev server on port 5173 or BASE_URL)
 - [ ] Manual smoke test of affected features
-- [ ] Update this task.md with progress
+- [x] Update this task.md with progress

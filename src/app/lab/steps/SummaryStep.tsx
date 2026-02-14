@@ -82,6 +82,7 @@ export function SummaryStep({ formData, onBack, onActivate }: SummaryStepProps) 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         mission_profile: formData.missionProfile,
+                        channel: formData.channel,
                         company_name: formData.companyName,
                         industry: formData.industry,
                         website_url: formData.websiteUrl,

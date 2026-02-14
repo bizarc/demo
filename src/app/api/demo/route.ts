@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
-import { buildSystemPrompt, MissionProfile, MISSION_PROFILES } from '@/lib/prompts';
+import { requireAuth, getProfileRole } from '@/lib/auth';
+import { buildSystemPrompt, MissionProfile, MISSION_PROFILES, Channel } from '@/lib/prompts';
 
 import { MissionProfile as DbMissionProfile } from '@/lib/database.types';
 import {
@@ -24,6 +25,10 @@ const PROFILE_TO_DB: Record<MissionProfile, DbMissionProfile> = {
 
 export async function POST(request: NextRequest) {
     try {
+        const authResult = await requireAuth();
+        if (authResult instanceof Response) return authResult;
+        const { userId } = authResult;
+
         const ip = getClientIp(request);
         const { allowed } = checkRateLimit(`demo:${ip}`, DEMO_LIMIT);
         if (!allowed) {
@@ -34,9 +39,11 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
+        const VALID_CHANNELS = ['sms', 'messenger', 'email', 'website', 'voice'] as const;
         const {
             status = 'active', // 'draft' or 'active'
             mission_profile,
+            channel: bodyChannel,
             company_name,
             industry,
             website_url,
@@ -48,8 +55,11 @@ export async function POST(request: NextRequest) {
             secondary_color,
             openrouter_model,
             current_step,
-            created_by,
+            created_by: bodyCreatedBy,
         } = body;
+        const channel = bodyChannel && VALID_CHANNELS.includes(bodyChannel) ? bodyChannel : 'website';
+
+        const created_by = userId !== null ? userId : (sanitizeString(bodyCreatedBy, LIMITS.creatorId) || null);
 
         const toArray = (val: string | string[] | undefined, maxItems = LIMITS.productsServicesItems): string[] => {
             return sanitizeStringArray(val, maxItems, LIMITS.itemLength);
@@ -91,6 +101,7 @@ export async function POST(request: NextRequest) {
                     primary_color: (primary_color && isValidHexColor(primary_color)) ? primary_color : '#2563EB',
                     secondary_color: (secondary_color && isValidHexColor(secondary_color)) ? secondary_color : '#FFFFFF',
                     mission_profile: dbMissionProfile,
+                    channel: channel as Channel,
                     openrouter_model: sanitizeString(openrouter_model, LIMITS.openrouterModel) || null,
                     system_prompt: null,
                     expires_at: null,
@@ -134,14 +145,18 @@ export async function POST(request: NextRequest) {
         const websiteUrlResult = validateUrl(website_url);
         const safeWebsiteUrl = websiteUrlResult.valid ? websiteUrlResult.url : '';
 
-        // Build system prompt
-        const system_prompt = buildSystemPrompt(mission_profile as MissionProfile, {
-            companyName: company_name,
-            industry,
-            products: toArray(products_services),
-            offers: toArray(offers),
-            qualificationCriteria: qualification_criteria,
-        });
+        // Build system prompt (channel-aware)
+        const system_prompt = buildSystemPrompt(
+            mission_profile as MissionProfile,
+            {
+                companyName: company_name,
+                industry,
+                products: toArray(products_services),
+                offers: toArray(offers),
+                qualificationCriteria: qualification_criteria,
+            },
+            channel as Channel
+        );
 
         // Set expiration (7 days)
         const expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -163,6 +178,7 @@ export async function POST(request: NextRequest) {
                 primary_color: (primary_color && isValidHexColor(primary_color)) ? primary_color : '#2563EB',
                 secondary_color: (secondary_color && isValidHexColor(secondary_color)) ? secondary_color : '#FFFFFF',
                 mission_profile: PROFILE_TO_DB[mission_profile as MissionProfile],
+                channel: channel as Channel,
                 openrouter_model: sanitizeString(openrouter_model, LIMITS.openrouterModel) || 'openai/gpt-4o-mini',
                 system_prompt,
                 expires_at,
@@ -196,10 +212,15 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/demo — List demos for a user (filtered by created_by).
- * Query params: created_by (required), status (optional filter)
+ * When auth enabled: uses session user. When AUTH_DISABLED: requires created_by query param.
+ * Query params: created_by (required when AUTH_DISABLED), status (optional filter)
  */
 export async function GET(request: NextRequest) {
     try {
+        const authResult = await requireAuth();
+        if (authResult instanceof Response) return authResult;
+        const { userId } = authResult;
+
         const ip = getClientIp(request);
         const { allowed } = checkRateLimit(`demo:${ip}`, DEMO_LIMIT);
         if (!allowed) {
@@ -210,23 +231,28 @@ export async function GET(request: NextRequest) {
         }
 
         const { searchParams } = request.nextUrl;
-        const createdByRaw = searchParams.get('created_by');
-        const createdBy = sanitizeString(createdByRaw, LIMITS.creatorId);
+        const createdByParam = sanitizeString(searchParams.get('created_by'), LIMITS.creatorId);
+        const createdBy = userId ?? createdByParam;
 
         if (!createdBy) {
             return NextResponse.json(
-                { error: 'created_by is required' },
+                { error: 'created_by is required when auth is disabled' },
                 { status: 400 }
             );
         }
 
         const supabase = createServerClient();
+        const role = userId ? await getProfileRole(userId) : 'operator';
+
         let query = supabase
             .from('demos')
             .select('id, company_name, industry, website_url, mission_profile, status, current_step, created_at, updated_at, expires_at, logo_url, primary_color, openrouter_model')
-            .eq('created_by', createdBy)
             .is('deleted_at', null)
             .order('updated_at', { ascending: false });
+
+        if (role !== 'super_admin') {
+            query = query.eq('created_by', createdBy);
+        }
 
         const statusFilter = searchParams.get('status') as 'draft' | 'active' | 'expired' | 'blueprint' | null;
         if (statusFilter) {

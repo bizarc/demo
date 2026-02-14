@@ -9,13 +9,14 @@ import { KnowledgeBaseStep } from './steps/KnowledgeBaseStep';
 import { ModelStep } from './steps/ModelStep';
 import { SummaryStep } from './steps/SummaryStep';
 import { ChatPreview } from './ChatPreview';
-import { MissionProfile } from '@/lib/prompts';
+import { MissionProfile, Channel } from '@/lib/prompts';
 import { ScrapeResult } from '@/lib/scraper';
 import { useAutosave } from '@/lib/useAutosave';
 import styles from './builder.module.css';
 
 export interface DemoFormData {
     missionProfile: MissionProfile | null;
+    channel: Channel;
     websiteUrl: string;
     scrapeResult: ScrapeResult | null;
     companyName: string;
@@ -42,6 +43,7 @@ export const STEPS = [
 
 export const INITIAL_FORM_DATA: DemoFormData = {
     missionProfile: null,
+    channel: 'website',
     websiteUrl: '',
     scrapeResult: null,
     companyName: '',
@@ -64,6 +66,8 @@ interface DemoBuilderProps {
     initialFormData?: DemoFormData;
     /** If provided, start at this step */
     initialStep?: string;
+    /** Version for optimistic locking when resuming a draft */
+    initialVersion?: number;
 }
 
 // Map DB mission_profile enum to full profile ID
@@ -90,8 +94,10 @@ export function demoRowToFormData(demo: Record<string, unknown>): DemoFormData {
         ? DB_TO_PROFILE[demo.mission_profile as string] || null
         : null;
 
+    const channel = (demo.channel as Channel) || 'website';
     return {
         missionProfile,
+        channel: ['sms', 'messenger', 'email', 'website', 'voice'].includes(channel) ? channel : 'website',
         websiteUrl: (demo.website_url as string) || '',
         scrapeResult: null, // Not stored in DB
         companyName: (demo.company_name as string) || '',
@@ -114,7 +120,7 @@ export function demoRowToFormData(demo: Record<string, unknown>): DemoFormData {
     };
 }
 
-export function DemoBuilder({ initialDraftId, initialFormData, initialStep }: DemoBuilderProps) {
+export function DemoBuilder({ initialDraftId, initialFormData, initialStep, initialVersion }: DemoBuilderProps) {
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(initialStep || 'mission');
     const [completedSteps, setCompletedSteps] = useState<string[]>(() => {
@@ -135,7 +141,7 @@ export function DemoBuilder({ initialDraftId, initialFormData, initialStep }: De
         saveNow,
         saveDraft,
         activate,
-    } = useAutosave({ initialDraftId });
+    } = useAutosave({ initialDraftId, initialVersion });
 
     const currentIndex = STEPS.findIndex(s => s.id === currentStep);
 
@@ -210,7 +216,9 @@ export function DemoBuilder({ initialDraftId, initialFormData, initialStep }: De
                 return (
                     <MissionStep
                         selected={formData.missionProfile}
+                        channel={formData.channel}
                         onSelect={(profile: MissionProfile) => updateFormData({ missionProfile: profile })}
+                        onChannelSelect={(ch) => updateFormData({ channel: ch })}
                         onNext={nextStep}
                     />
                 );

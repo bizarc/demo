@@ -10,6 +10,9 @@ const mockSingle = vi.fn();
 const mockUpdate = vi.fn();
 const mockDelete = vi.fn();
 
+vi.mock('@/lib/auth', () => ({
+    requireAuth: vi.fn().mockResolvedValue({ userId: null }),
+}));
 vi.mock('@/lib/supabase', () => ({
     createServerClient: vi.fn(() => ({
         from: mockFrom,
@@ -124,7 +127,7 @@ describe('PATCH /api/demo/[id]', () => {
             eq: vi.fn().mockReturnThis(),
             is: vi.fn().mockReturnThis(),
             single: vi.fn().mockResolvedValue({
-                data: { id: demoId, status: 'draft' },
+                data: { id: demoId, status: 'draft', created_by: null, version: 1 },
                 error: null,
             }),
         };
@@ -134,7 +137,7 @@ describe('PATCH /api/demo/[id]', () => {
             eq: vi.fn().mockReturnThis(),
             select: vi.fn().mockReturnThis(),
             single: vi.fn().mockResolvedValue({
-                data: { id: demoId, status: 'draft', updated_at: new Date().toISOString() },
+                data: { id: demoId, status: 'draft', updated_at: new Date().toISOString(), version: 2 },
                 error: null,
             }),
         };

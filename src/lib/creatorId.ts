@@ -1,7 +1,6 @@
 /**
- * Temporary user scoping via localStorage.
- * Generates and persists a creator_id until auth is implemented.
- * When auth arrives, migrate created_by to real user IDs.
+ * User scoping: prefers auth user ID when logged in; falls back to localStorage.
+ * When AUTH_DISABLED, auth is bypassed and only localStorage is used.
  */
 
 const STORAGE_KEY = 'lab_creator_id';

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { DemoFormData } from '../DemoBuilder';
 
 interface ContextStepProps {
@@ -7,6 +8,14 @@ interface ContextStepProps {
     onUpdate: (updates: Partial<DemoFormData>) => void;
     onNext: () => void;
     onBack: () => void;
+}
+
+interface ResearchEnrichment {
+    summary: string;
+    offerings: string[];
+    competitors: string[];
+    market_position: string | null;
+    qualification_notes: string;
 }
 
 const labelStyle: React.CSSProperties = {
@@ -53,8 +62,54 @@ const btnBase: React.CSSProperties = {
     transition: 'background 150ms',
 };
 
+function mergeList(existing: string, add: string[]): string {
+    const a = existing
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+    const combined = [...new Set([...a, ...add])];
+    return combined.join(', ');
+}
+
 export function ContextStep({ formData, onUpdate, onNext, onBack }: ContextStepProps) {
+    const [researchLoading, setResearchLoading] = useState(false);
+    const [researchError, setResearchError] = useState<string | null>(null);
     const canContinue = formData.companyName.trim().length > 0;
+
+    const runResearch = async () => {
+        if (!formData.companyName.trim()) return;
+        setResearchLoading(true);
+        setResearchError(null);
+        try {
+            const res = await fetch('/api/research', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    companyName: formData.companyName,
+                    websiteUrl: formData.websiteUrl || undefined,
+                    industry: formData.industry || undefined,
+                }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || 'Research failed');
+            const { enrichment } = data as { enrichment?: ResearchEnrichment };
+            if (enrichment) {
+                onUpdate({
+                    productsServices: mergeList(formData.productsServices, enrichment.offerings ?? []),
+                    offers: enrichment.market_position
+                        ? mergeList(formData.offers, [enrichment.market_position])
+                        : formData.offers,
+                    qualificationCriteria: enrichment.qualification_notes
+                        ? mergeList(formData.qualificationCriteria, [enrichment.qualification_notes])
+                        : formData.qualificationCriteria,
+                });
+            }
+        } catch (e) {
+            setResearchError(e instanceof Error ? e.message : 'Research failed');
+        } finally {
+            setResearchLoading(false);
+        }
+    };
 
     return (
         <div>
@@ -84,6 +139,39 @@ export function ContextStep({ formData, onUpdate, onNext, onBack }: ContextStepP
                         onChange={(e) => onUpdate({ industry: e.target.value })}
                         placeholder="Technology, Healthcare, etc."
                     />
+                </div>
+
+                <div style={{ marginBottom: '8px' }}>
+                    <button
+                        type="button"
+                        onClick={runResearch}
+                        disabled={researchLoading || !formData.companyName.trim()}
+                        style={{
+                            ...btnBase,
+                            background: 'var(--color-primary)',
+                            color: '#FFFFFF',
+                            opacity: researchLoading || !formData.companyName.trim() ? 0.6 : 1,
+                            cursor: researchLoading || !formData.companyName.trim() ? 'not-allowed' : 'pointer',
+                        }}
+                    >
+                        {researchLoading ? (
+                            <>
+                                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                                <span style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.5)', borderTopColor: '#FFF', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                                Researching…
+                            </>
+                        ) : (
+                            <>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="m21 21-4.35-4.35" />
+                                </svg>
+                                Run AI Research
+                            </>
+                        )}
+                    </button>
+                    <p style={helperStyle}>Uses Perplexity to enrich context from company name and website</p>
+                    {researchError && <p style={{ ...helperStyle, color: 'var(--color-error, #EF4444)', marginTop: '4px' }}>{researchError}</p>}
                 </div>
 
                 <div>

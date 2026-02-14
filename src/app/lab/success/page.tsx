@@ -17,7 +17,7 @@ function SuccessContent() {
         : '';
     const [qrCodeData, setQrCodeData] = useState('');
     const [copied, setCopied] = useState(false);
-    const [demo, setDemo] = useState<{ company_name?: string } | null>(null);
+    const [demo, setDemo] = useState<{ company_name?: string; channel?: string; sms_short_code?: string; whatsapp_short_code?: string; email_short_code?: string; voice_short_code?: string } | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -123,6 +123,94 @@ function SuccessContent() {
                 }}>
                     Your AI demo for <strong>{demo?.company_name}</strong> has been generated successfully.
                 </p>
+
+                {/* SMS instructions when channel is sms */}
+                {demo?.channel === 'sms' && demo?.sms_short_code && (
+                    <div style={{
+                        background: '#EFF6FF',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        marginBottom: '24px',
+                        textAlign: 'left',
+                        border: '1px solid #DBEAFE',
+                    }}>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-primary)', marginBottom: '8px' }}>
+                            SMS Demo
+                        </p>
+                        <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                            Share with your prospect: Text <strong>START-{demo.sms_short_code}</strong> to your Twilio number to start the conversation.
+                        </p>
+                        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                            Configure your Twilio SMS webhook to: <code style={{ fontSize: '11px', background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px' }}>{typeof window !== 'undefined' ? `${window.location.origin}/api/twilio/sms` : '/api/twilio/sms'}</code>
+                        </p>
+                    </div>
+                )}
+
+                {/* Email instructions when channel is email */}
+                {demo?.channel === 'email' && demo?.email_short_code && (
+                    <div style={{
+                        background: '#FFF8E1',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        marginBottom: '24px',
+                        textAlign: 'left',
+                        border: '1px solid #FFE082',
+                    }}>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#F59E0B', marginBottom: '8px' }}>
+                            Email Demo
+                        </p>
+                        <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                            Share with your prospect: Email <strong>start-{demo.email_short_code}@your-inbound-domain.com</strong> to start the conversation.
+                        </p>
+                        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                            Configure SendGrid Inbound Parse webhook to: <code style={{ fontSize: '11px', background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px' }}>{typeof window !== 'undefined' ? `${window.location.origin}/api/sendgrid/inbound` : '/api/sendgrid/inbound'}</code>
+                        </p>
+                    </div>
+                )}
+
+                {/* WhatsApp instructions when channel is messenger */}
+                {demo?.channel === 'messenger' && demo?.whatsapp_short_code && (
+                    <div style={{
+                        background: '#E8F5E9',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        marginBottom: '24px',
+                        textAlign: 'left',
+                        border: '1px solid #C8E6C9',
+                    }}>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-success)', marginBottom: '8px' }}>
+                            WhatsApp Demo
+                        </p>
+                        <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                            Share with your prospect: Send <strong>START-{demo.whatsapp_short_code}</strong> to your WhatsApp Business number to start the conversation.
+                        </p>
+                        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                            Configure your Twilio WhatsApp webhook to: <code style={{ fontSize: '11px', background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px' }}>{typeof window !== 'undefined' ? `${window.location.origin}/api/twilio/whatsapp` : '/api/twilio/whatsapp'}</code>
+                        </p>
+                    </div>
+                )}
+
+                {/* Voice instructions when channel is voice */}
+                {demo?.channel === 'voice' && demo?.voice_short_code && (
+                    <div style={{
+                        background: '#F3E8FF',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        marginBottom: '24px',
+                        textAlign: 'left',
+                        border: '1px solid #E9D5FF',
+                    }}>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#7C3AED', marginBottom: '8px' }}>
+                            Voice Demo
+                        </p>
+                        <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                            Share with your prospect: Call your Twilio number and enter <strong>{demo.voice_short_code}</strong> when prompted.
+                        </p>
+                        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                            Configure your Twilio Voice webhook to: <code style={{ fontSize: '11px', background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px' }}>{typeof window !== 'undefined' ? `${window.location.origin}/api/twilio/voice` : '/api/twilio/voice'}</code>
+                        </p>
+                    </div>
+                )}
 
                 {/* Magic Link Box */}
                 <div style={{

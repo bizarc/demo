@@ -29,6 +29,23 @@
 * **Campaign Manager:**  
   * **Cold Outreach:** Orchestrate email sequences and LinkedIn connection requests.  
   * **Signal Detection:** Highlight prospects who replied or visited the demo link.
+* **RECON Integration:**  
+  * RADAR reads workspace intelligence from RECON for personalization.
+  * RADAR writes net-new prospect research and campaign signals back to RECON.
+
+### **Phase 1.5: RECON (Shared Intelligence)**
+
+*The shared intelligence module used across Funnel Finished.*
+
+* **Ownership Scope:**  
+  * Workspace-scoped intelligence assets shared across RADAR, THE LAB, and BLUEPRINT.
+* **Research Store:**  
+  * Company profiles, market notes, tech-stack observations, and campaign-relevant context.
+* **Knowledge Base Store:**  
+  * Reusable document collections (catalogs, FAQs, service menus, review templates) with retrieval-ready indexing.
+* **Lifecycle & Governance:**  
+  * Assets move through draft -> validated -> production-approved states.
+  * Access is RBAC-controlled by internal role and workspace.
 
 ### **Phase 2: THE LAB (Sales & Demos)**
 
@@ -37,6 +54,7 @@
 * **Asset Injection:**  
   * Upload Prospect Logo & Color Hex Codes.  
   * Scrape Prospect Website for context.  
+  * Read/enrich workspace intelligence in RECON (research + knowledge assets).  
 * **The "Magic Link":**  
   * Generates a unique, expiring URL (e.g., demo.funnelfinished.com/v/client-id).  
   * **Experience:** The prospect chats with the agent in a simulated environment (SMS/WhatsApp style).  
@@ -49,6 +67,9 @@
 * **Mission Profiles:**  
   * Select the "Job to be Done" to load pre-set logic templates.  
   * *Options:* Database Reactivation, Inbound Nurture, Customer Service, Review Generation.  
+* **RECON Consumption:**  
+  * BLUEPRINT selects production-approved RECON knowledge assets as deployment inputs.
+  * Research context from RECON can be referenced for copy, qualification, and workflow tuning.
 * **The Vault:**  
   * Secure storage for Client API Keys (Twilio SID, CRM Keys, SendGrid).  
   * *Note:* Clients never see this; your team inputs this during onboarding.  
@@ -94,9 +115,10 @@
 
 **The "Push to Production" Flow:**
 
-1. **Prospecting:** Ops team identifies lead in **RADAR**.  
-2. **Sales:** Ops team builds demo in **LAB**. Client says "Yes."  
-3. **Config:** Ops team selects "Database Reactivation" profile in **BLUEPRINT**.  
-4. **Ingest:** Ops team uploads client's CSV into **DATA AIRLOCK**.  
-5. **Launch:** Ops team hits "Start Pilot" in **MISSION CONTROL**.  
-6. **Reporting:** Client logs into **PORTAL** to see appointments appearing.
+1. **Prospecting:** Ops team identifies lead in **RADAR**, leveraging RECON context.  
+2. **Intelligence:** Ops team enriches workspace research/knowledge in **RECON** as needed.  
+3. **Sales:** Ops team builds demo in **LAB**, consuming RECON assets and adding missing context when needed. Client says "Yes."  
+4. **Config:** Ops team configures deployment in **BLUEPRINT** using production-approved RECON knowledge assets.  
+5. **Ingest:** Ops team uploads client's CSV into **DATA AIRLOCK**.  
+6. **Launch:** Ops team hits "Start Pilot" in **MISSION CONTROL**.  
+7. **Reporting:** Client logs into **PORTAL** to see appointments appearing.

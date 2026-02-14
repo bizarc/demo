@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { DemoFormData } from './DemoBuilder';
-import { MISSION_PROFILES, MissionProfile } from '@/lib/prompts';
+import { MISSION_PROFILES, MissionProfile, getSuggestedPrompts } from '@/lib/prompts';
 
 interface ChatPreviewProps {
     /** The real draft UUID from the database */
@@ -16,15 +16,15 @@ interface Message {
     content: string;
 }
 
-function getInitialMessages(profile: MissionProfile | null): Message[] {
+function getInitialMessages(profile: MissionProfile | null, channel: DemoFormData['channel']): Message[] {
     if (!profile) return [];
-    const config = MISSION_PROFILES[profile];
-    return [{ role: 'assistant', content: config.suggestedPrompts[0] }];
+    const prompts = getSuggestedPrompts(profile, channel);
+    return [{ role: 'assistant', content: prompts[0] }];
 }
 
 export function ChatPreview({ demoId, formData }: ChatPreviewProps) {
     const [messages, setMessages] = useState<Message[]>(() =>
-        getInitialMessages(formData.missionProfile)
+        getInitialMessages(formData.missionProfile, formData.channel)
     );
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
@@ -231,11 +231,11 @@ export function ChatPreview({ demoId, formData }: ChatPreviewProps) {
             </div>
 
             {/* Suggested Prompts */}
-            {messages.length === 1 && (
+            {messages.length === 1 && missionProfile && (
                 <div style={{ padding: '0 16px 8px' }}>
                     <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '8px' }}>Try asking:</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {missionProfile.suggestedPrompts.slice(1, 4).map((prompt, idx) => (
+                        {getSuggestedPrompts(missionProfile.id, formData.channel).slice(1, 4).map((prompt, idx) => (
                             <button
                                 key={idx}
                                 onClick={() => setInput(prompt)}

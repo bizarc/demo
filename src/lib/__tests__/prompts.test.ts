@@ -3,6 +3,7 @@ import {
     MISSION_PROFILES,
     buildSystemPrompt,
     createInitialMessages,
+    getSuggestedPrompts,
     MissionProfile,
 } from '../prompts';
 
@@ -84,6 +85,27 @@ describe('buildSystemPrompt', () => {
         const nurture = buildSystemPrompt('inbound-nurture', context);
 
         expect(reactivation).not.toBe(nurture);
+    });
+
+    it('appends channel-specific instructions when channel is provided', () => {
+        const context = { companyName: 'Test' };
+        const website = buildSystemPrompt('database-reactivation', context, 'website');
+        const sms = buildSystemPrompt('database-reactivation', context, 'sms');
+
+        expect(website).toContain('[CHANNEL: Website Chat]');
+        expect(sms).toContain('[CHANNEL: SMS]');
+        expect(sms).toContain('160 characters');
+        expect(website).not.toContain('160 characters');
+    });
+});
+
+describe('getSuggestedPrompts', () => {
+    it('returns SMS variants for sms channel', () => {
+        const sms = getSuggestedPrompts('database-reactivation', 'sms');
+        const website = getSuggestedPrompts('database-reactivation', 'website');
+
+        expect(sms[0]).not.toBe(website[0]);
+        expect(sms[0].length).toBeLessThanOrEqual(website[0].length + 20); // SMS tends shorter
     });
 });
 

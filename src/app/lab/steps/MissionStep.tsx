@@ -1,11 +1,21 @@
 'use client';
 
-import { MISSION_PROFILES, MissionProfile } from '@/lib/prompts';
-import { RotateCcw, Sprout, Headset, Star, LucideIcon } from 'lucide-react';
+import { MISSION_PROFILES, MissionProfile, CHANNELS, Channel } from '@/lib/prompts';
+import { RotateCcw, Sprout, Headset, Star, MessageSquare, Mail, Smartphone, Phone, Globe, LucideIcon } from 'lucide-react';
+
+const CHANNEL_ICONS: Record<Channel, LucideIcon> = {
+    sms: Smartphone,
+    messenger: MessageSquare,
+    email: Mail,
+    website: Globe,
+    voice: Phone,
+};
 
 interface MissionStepProps {
     selected: MissionProfile | null;
+    channel: Channel;
     onSelect: (profile: MissionProfile) => void;
+    onChannelSelect: (channel: Channel) => void;
     onNext: () => void;
 }
 
@@ -16,7 +26,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
     Star,
 };
 
-export function MissionStep({ selected, onSelect, onNext }: MissionStepProps) {
+export function MissionStep({ selected, channel, onSelect, onChannelSelect, onNext }: MissionStepProps) {
     const profiles = Object.values(MISSION_PROFILES);
 
     return (
@@ -101,6 +111,43 @@ export function MissionStep({ selected, onSelect, onNext }: MissionStepProps) {
                         </button>
                     );
                 })}
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                    Channel
+                </h3>
+                <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
+                    Where will this demo run? (Affects prompt tone and length)
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {CHANNELS.map((c) => {
+                        const isSelected = channel === c.id;
+                        const IconComp = CHANNEL_ICONS[c.id];
+                        return (
+                            <button
+                                key={c.id}
+                                onClick={() => onChannelSelect(c.id)}
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '8px 14px',
+                                    fontSize: '13px',
+                                    fontWeight: 500,
+                                    background: isSelected ? '#EFF6FF' : 'var(--color-surface)',
+                                    border: isSelected ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    color: isSelected ? 'var(--color-primary)' : 'var(--color-text-primary)',
+                                }}
+                            >
+                                {IconComp && <IconComp size={16} strokeWidth={1.75} />}
+                                {c.name}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

@@ -1,5 +1,43 @@
 import { ChatMessage } from './openrouter';
 
+export type Channel = 'sms' | 'messenger' | 'email' | 'website' | 'voice';
+
+export const CHANNELS: { id: Channel; name: string; description: string }[] = [
+    { id: 'sms', name: 'SMS', description: 'Short text messages (160 chars)' },
+    { id: 'messenger', name: 'Messenger', description: 'WhatsApp, Telegram' },
+    { id: 'email', name: 'Email', description: 'Email correspondence' },
+    { id: 'website', name: 'Website', description: 'In-browser chat' },
+    { id: 'voice', name: 'Voice', description: 'Phone call' },
+];
+
+/**
+ * Channel-specific prompt instructions.
+ * Appended to system prompt to tune tone, length, and compliance per channel.
+ */
+const CHANNEL_INSTRUCTIONS: Record<Channel, string> = {
+    sms: `[CHANNEL: SMS]
+- Keep each response under 160 characters when possible. Be concise.
+- Use clear, direct language. One idea per message.
+- Include a simple CTA when appropriate (e.g., "Reply YES to learn more").
+- No markdown, no links unless essential.`,
+    messenger: `[CHANNEL: Messenger - WhatsApp/Telegram]
+- Use a conversational, friendly tone. Medium length (1-3 short paragraphs).
+- Links are fine. Use simple formatting.
+- CTAs: "Tap here", "Reply with...", "Click to..."`,
+    email: `[CHANNEL: Email]
+- Professional but warm. Can use longer paragraphs.
+- Clear subject lines if initiating. One primary CTA per email.
+- Sign off appropriately. No excessive formatting.`,
+    website: `[CHANNEL: Website Chat]
+- Conversational, helpful. Natural dialogue length.
+- Can include links, bullets when helpful.
+- Match the visitor's pace and depth of questions.`,
+    voice: `[CHANNEL: Voice]
+- Spoken, natural tone. No markdown or written formatting.
+- Short sentences. Pause-friendly. Confirm understanding.
+- Clear, audible CTAs. "Would you like me to...", "Say yes to...".`,
+};
+
 export type MissionProfile =
     | 'database-reactivation'
     | 'inbound-nurture'
@@ -13,6 +51,8 @@ export interface MissionProfileConfig {
     icon: string; // lucide-react icon name
     systemPrompt: string;
     suggestedPrompts: string[];
+    /** Shorter variants for SMS (under 160 chars) */
+    suggestedPromptsSms?: string[];
 }
 
 /**
@@ -48,6 +88,11 @@ Always be helpful, conversational, and focus on understanding their needs before
             "Are you still looking for solutions in this area?",
             "Would you be interested in hearing about our latest updates?",
         ],
+        suggestedPromptsSms: [
+            "Hi! We haven't connected in a while. How are things?",
+            "Still looking for solutions? We have updates.",
+            "Reply YES to hear about our latest offers.",
+        ],
     },
 
     'inbound-nurture': {
@@ -79,6 +124,11 @@ Be helpful and informative without being pushy. Focus on education and value rat
             "Do you have any specific questions I can help with?",
             "Would you like me to walk you through our options?",
         ],
+        suggestedPromptsSms: [
+            "Welcome! What can I help you with?",
+            "Any questions? Reply here.",
+            "Reply to get started.",
+        ],
     },
 
     'customer-service': {
@@ -108,6 +158,11 @@ Always prioritize customer satisfaction. If you can't solve an issue, acknowledg
             "I'm sorry to hear you're experiencing issues. Let me help.",
             "Can you tell me more about what's happening?",
             "Is there anything else I can assist you with?",
+        ],
+        suggestedPromptsSms: [
+            "How can I help? Reply here.",
+            "Tell me what's going on.",
+            "I'm here to help.",
         ],
     },
 
@@ -139,11 +194,17 @@ Be genuine and appreciative. Never pressure customers to leave reviews, and alwa
             "Would you be willing to share your feedback?",
             "Your review would really help other customers like you.",
         ],
+        suggestedPromptsSms: [
+            "How was your experience? We'd love your feedback!",
+            "Reply to leave a quick review.",
+            "Thanks for choosing us! Would you share your thoughts?",
+        ],
     },
 };
 
 /**
- * Build the system prompt with company context
+ * Build the system prompt with company context and optional channel.
+ * When channel is provided, appends channel-specific instructions (tone, length, CTA).
  */
 export function buildSystemPrompt(
     profile: MissionProfile,
@@ -154,7 +215,8 @@ export function buildSystemPrompt(
         offers?: string[];
         qualificationCriteria?: string;
         knowledgeBaseContext?: string;
-    }
+    },
+    channel: Channel = 'website'
 ): string {
     const config = MISSION_PROFILES[profile];
 
@@ -180,20 +242,36 @@ export function buildSystemPrompt(
         context.knowledgeBaseContext || ''
     );
 
+    // Append channel-specific instructions
+    prompt = prompt.trim() + '\n\n' + CHANNEL_INSTRUCTIONS[channel];
+
     return prompt.trim();
 }
 
 /**
- * Create initial messages for a chat session
+ * Get suggested prompts for a mission, optionally channel-aware.
+ * SMS uses shorter variants when available.
+ */
+export function getSuggestedPrompts(profile: MissionProfile, channel: Channel = 'website'): string[] {
+    const config = MISSION_PROFILES[profile];
+    if (channel === 'sms' && config.suggestedPromptsSms?.length) {
+        return config.suggestedPromptsSms;
+    }
+    return config.suggestedPrompts;
+}
+
+/**
+ * Create initial messages for a chat session.
+ * Uses channel-specific suggested prompts when channel is SMS.
  */
 export function createInitialMessages(
     profile: MissionProfile,
-    systemPrompt: string
+    systemPrompt: string,
+    channel: Channel = 'website'
 ): ChatMessage[] {
-    const config = MISSION_PROFILES[profile];
-
+    const prompts = getSuggestedPrompts(profile, channel);
     return [
         { role: 'system', content: systemPrompt },
-        { role: 'assistant', content: config.suggestedPrompts[0] },
+        { role: 'assistant', content: prompts[0] },
     ];
 }

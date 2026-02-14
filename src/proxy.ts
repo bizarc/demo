@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { updateSession } from '@/lib/supabase/session';
 
 /**
  * CORS configuration for API routes.
@@ -14,7 +15,6 @@ const ALLOWED_ORIGINS: string[] = [
 function isAllowedOrigin(origin: string | null): boolean {
     if (!origin) return false;
     if (ALLOWED_ORIGINS.includes(origin)) return true;
-    // Allow same-host (e.g. Vercel preview URLs)
     try {
         const appUrl = process.env.NEXT_PUBLIC_APP_URL;
         if (appUrl) {
@@ -28,33 +28,43 @@ function isAllowedOrigin(origin: string | null): boolean {
     return false;
 }
 
-export function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
 
-    // Apply CORS only to API routes
-    if (pathname.startsWith('/api/')) {
-        const origin = request.headers.get('origin');
-        const response = NextResponse.next();
-
-        // Only set CORS headers when origin is present and allowed
-        if (origin && isAllowedOrigin(origin)) {
-            response.headers.set('Access-Control-Allow-Origin', origin);
-        }
-        response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-        response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        response.headers.set('Access-Control-Max-Age', '86400');
-
-        // Handle preflight
-        if (request.method === 'OPTIONS') {
-            return new NextResponse(null, { status: 204, headers: response.headers });
-        }
-
-        return response;
+    // Auth: protect AUTH_REQUIRED_PATHS (/, /lab, ...), allow /login, /auth/*, /demo/*
+    const authResponse = await updateSession(request);
+    if (authResponse.status === 307 || authResponse.status === 308) {
+        return authResponse;
     }
 
-    return NextResponse.next();
+    // CORS for API routes (add headers to authResponse to preserve session cookies)
+    if (pathname.startsWith('/api/')) {
+        const origin = request.headers.get('origin');
+        if (origin && isAllowedOrigin(origin)) {
+            authResponse.headers.set('Access-Control-Allow-Origin', origin);
+        }
+        authResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+        authResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        authResponse.headers.set('Access-Control-Max-Age', '86400');
+
+        if (request.method === 'OPTIONS') {
+            return new NextResponse(null, { status: 204, headers: authResponse.headers });
+        }
+
+        return authResponse;
+    }
+
+    return authResponse;
 }
 
 export const config = {
-    matcher: '/api/:path*',
+    matcher: [
+        '/',
+        '/api/:path*',
+        '/lab/:path*',
+        '/lab',
+        '/login',
+        '/auth/:path*',
+        '/demo/:path*',
+    ],
 };

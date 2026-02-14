@@ -16,6 +16,22 @@ Build the approved designs with full functionality.
 ### Phase 2: Polish & Deploy
 Testing, refinement, and production deployment.
 
+### Phase 3: Platform Expansion & Intelligence
+Shared intelligence, auth/RBAC, and production deployment workflows across RADAR, THE LAB, BLUEPRINT, and MISSION CONTROL.
+
+---
+
+## Platform Expansion Direction (Phase 3)
+
+To align with Funnel Finished v3, research and knowledge assets are owned by **RECON**. Internal ops (LAB, RADAR) use permission-level security without workspace scoping. Workspaces are reserved for BLUEPRINT client implementations and client portals.
+
+- **RECON owns intelligence assets**: research records, reusable knowledge bases, and retrieval context.
+- **RADAR** consumes and contributes intelligence for prospecting and campaign personalization.
+- **THE LAB** is an authoring and demo surface that reads existing RECON assets and can enrich them during demo creation.
+- **BLUEPRINT** consumes approved RECON assets when configuring production agents.
+
+Guiding rule: module workflows remain separate, but intelligence assets are shared and referenced from RECON rather than duplicated by default.
+
 ---
 
 ## Phase 0: Design Work
@@ -80,6 +96,7 @@ Use Stitch to generate multiple design system options:
 | **Scraping** | Cheerio + Jina fallback | Free, fast, handles most sites |
 | **AI** | OpenRouter (user-selectable model) | Flexibility, cost control |
 | **Storage** | Supabase (PostgreSQL) | Persistent, real-time capable, generous free tier |
+| **Shared Intelligence Ownership** | RECON (workspace-scoped) | Reuse across RADAR, THE LAB, and BLUEPRINT |
 | **Link Expiration** | 7 days default | Configurable per demo |
 | **Rate Limiting** | Configurable from start | Prevent abuse, control costs |
 

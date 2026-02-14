@@ -38,6 +38,12 @@ export interface Database {
                     deleted_at: string | null
                     current_step: string | null
                     knowledge_base_id: string | null
+                    version: number
+                    channel: string | null
+                    sms_short_code: string | null
+                    whatsapp_short_code: string | null
+                    email_short_code: string | null
+                    voice_short_code: string | null
                 }
                 Insert: {
                     id?: string
@@ -61,6 +67,12 @@ export interface Database {
                     deleted_at?: string | null
                     current_step?: string | null
                     knowledge_base_id?: string | null
+                    version?: number
+                    channel?: string | null
+                    sms_short_code?: string | null
+                    whatsapp_short_code?: string | null
+                    email_short_code?: string | null
+                    voice_short_code?: string | null
                 }
                 Update: {
                     id?: string
@@ -84,6 +96,12 @@ export interface Database {
                     deleted_at?: string | null
                     current_step?: string | null
                     knowledge_base_id?: string | null
+                    version?: number
+                    channel?: string | null
+                    sms_short_code?: string | null
+                    whatsapp_short_code?: string | null
+                    email_short_code?: string | null
+                    voice_short_code?: string | null
                 }
                 Relationships: []
             }
@@ -191,7 +209,7 @@ export interface Database {
                     id: string
                     demo_id: string
                     identifier: string
-                    identifier_type: 'email' | 'phone' | 'anonymous'
+                    identifier_type: 'email' | 'phone' | 'anonymous' | 'whatsapp'
                     display_name: string | null
                     created_at: string
                     last_seen_at: string
@@ -201,7 +219,7 @@ export interface Database {
                     id?: string
                     demo_id: string
                     identifier: string
-                    identifier_type: 'email' | 'phone' | 'anonymous'
+                    identifier_type: 'email' | 'phone' | 'anonymous' | 'whatsapp'
                     display_name?: string | null
                     created_at?: string
                     last_seen_at?: string
@@ -211,7 +229,7 @@ export interface Database {
                     id?: string
                     demo_id?: string
                     identifier?: string
-                    identifier_type?: 'email' | 'phone' | 'anonymous'
+                    identifier_type?: 'email' | 'phone' | 'anonymous' | 'whatsapp'
                     display_name?: string | null
                     created_at?: string
                     last_seen_at?: string
@@ -224,7 +242,7 @@ export interface Database {
                     id: string
                     lead_id: string
                     demo_id: string
-                    channel: 'chat' | 'voice' | 'sms'
+                    channel: 'chat' | 'voice' | 'sms' | 'messenger' | 'email'
                     created_at: string
                     ended_at: string | null
                     metadata: Json
@@ -233,7 +251,7 @@ export interface Database {
                     id?: string
                     lead_id: string
                     demo_id: string
-                    channel?: 'chat' | 'voice' | 'sms'
+                    channel?: 'chat' | 'voice' | 'sms' | 'messenger' | 'email'
                     created_at?: string
                     ended_at?: string | null
                     metadata?: Json
@@ -242,7 +260,7 @@ export interface Database {
                     id?: string
                     lead_id?: string
                     demo_id?: string
-                    channel?: 'chat' | 'voice' | 'sms'
+                    channel?: 'chat' | 'voice' | 'sms' | 'messenger' | 'email'
                     created_at?: string
                     ended_at?: string | null
                     metadata?: Json
@@ -277,6 +295,86 @@ export interface Database {
                     token_count?: number
                     metadata?: Json
                 }
+                Relationships: []
+            }
+            workspaces: {
+                Row: {
+                    id: string
+                    name: string
+                    created_at: string
+                }
+                Insert: { id?: string; name: string; created_at?: string }
+                Update: { id?: string; name?: string; created_at?: string }
+                Relationships: []
+            }
+            profiles: {
+                Row: {
+                    id: string
+                    role: string
+                    workspace_id: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: { id: string; role: string; workspace_id?: string | null; created_at?: string; updated_at?: string }
+                Update: { role?: string; workspace_id?: string | null; updated_at?: string }
+                Relationships: []
+            }
+            research_records: {
+                Row: {
+                    id: string
+                    workspace_id: string
+                    target_id: string | null
+                    source: string
+                    title: string
+                    summary: string
+                    competitors: string[]
+                    market_position: string | null
+                    offerings: string[]
+                    tech_stack: string[]
+                    evidence: Json
+                    confidence_score: number | null
+                    status: string
+                    created_by: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    workspace_id: string
+                    target_id?: string | null
+                    source?: string
+                    title: string
+                    summary?: string
+                    competitors?: string[]
+                    market_position?: string | null
+                    offerings?: string[]
+                    tech_stack?: string[]
+                    evidence?: Json
+                    confidence_score?: number | null
+                    status?: string
+                    created_by?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: { [k: string]: unknown }
+                Relationships: []
+            }
+            research_links: {
+                Row: {
+                    id: string
+                    research_id: string
+                    link_type: string
+                    target_id: string
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    research_id: string
+                    link_type: string
+                    target_id: string
+                    created_at?: string
+                }
+                Update: { [k: string]: unknown }
                 Relationships: []
             }
         }

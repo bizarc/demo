@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getOpenRouterClient, ChatMessage, OpenRouterClient } from '@/lib/openrouter';
-import { buildSystemPrompt, MissionProfile } from '@/lib/prompts';
+import { buildSystemPrompt, MissionProfile, Channel } from '@/lib/prompts';
 import { createServerClient } from '@/lib/supabase';
 import { isValidUuid, isValidLeadIdentifier, sanitizeString, LIMITS } from '@/lib/validation';
 import { getClientIp, checkRateLimit, CHAT_LIMIT } from '@/lib/rateLimit';
@@ -251,13 +251,17 @@ export async function POST(request: NextRequest) {
                 review: 'review-generation',
             };
             const fullProfile = DB_TO_PROFILE[demo.mission_profile] || 'inbound-nurture';
+            const channel: Channel =
+                demo.channel && ['sms', 'messenger', 'email', 'website', 'voice'].includes(demo.channel)
+                    ? (demo.channel as Channel)
+                    : 'website';
             systemPrompt = buildSystemPrompt(fullProfile, {
                 companyName: demo.company_name || 'Company',
                 industry: demo.industry,
                 products: demo.products_services || [],
                 offers: demo.offers || [],
                 qualificationCriteria: demo.qualification_criteria?.join(', '),
-            });
+            }, channel);
         } else {
             // Fallback for drafts without a mission profile
             systemPrompt = `You are a helpful AI assistant for ${demo.company_name || 'a company'}. Be professional and helpful.`;

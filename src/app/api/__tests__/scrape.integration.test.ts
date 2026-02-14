@@ -3,6 +3,9 @@ import { POST } from '../scrape/route';
 import { createMockRequest } from './helpers';
 import { scrapeWebsite } from '@/lib/scraper';
 
+vi.mock('@/lib/auth', () => ({
+    requireAuth: vi.fn().mockResolvedValue({ userId: null }),
+}));
 vi.mock('@/lib/scraper', () => ({
     scrapeWebsite: vi.fn().mockResolvedValue({
         companyName: 'Example Corp',

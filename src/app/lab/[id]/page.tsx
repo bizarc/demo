@@ -13,6 +13,7 @@ export default function EditDemoPage() {
     const [error, setError] = useState<string | null>(null);
     const [initialFormData, setInitialFormData] = useState<DemoFormData | null>(null);
     const [initialStep, setInitialStep] = useState<string>('mission');
+    const [initialVersion, setInitialVersion] = useState<number>(1);
 
     useEffect(() => {
         if (!demoId) {
@@ -42,6 +43,7 @@ export default function EditDemoPage() {
 
                 setInitialFormData(demoRowToFormData(data));
                 setInitialStep(data.current_step || 'mission');
+                setInitialVersion(typeof data.version === 'number' ? data.version : 1);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to load demo');
             } finally {
@@ -118,6 +120,7 @@ export default function EditDemoPage() {
             initialDraftId={demoId}
             initialFormData={initialFormData}
             initialStep={initialStep}
+            initialVersion={initialVersion}
         />
     );
 }

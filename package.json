@@ -17,6 +17,8 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
+    "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
     "@types/qrcode": "^1.5.6",
     "cheerio": "^1.2.0",
@@ -27,7 +29,8 @@
     "qrcode": "^1.5.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-markdown": "^10.1.0"
+    "react-markdown": "^10.1.0",
+    "twilio": "^5.12.1"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.0.1",

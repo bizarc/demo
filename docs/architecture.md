@@ -4,6 +4,8 @@
 
 THE LAB is a Next.js application using the App Router pattern. All backend logic runs as serverless API routes. Data is stored in Supabase (PostgreSQL) and AI responses are streamed via OpenRouter.
 
+Within the broader Funnel Finished platform, research and knowledge assets are owned by **RECON**: the workspace-scoped shared intelligence module consumed by RADAR, THE LAB, and BLUEPRINT.
+
 ## System Diagram
 
 ```
@@ -93,6 +95,28 @@ Field changes   → PATCH /api/demo/[id]    → Debounced (1s), immediate on ste
 Step 5          → PATCH (status: 'active') → System prompt generated, demo goes live
 ```
 
+## Internal vs. Workspace Scope
+
+- **Internal ops** (LAB, RADAR, RECON, MISSION CONTROL): Use permission-level security (super_admin, operator). No workspace scoping. Demos are `created_by`-scoped. Research uses a single internal scope.
+- **Workspaces**: Reserved for BLUEPRINT client implementations and client-segmented portals. Multi-tenancy lives here. Not used for internal LAB operations.
+
+## Auth & RBAC
+
+- **Supabase Auth**: Email/password sign-in; session stored in cookies.
+- **Permission levels**: `super_admin` sees all demos and research; `operator` sees only content they created (`created_by`). No workspace scoping for internal modules.
+- **Proxy** (`src/proxy.ts`): Next.js proxy (formerly middleware) handles session refresh and route protection.
+- **AUTH_REQUIRED_PATHS** (`src/lib/supabase/session.ts`): App-wide list of paths requiring auth. Currently: `/`, `/lab`. Extend with `/radar`, `/blueprint`, `/mission-control` as built.
+- **Public routes**: `/login`, `/auth/*`, `/demo/*` (magic link chat).
+- **API auth**: POST/GET/PATCH/DELETE on `/api/demo`, POST `/api/scrape` require auth when `AUTH_DISABLED` is unset.
+- **Profiles**: `profiles` table links `auth.users` to `role` (super_admin, operator, client_viewer) and `workspace_id`.
+- **AUTH_DISABLED**: Set to `true` for local dev or E2E; bypasses auth checks.
+
+## Data Integrity
+
+- **Optimistic locking**: `demos.version` incremented on each update; PATCH requires matching version or returns 409.
+- **Audit trail**: `demo_audit_log` records status transitions (from_status, to_status, changed_by, changed_at).
+- **Push to BLUEPRINT**: Active demos can transition to `status = 'blueprint'` via LAB home action.
+
 ## Key Patterns
 
 ### Server-Sent Events (Streaming)
@@ -127,7 +151,28 @@ THE LAB is one module in the broader Funnel Finished platform:
 | Module | Purpose | Status |
 |--------|---------|--------|
 | RADAR | Prospecting | Planned |
+| RECON | Shared workspace intelligence (research + knowledge bases) | Planned |
 | **THE LAB** | **Sales demos** | **Active** |
 | BLUEPRINT | Production config | Planned |
 | MISSION CONTROL | Operations | Planned |
 | CLIENT PORTAL | Client dashboard | Planned |
+
+## Cross-Module Intelligence (RECON)
+
+RECON is the system of record for shared intelligence assets:
+
+- Research records (company intelligence, competitive notes, tech-stack observations)
+- Reusable knowledge bases and document collections
+- Retrieval-ready chunks and supporting metadata
+
+### RECON Research Integration
+
+- **POST /api/research** — Runs AI research via Perplexity (OpenRouter) for a company. Input: `companyName`, optional `websiteUrl`, `industry`. Stores results in `research_records` when migrations are applied; returns enrichment (summary, offerings, competitors, market_position, qualification_notes) in all cases.
+- **GET /api/research** — Lists research records (filterable by status).
+- **LAB Builder Step 3 (Context)** — "Run AI Research" button merges Perplexity output into products, offers, and qualification criteria fields. Requires `OPENROUTER_API_KEY`.
+
+Module contracts:
+
+- RADAR writes prospect intelligence and references RECON during campaign personalization.
+- THE LAB reads RECON by default and can add or refine assets during demo creation.
+- BLUEPRINT consumes approved RECON assets for production deployments, minimizing one-off copies.

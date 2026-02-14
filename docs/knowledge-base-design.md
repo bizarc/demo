@@ -18,6 +18,17 @@ The existing system uses:
 
 **Gap:** No structured knowledge retrieval. Context comes only from scraped website content and manually entered products/offers/qualifications. Missions like Customer Service (FAQ) and Review Generation (templates) would benefit from document-based knowledge bases.
 
+### 1.1 RECON Alignment (Workspace Scope)
+
+Funnel Finished now treats knowledge assets as part of **RECON**, a shared workspace-scoped intelligence module.
+
+- **Authoritative owner:** RECON (workspace-scoped), not a single LAB demo.
+- **LAB role:** consume and enrich RECON assets while configuring demos.
+- **BLUEPRINT role:** consume production-approved RECON assets for deployment.
+- **RADAR role:** optional consumer for campaign context and prospect personalization.
+
+Implementation can remain demo-scoped as an interim shape, but target architecture is workspace-scoped reuse with explicit module contracts.
+
 ---
 
 ## 2. Use Cases by Mission Profile
@@ -51,7 +62,9 @@ The existing system uses:
 ### 4.1 Data Model
 
 ```
-demos (1) ──── (*) knowledge_bases
+workspaces (1) ──── (*) knowledge_bases
+knowledge_bases (*) ──── (*) demos
+knowledge_bases (*) ──── (*) blueprint_configs
 knowledge_bases (1) ──── (*) documents
 documents (1) ──── (*) chunks
 chunks ──── knowledge_bases (belongs_to)
@@ -59,9 +72,11 @@ chunks ──── knowledge_bases (belongs_to)
 
 **Tables:**
 
-- **knowledge_bases**: One per demo (or shared/reusable later).
-  - `id`, `demo_id`, `name`, `type`, `created_at`
+- **knowledge_bases**: Workspace-scoped and reusable across demos/campaigns/blueprints.
+  - `id`, `workspace_id`, `name`, `type`, `created_at`
   - `type`: `product_catalog` | `faq` | `service_menu` | `review_template` | `custom`
+
+For transition compatibility, demo-level linking can remain, but should evolve to association tables (e.g. `demo_knowledge_bases`, `blueprint_knowledge_bases`) rather than hard ownership by `demo_id`.
 
 - **documents**: Uploaded files with extracted content.
   - `id`, `kb_id`, `filename`, `content`, `chunk_count`, `created_at`
@@ -168,6 +183,12 @@ Add to `demos` table:
 - `knowledge_base_id` (UUID, nullable, FK → knowledge_bases)
 
 When `knowledge_base_id` is set, chat API runs retrieval before each response.
+
+### 6.4 Module Contracts (RECON)
+
+- **RADAR**: reads RECON for messaging context; may write research-derived KB drafts.
+- **THE LAB**: reads RECON by default; may create/update KB content during demo prep.
+- **BLUEPRINT**: selects production-approved RECON KBs; does not depend on demo-scoped ownership.
 
 ---
 

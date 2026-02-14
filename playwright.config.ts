@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const baseURL = process.env.BASE_URL ?? 'http://localhost:3000';
+const baseURL = process.env.BASE_URL ?? 'http://localhost:5173';
 const isRemote = !baseURL.includes('localhost');
 
 export default defineConfig({
@@ -26,6 +26,7 @@ export default defineConfig({
                   url: baseURL,
                   reuseExistingServer: !process.env.CI,
                   timeout: 60 * 1000,
+                  env: { ...process.env, PORT: '5173', AUTH_DISABLED: 'true' },
               },
           }
         : {}),

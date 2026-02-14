@@ -6,8 +6,8 @@
 |-------|------|--------|
 | Phase 0 | Design System & UI | Complete |
 | Phase 1 | Core Implementation | Complete |
-| Phase 2 | Polish & Deploy | In Progress |
-| Phase 3 | Platform Expansion & Intelligence | Planned |
+| Phase 2 | Polish & Deploy | Complete |
+| Phase 3 | Platform Expansion & Intelligence | In Progress |
 
 ---
 
@@ -68,44 +68,44 @@ Built the end-to-end demo creation and chat experience.
 
 ---
 
-## Phase 2 — Polish & Deploy (In Progress)
+## Phase 2 — Polish & Deploy (Complete)
 
-### 2.1 Testing & Component Documentation (Partial)
+### 2.1 Testing & Component Documentation (Complete)
 - [x] Storybook setup with 65+ stories for all 23 components
 - [x] Vitest unit tests for utilities and 3 UI components
 - [x] Interaction tests for 7 key components
-- [ ] Integration tests for API routes
-- [ ] E2E tests with Playwright
+- [x] Integration tests for API routes
+- [x] E2E tests with Playwright
 
 ### 2.2 Error Handling
-- [ ] Error boundary component
-- [ ] Custom 404 page
-- [ ] Expired demo page with operator contact
-- [ ] Toast notifications for user feedback
-- [ ] Retry logic for failed API calls
+- [x] Error boundary component
+- [x] Custom 404 page
+- [x] Expired demo page with operator contact
+- [x] Toast notifications for user feedback
+- [x] Retry logic for failed API calls
 
 ### 2.3 Performance
-- [ ] Image optimization (logos, assets)
-- [ ] Skeleton loading states for data fetching
-- [ ] Lazy loading for heavy components
-- [ ] Bundle analysis and code splitting
+- [x] Image optimization (logos, assets)
+- [x] Skeleton loading states for data fetching
+- [x] Add loading states to all buttons
+- [x] Core Web Vitals measurement and optimization
 
 ### 2.4 Security
-- [ ] CORS configuration
-- [ ] Rate limiting enforcement on all routes
-- [ ] Supabase RLS audit
-- [ ] Input sanitization review
+- [x] CORS configuration
+- [x] Rate limiting enforcement on all routes
+- [x] Supabase RLS audit
+- [x] Input sanitization review
 
 ### 2.5 Deployment
-- [ ] Vercel deployment configuration
-- [ ] Environment variable setup
-- [ ] Preview builds for PRs
-- [ ] Production deployment
-- [ ] Smoke test all critical paths
+- [x] Vercel deployment configuration
+- [x] Environment variable setup
+- [x] Preview builds for PRs
+- [x] Production deployment
+- [x] Smoke test all critical paths
 
 ---
 
-## Phase 3 — Platform Expansion & Intelligence (Planned)
+## Phase 3 — Platform Expansion & Intelligence (In Progress)
 
 > Features under consideration for LAB demo functionality, BLUEPRINT production flows, or both. Each item requires research and design before implementation.
 
@@ -116,16 +116,25 @@ Built the end-to-end demo creation and chat experience.
 - **Data integrity** — Optimistic locking, audit trails, Push-to-BLUEPRINT action
 
 ### 3.2 Research Skill (Company Intelligence)
-AI-powered company research via Perplexity (OpenRouter). Auto-run or on-demand tool producing structured output (summary, competitors, market position).
+AI-powered company research via Perplexity (OpenRouter), implemented as part of **RECON**. POST/GET `/api/research`; "Run AI Research" in LAB builder Step 3 enriches context. Research can be auto-run or on-demand and consumed by RADAR, THE LAB, and BLUEPRINT.
 
 ### 3.3 Improved Scraping & Context Generation
-Multi-page crawling, structured extraction (products, pricing, FAQs), image/logo detection improvements, combined with research skill output.
+Completed: multi-page crawling, structured extraction (products, pricing, FAQs), and logo/color improvements. Output is designed to merge with RECON research context.
 
 ### 3.4 Advanced Prompt Engineering (Missions x Channels)
 Detailed prompt templates per mission (Reactivation, Nurture, Service, Review) crossed with channel (SMS, Voice, Website Chat, Messenger). Includes tone, length, CTA style, and compliance.
 
 ### 3.5 Knowledge Bases (RAG)
-Mission-specific knowledge stores (product catalogs, FAQ databases). Evaluate vector DB options (Supabase pgvector, Pinecone). Document upload/ingestion flow.
+Completed for LAB scope: mission-specific knowledge stores with Supabase pgvector, ingestion flow, and retrieval integration. Next step is RECON alignment for workspace-scoped reuse in RADAR and BLUEPRINT.
+
+### 3.7 RECON (Shared Intelligence Module)
+RECON is the shared intelligence module for client/workspace-scoped research and knowledge assets.
+
+- Shared research records and reusable knowledge bases across modules
+- RADAR uses RECON context for personalized campaigns
+- THE LAB reads and enriches RECON during demo creation
+- BLUEPRINT consumes approved RECON assets for production deployments
+- Governance roadmap: versioning, promotion states, and RBAC-scoped access
 
 ### 3.6 Voice AI Demos
 Voice AI demo architecture per mission. Evaluate providers (ElevenLabs, OpenAI TTS/STT, Deepgram). Browser-based and/or phone call UX.

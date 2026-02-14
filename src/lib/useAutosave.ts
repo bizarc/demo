@@ -1,11 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getCreatorId } from './creatorId';
+import { useCreatorId } from './useCreatorId';
 import { fetchWithRetry } from './fetchWithRetry';
 
 interface AutosaveFormData {
     missionProfile: string | null;
+    channel?: string | null;
     websiteUrl: string;
     companyName: string;
     industry: string;
@@ -21,6 +22,8 @@ interface AutosaveFormData {
 interface UseAutosaveOptions {
     /** Initial draft ID if resuming an existing draft */
     initialDraftId?: string | null;
+    /** Initial version for optimistic locking when resuming */
+    initialVersion?: number;
     /** Debounce delay in ms (default 1000) */
     debounceMs?: number;
 }
@@ -46,6 +49,7 @@ interface UseAutosaveReturn {
 function buildPayload(formData: AutosaveFormData, currentStep: string) {
     return {
         mission_profile: formData.missionProfile || undefined,
+        channel: formData.channel || undefined,
         company_name: formData.companyName || undefined,
         industry: formData.industry || undefined,
         website_url: formData.websiteUrl || undefined,
@@ -61,7 +65,9 @@ function buildPayload(formData: AutosaveFormData, currentStep: string) {
 }
 
 export function useAutosave(options: UseAutosaveOptions = {}): UseAutosaveReturn {
-    const { initialDraftId = null, debounceMs = 1000 } = options;
+    const { initialDraftId = null, initialVersion = 1, debounceMs = 1000 } = options;
+    const creatorId = useCreatorId();
+    const versionRef = useRef(initialVersion);
 
     const [draftId, setDraftId] = useState<string | null>(initialDraftId);
     const [saving, setSaving] = useState(false);
@@ -70,11 +76,14 @@ export function useAutosave(options: UseAutosaveOptions = {}): UseAutosaveReturn
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    // Keep draftId in a ref so async callbacks always see latest value
+    // Keep draftId and version in refs so async callbacks always see latest values
     const draftIdRef = useRef(draftId);
     useEffect(() => {
         draftIdRef.current = draftId;
     }, [draftId]);
+    useEffect(() => {
+        versionRef.current = initialVersion;
+    }, [initialVersion]);
 
     // Cleanup on unmount
     useEffect(() => {
@@ -98,11 +107,10 @@ export function useAutosave(options: UseAutosaveOptions = {}): UseAutosaveReturn
         setError(null);
 
         try {
-            const creatorId = getCreatorId();
             const payload = {
                 ...buildPayload(formData, currentStep),
                 status: 'draft',
-                created_by: creatorId,
+                created_by: creatorId ?? undefined,
             };
 
             const res = await fetchWithRetry('/api/demo', {
@@ -125,7 +133,7 @@ export function useAutosave(options: UseAutosaveOptions = {}): UseAutosaveReturn
         } finally {
             setSaving(false);
         }
-    }, []);
+    }, [creatorId]);
 
     /**
      * Immediately save the current form data to the draft.
@@ -155,7 +163,10 @@ export function useAutosave(options: UseAutosaveOptions = {}): UseAutosaveReturn
         setError(null);
 
         try {
-            const payload = buildPayload(formData, currentStep);
+            const payload = {
+                ...buildPayload(formData, currentStep),
+                version: versionRef.current,
+            };
             const res = await fetchWithRetry(`/api/demo/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
@@ -168,6 +179,7 @@ export function useAutosave(options: UseAutosaveOptions = {}): UseAutosaveReturn
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to save draft');
 
+            if (typeof data.version === 'number') versionRef.current = data.version;
             setLastSavedAt(data.updated_at || new Date().toISOString());
         } catch (err) {
             if (err instanceof DOMException && err.name === 'AbortError') return;
@@ -215,6 +227,7 @@ export function useAutosave(options: UseAutosaveOptions = {}): UseAutosaveReturn
             const payload = {
                 ...buildPayload(formData, 'summary'),
                 status: 'active',
+                version: versionRef.current,
             };
 
             const res = await fetchWithRetry(`/api/demo/${id}`, {

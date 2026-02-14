@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase';
-import { buildSystemPrompt, MissionProfile, MISSION_PROFILES } from '@/lib/prompts';
+import { requireAuth } from '@/lib/auth';
+import { buildSystemPrompt, MissionProfile, MISSION_PROFILES, Channel } from '@/lib/prompts';
 import { MissionProfile as DbMissionProfile } from '@/lib/database.types';
 import {
     isValidUuid,
@@ -11,8 +12,10 @@ import {
     LIMITS,
 } from '@/lib/validation';
 import { getClientIp, checkRateLimit, DEMO_LIMIT } from '@/lib/rateLimit';
+import { customAlphabet } from 'nanoid';
 
 const VALID_PROFILES = Object.keys(MISSION_PROFILES) as MissionProfile[];
+const VALID_CHANNELS = ['sms', 'messenger', 'email', 'website', 'voice'] as const;
 
 const PROFILE_TO_DB: Record<MissionProfile, DbMissionProfile> = {
     'database-reactivation': 'reactivation',
@@ -82,6 +85,9 @@ export async function GET(
             current_step: demo.current_step,
             system_prompt: demo.system_prompt,
             knowledge_base_id: demo.knowledge_base_id,
+            version: demo.version ?? 1,
+            channel: demo.channel ?? 'website',
+            sms_short_code: demo.sms_short_code ?? null,
         });
     } catch (error) {
         console.error('Demo GET error:', error);
@@ -92,6 +98,7 @@ export async function GET(
 /**
  * PATCH /api/demo/[id] — Autosave / update a demo.
  * Supports partial updates for draft autosave and full activation.
+ * When auth enabled: verifies ownership (created_by matches current user).
  */
 export async function PATCH(
     request: NextRequest,
@@ -102,6 +109,9 @@ export async function PATCH(
     if (!id || !isValidUuid(id)) {
         return NextResponse.json({ error: 'Invalid demo ID' }, { status: 400 });
     }
+
+    const authResult = await requireAuth();
+    if (authResult instanceof Response) return authResult;
 
     const ip = getClientIp(request);
     const { allowed } = checkRateLimit(`demo:${ip}`, DEMO_LIMIT);
@@ -117,15 +127,30 @@ export async function PATCH(
         const supabase = createServerClient();
 
         // Verify demo exists and is not deleted
+        // Note: version omitted from select for backward compat with DBs pre-migration; optimistic locking disabled when absent
         const { data: existing, error: fetchError } = await supabase
             .from('demos')
-            .select('id, status')
+            .select('id, status, created_by')
             .eq('id', id)
             .is('deleted_at', null)
             .single();
 
         if (fetchError || !existing) {
             return NextResponse.json({ error: 'Demo not found' }, { status: 404 });
+        }
+
+        const existingRow = existing as { version?: number };
+        const clientVersion = typeof body.version === 'number' ? body.version : undefined;
+        if (clientVersion !== undefined && existingRow.version != null && existingRow.version !== clientVersion) {
+            return NextResponse.json(
+                { error: 'Demo was modified by another session. Please refresh and try again.', code: 'VERSION_CONFLICT' },
+                { status: 409 }
+            );
+        }
+
+        // When auth enabled, verify ownership
+        if (authResult.userId && existing.created_by && existing.created_by !== authResult.userId) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
         const toArray = (val: string | string[] | undefined) =>
@@ -166,6 +191,10 @@ export async function PATCH(
             }
         }
 
+        if (body.channel !== undefined) {
+            updatePayload.channel = VALID_CHANNELS.includes(body.channel) ? body.channel : 'website';
+        }
+
         // --- Activation: transition from draft to active ---
         if (body.status === 'active' && existing.status === 'draft') {
             // Validate required fields for activation
@@ -202,6 +231,9 @@ export async function PATCH(
             const mergedQualCriteria = body.qualification_criteria !== undefined
                 ? body.qualification_criteria
                 : fullDemo.qualification_criteria?.join(', ');
+            const mergedChannel: Channel = (body.channel && VALID_CHANNELS.includes(body.channel))
+                ? body.channel
+                : (fullDemo.channel && VALID_CHANNELS.includes(fullDemo.channel as Channel) ? (fullDemo.channel as Channel) : 'website');
 
             // Determine the mission profile for prompt building
             const promptProfile = missionProfile as MissionProfile;
@@ -212,7 +244,24 @@ export async function PATCH(
                 products: mergedProducts,
                 offers: mergedOffers,
                 qualificationCriteria: mergedQualCriteria,
-            });
+            }, mergedChannel);
+
+            if (mergedChannel === 'sms') {
+                const nanoid8 = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 8);
+                updatePayload.sms_short_code = nanoid8();
+            }
+            if (mergedChannel === 'messenger') {
+                const nanoid8 = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 8);
+                updatePayload.whatsapp_short_code = nanoid8();
+            }
+            if (mergedChannel === 'email') {
+                const nanoid8 = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 8);
+                updatePayload.email_short_code = nanoid8();
+            }
+            if (mergedChannel === 'voice') {
+                const nanoid8 = customAlphabet('0123456789', 8);
+                updatePayload.voice_short_code = nanoid8();
+            }
 
             updatePayload.status = 'active';
             updatePayload.system_prompt = system_prompt;
@@ -220,15 +269,36 @@ export async function PATCH(
             updatePayload.current_step = 'summary';
         }
 
-        // Apply the update
-        const { data: updated, error: updateError } = await supabase
+        // --- Push to BLUEPRINT: transition from active to blueprint ---
+        if (body.status === 'blueprint' && existing.status === 'active') {
+            updatePayload.status = 'blueprint';
+        } else if (body.status === 'blueprint' && existing.status !== 'active') {
+            return NextResponse.json(
+                { error: 'Only active demos can be pushed to BLUEPRINT' },
+                { status: 400 }
+            );
+        }
+
+        let updateQuery = supabase
             .from('demos')
             .update(updatePayload)
-            .eq('id', id)
+            .eq('id', id);
+
+        if (existingRow.version != null) {
+            updateQuery = updateQuery.eq('version', existingRow.version);
+        }
+
+        const { data: updated, error: updateError } = await updateQuery
             .select('id, status, updated_at, expires_at')
             .single();
 
         if (updateError || !updated) {
+            if (existingRow.version != null && updateError && (String(updateError.code) === 'PGRST116' || /0 rows|no rows/i.test(updateError.message ?? ''))) {
+                return NextResponse.json(
+                    { error: 'Demo was modified by another session. Please refresh and try again.', code: 'VERSION_CONFLICT' },
+                    { status: 409 }
+                );
+            }
             console.error('Supabase update error:', updateError);
             return NextResponse.json(
                 { error: 'Failed to update demo' },
@@ -236,11 +306,13 @@ export async function PATCH(
             );
         }
 
+        const updatedRow = updated as { version?: number };
         const response: Record<string, unknown> = {
             success: true,
             id: updated.id,
             status: updated.status,
             updated_at: updated.updated_at,
+            version: updatedRow.version ?? (existingRow.version ?? 1) + 1,
         };
 
         // If just activated, include magic link
@@ -259,6 +331,7 @@ export async function PATCH(
 
 /**
  * DELETE /api/demo/[id] — Soft delete (or hard delete with ?hard=true).
+ * When auth enabled: verifies ownership.
  */
 export async function DELETE(
     request: NextRequest,
@@ -269,6 +342,9 @@ export async function DELETE(
     if (!id || !isValidUuid(id)) {
         return NextResponse.json({ error: 'Invalid demo ID' }, { status: 400 });
     }
+
+    const authResult = await requireAuth();
+    if (authResult instanceof Response) return authResult;
 
     const ip = getClientIp(request);
     const { allowed } = checkRateLimit(`demo:${ip}`, DEMO_LIMIT);
@@ -282,6 +358,18 @@ export async function DELETE(
     try {
         const supabase = createServerClient();
         const hardDelete = request.nextUrl.searchParams.get('hard') === 'true';
+
+        if (authResult.userId) {
+            const { data: demo } = await supabase
+                .from('demos')
+                .select('created_by')
+                .eq('id', id)
+                .is('deleted_at', null)
+                .single();
+            if (demo?.created_by && demo.created_by !== authResult.userId) {
+                return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+            }
+        }
 
         if (hardDelete) {
             const { error } = await supabase

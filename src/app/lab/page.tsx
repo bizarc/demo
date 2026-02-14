@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getCreatorId } from '@/lib/creatorId';
+import { SignOutButton } from '@/components/auth/SignOutButton';
+import { useCreatorId } from '@/lib/useCreatorId';
 import { useToast } from '@/components/ui/Toast';
 import { fetchWithRetry } from '@/lib/fetchWithRetry';
 import { SkeletonDemoRow } from '@/components/ui/Skeleton';
@@ -56,18 +57,20 @@ function formatRelativeTime(dateStr: string): string {
 export default function LabHomePage() {
     const router = useRouter();
     const { addToast } = useToast();
+    const creatorId = useCreatorId();
     const [demos, setDemos] = useState<DemoListItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [pushingId, setPushingId] = useState<string | null>(null);
 
     const loadDemos = useCallback(async () => {
-        const creatorId = getCreatorId();
         if (!creatorId) return;
 
         try {
-            const params = new URLSearchParams({ created_by: creatorId });
+            const params = new URLSearchParams();
+            if (creatorId) params.set('created_by', creatorId);
             if (statusFilter) params.append('status', statusFilter);
 
             const res = await fetchWithRetry(`/api/demo?${params}`);
@@ -82,7 +85,7 @@ export default function LabHomePage() {
         } finally {
             setLoading(false);
         }
-    }, [statusFilter]);
+    }, [creatorId, statusFilter, addToast]);
 
     useEffect(() => {
         loadDemos();
@@ -100,6 +103,29 @@ export default function LabHomePage() {
             addToast({ title: 'Delete failed', description: msg, variant: 'error' });
         } finally {
             setDeletingId(null);
+        }
+    };
+
+    const handlePushToBlueprint = async (id: string) => {
+        if (!confirm('Push this demo to BLUEPRINT? It will be marked for production configuration.')) return;
+        setPushingId(id);
+        try {
+            const res = await fetchWithRetry(`/api/demo/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'blueprint' }),
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || 'Failed to push');
+            }
+            setDemos(prev => prev.map(d => d.id === id ? { ...d, status: 'blueprint' as const } : d));
+            addToast({ title: 'Pushed to BLUEPRINT', description: 'Demo is ready for production configuration.', variant: 'success' });
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Failed to push';
+            addToast({ title: 'Push failed', description: msg, variant: 'error' });
+        } finally {
+            setPushingId(null);
         }
     };
 
@@ -147,28 +173,31 @@ export default function LabHomePage() {
                             Create and manage AI demo agents
                         </p>
                     </div>
-                    <Link
-                        href="/lab/new"
-                        style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '10px 20px',
-                            background: 'var(--color-primary)',
-                            color: '#FFFFFF',
-                            borderRadius: '6px',
-                            fontWeight: 500,
-                            fontSize: '14px',
-                            textDecoration: 'none',
-                            transition: 'opacity 150ms',
-                        }}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                        New demo
-                    </Link>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <SignOutButton />
+                        <Link
+                            href="/lab/new"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '10px 20px',
+                                background: 'var(--color-primary)',
+                                color: '#FFFFFF',
+                                borderRadius: '6px',
+                                fontWeight: 500,
+                                fontSize: '14px',
+                                textDecoration: 'none',
+                                transition: 'opacity 150ms',
+                            }}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            New demo
+                        </Link>
+                    </div>
                 </div>
             </div>
 
@@ -357,6 +386,12 @@ export default function LabHomePage() {
                                                 <ActionButton
                                                     label="Copy link"
                                                     onClick={() => handleCopyLink(demo.id)}
+                                                />
+                                                <ActionButton
+                                                    label={pushingId === demo.id ? 'Pushing...' : 'Push to BLUEPRINT'}
+                                                    onClick={() => handlePushToBlueprint(demo.id)}
+                                                    disabled={!!pushingId}
+                                                    loading={pushingId === demo.id}
                                                 />
                                             </>
                                         )}

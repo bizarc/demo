@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { FlaskConical } from 'lucide-react';
-import { getCreatorId } from '@/lib/creatorId';
+import { useCreatorId } from '@/lib/useCreatorId';
 import { fetchWithRetry } from '@/lib/fetchWithRetry';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -57,11 +57,11 @@ function formatRelativeTime(dateStr: string): string {
 }
 
 export function RecentDemos() {
+  const creatorId = useCreatorId();
   const [demos, setDemos] = useState<DemoListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadDemos = useCallback(async () => {
-    const creatorId = getCreatorId();
     if (!creatorId) {
       setLoading(false);
       return;
@@ -76,7 +76,7 @@ export function RecentDemos() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [creatorId]);
 
   useEffect(() => {
     loadDemos();
