@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { POST } from '../scrape/route';
 import { createMockRequest } from './helpers';
+import { scrapeWebsite } from '@/lib/scraper';
 
 vi.mock('@/lib/scraper', () => ({
     scrapeWebsite: vi.fn().mockResolvedValue({
@@ -76,6 +77,17 @@ describe('POST /api/scrape', () => {
         expect(data.data.offers).toEqual(['Free trial']);
         expect(data.data.qualifications).toEqual(['Ideal for enterprise customers', 'Budget-conscious organizations']);
         expect(data.data.logoUrl).toBe('https://example.com/logo.png');
+        expect(scrapeWebsite).toHaveBeenCalledWith('https://example.com', { multiPage: true });
+    });
+
+    it('passes multiPage: false when requested', async () => {
+        const req = createMockRequest(baseUrl, {
+            method: 'POST',
+            body: { url: 'https://example.com', multiPage: false },
+            headers: { 'x-forwarded-for': '9.9.9.9' },
+        });
+        await POST(req);
+        expect(scrapeWebsite).toHaveBeenCalledWith('https://example.com', { multiPage: false });
     });
 
     it('returns 429 when rate limit exceeded', async () => {

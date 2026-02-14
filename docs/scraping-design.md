@@ -131,11 +131,12 @@ researchResult: { summary?, competitors?, marketPosition? }
    - Add secondary color from CSS
    - Improve logo selection (size, priority)
 
-2. **Phase B (3.3.2):** Optional multi-page
-   - Sitemap discovery and URL extraction
-   - Parallel fetch of up to 5 pages
-   - Merge and deduplicate products, offers, qualifications
-   - Add `?multiPage=true` or `depth` query for gradual rollout
+2. **Phase B (3.3.2):** Optional multi-page ✅ Implemented
+   - Sitemap discovery (`/sitemap.xml`, `/sitemap_index.xml`) and URL extraction
+   - Nav link fallback when no sitemap
+   - Parallel fetch of up to 5 pages (home + 4)
+   - Merge and deduplicate products, offers, qualifications, rawText
+   - `multiPage` option (default: true) via API body and `ScrapeOptions`
 
 3. **Phase C (3.3.3):** Optional FAQs and pricing
    - Extract FAQ structure

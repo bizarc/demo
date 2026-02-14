@@ -24,7 +24,13 @@ export interface ScrapeResult {
 export interface ScrapeOptions {
     useJinaFallback?: boolean;
     timeout?: number;
+    /** When true, crawl up to 5 pages (sitemap or nav links) and merge context. Default: true */
+    multiPage?: boolean;
 }
+
+/** Maximum pages to crawl in multi-page mode (home + N additional) */
+const MAX_PAGES = 5;
+const PER_PAGE_TIMEOUT = 5000;
 
 /**
  * Scrape a website URL and extract business information
@@ -33,14 +39,13 @@ export async function scrapeWebsite(
     url: string,
     options: ScrapeOptions = {}
 ): Promise<ScrapeResult> {
-    const { useJinaFallback = true, timeout = 10000 } = options;
+    const { useJinaFallback = true, timeout = 10000, multiPage = true } = options;
 
     // Normalize URL
     const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
 
     try {
-        // Try Cheerio-based scraping first
-        const result = await scrapeWithCheerio(normalizedUrl, timeout);
+        const result = await scrapeWithCheerio(normalizedUrl, timeout, multiPage);
         return result;
     } catch (error) {
         // If Cheerio fails and Jina fallback is enabled, try Jina
@@ -52,20 +57,22 @@ export async function scrapeWebsite(
     }
 }
 
+const FETCH_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (compatible; TheLab/1.0; +https://thelab.demo)',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+};
+
 /**
  * Scrape using Cheerio (for static HTML sites)
  */
-async function scrapeWithCheerio(url: string, timeout: number): Promise<ScrapeResult> {
+async function scrapeWithCheerio(url: string, timeout: number, multiPage: boolean): Promise<ScrapeResult> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
         const response = await fetch(url, {
             signal: controller.signal,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (compatible; TheLab/1.0; +https://thelab.demo)',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            },
+            headers: FETCH_HEADERS,
         });
 
         if (!response.ok) {
@@ -75,40 +82,49 @@ async function scrapeWithCheerio(url: string, timeout: number): Promise<ScrapeRe
         const html = await response.text();
         const $ = cheerio.load(html);
 
-        // Extract basic info
+        // Extract from homepage first
         const title = $('title').first().text().trim();
         const metaDescription = $('meta[name="description"]').attr('content') ||
             $('meta[property="og:description"]').attr('content') || null;
         const h1 = $('h1').first().text().trim();
 
-        // Extract company name (try various sources)
         const companyName = extractCompanyName($, title, url);
-
-        // Extract logo
         const logoUrl = extractLogo($, url);
-
-        // Extract primary color
         const primaryColor = extractPrimaryColor($);
-
-        // Extract body text for context
-        const rawText = extractBodyText($);
-
-        // Extract products/services from page content
-        const { products, offers } = extractProductsAndOffers($);
-
-        // Extract qualification criteria (heuristics)
-        const qualifications = extractQualifications(rawText);
-
-        // Extract secondary color from CSS
         const secondaryColor = extractSecondaryColor($);
+        let rawText = extractBodyText($);
+        let { products, offers } = extractProductsAndOffers($);
+        let qualifications = extractQualifications(rawText);
 
-        // Try to determine industry
+        // Multi-page: discover and fetch additional URLs
+        const additionalUrls: string[] = multiPage
+            ? await discoverAdditionalUrls(url, $)
+            : [];
+
+        if (additionalUrls.length > 0) {
+            const pageResults = await fetchPagesParallel(additionalUrls, PER_PAGE_TIMEOUT);
+
+            for (const pr of pageResults) {
+                if (!pr.html) continue;
+                const $p = cheerio.load(pr.html);
+                const pRaw = extractBodyText($p);
+                const pExtract = extractProductsAndOffers($p);
+                const pQuals = extractQualifications(pRaw);
+
+                rawText += '\n\n' + pRaw;
+                products = mergeDedup(products, pExtract.products);
+                offers = mergeDedup(offers, pExtract.offers);
+                qualifications = mergeDedup(qualifications, pQuals);
+            }
+        }
+
+        // Re-infer industry from merged rawText
         const industry = inferIndustry(rawText, companyName);
 
         return {
             companyName: sanitizeTextField(companyName, 500),
             industry: industry ? sanitizeTextField(industry, 200) : null,
-            products: sanitizeStringArray(products, 5, 200),
+            products: sanitizeStringArray(products, 8, 200),
             offers: sanitizeStringArray(offers, 5, 200),
             qualifications: sanitizeStringArray(qualifications, 5, 200),
             logoUrl: sanitizeScrapedUrl(logoUrl),
@@ -118,11 +134,140 @@ async function scrapeWithCheerio(url: string, timeout: number): Promise<ScrapeRe
             description: metaDescription || h1
                 ? sanitizeScrapedText(metaDescription || h1, 500)
                 : null,
-            rawText: sanitizeScrapedText(rawText, 5000),
+            rawText: sanitizeScrapedText(rawText, 8000),
         };
     } finally {
         clearTimeout(timeoutId);
     }
+}
+
+/** Merge arrays, deduplicating by normalized key */
+function mergeDedup(a: string[], b: string[]): string[] {
+    const seen = new Set(a.map((s) => s.trim().toLowerCase().slice(0, 80)));
+    for (const s of b) {
+        const key = s.trim().toLowerCase().slice(0, 80);
+        if (key && !seen.has(key)) {
+            seen.add(key);
+            a.push(s.trim());
+        }
+    }
+    return a;
+}
+
+/** Discover up to (MAX_PAGES - 1) additional URLs from sitemap or nav links */
+async function discoverAdditionalUrls(baseUrl: string, $: cheerio.CheerioAPI): Promise<string[]> {
+    const base = new URL(baseUrl);
+    const origin = base.origin;
+    const homeNorm = base.href.replace(/\/$/, '') || base.href;
+
+    const sameOrigin = (u: string): boolean => {
+        try {
+            const parsed = new URL(u, baseUrl);
+            return parsed.origin === origin;
+        } catch {
+            return false;
+        }
+    };
+
+    const excludeHome = (u: string): boolean => {
+        const norm = u.replace(/\/$/, '');
+        return norm !== homeNorm && norm !== baseUrl.replace(/\/$/, '');
+    };
+
+    // 1. Try sitemap
+    const sitemapUrls = await fetchSitemapUrls(baseUrl);
+    const fromSitemap = sitemapUrls
+        .filter((u) => sameOrigin(u) && excludeHome(u))
+        .slice(0, MAX_PAGES - 1);
+
+    if (fromSitemap.length > 0) return fromSitemap;
+
+    // 2. Fallback: nav links from homepage
+    const seen = new Set<string>();
+    const navUrls: string[] = [];
+    $('nav a, header a, .nav a, .header a, [role="navigation"] a').each((_, el) => {
+        const href = $(el).attr('href');
+        if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+        try {
+            const absolute = new URL(href, baseUrl).href;
+            const norm = absolute.replace(/\/$/, '');
+            if (sameOrigin(absolute) && excludeHome(absolute) && !seen.has(norm)) {
+                seen.add(norm);
+                navUrls.push(absolute);
+            }
+        } catch {
+            // ignore invalid URLs
+        }
+    });
+
+    return navUrls.slice(0, MAX_PAGES - 1);
+}
+
+/** Fetch sitemap and parse <loc> URLs. Handles sitemap index (nested). */
+async function fetchSitemapUrls(baseUrl: string): Promise<string[]> {
+    const base = new URL(baseUrl);
+    const candidates = [
+        new URL('/sitemap.xml', base).href,
+        new URL('/sitemap_index.xml', base).href,
+        new URL('/sitemap-index.xml', base).href,
+        new URL('/sitemap.xml', base.origin).href,
+    ];
+
+    for (const url of candidates) {
+        try {
+            const res = await fetch(url, {
+                headers: FETCH_HEADERS,
+                signal: AbortSignal.timeout(3000),
+            });
+            if (!res.ok) continue;
+
+            const xml = await res.text();
+            const locs = xml.match(/<loc>([^<]+)<\/loc>/gi);
+            if (!locs || locs.length === 0) continue;
+
+            const urls = locs.map((m) => m.replace(/<\/?loc>/gi, '').trim());
+            const xmlUrls = urls.filter((u) => u.toLowerCase().endsWith('.xml'));
+
+            if (xmlUrls.length > 0) {
+                // Sitemap index: fetch first child sitemap
+                const childRes = await fetch(xmlUrls[0], {
+                    headers: FETCH_HEADERS,
+                    signal: AbortSignal.timeout(3000),
+                });
+                if (!childRes.ok) return urls.filter((u) => !u.toLowerCase().endsWith('.xml'));
+                const childXml = await childRes.text();
+                const childLocs = childXml.match(/<loc>([^<]+)<\/loc>/gi);
+                if (childLocs) {
+                    return childLocs.map((m) => m.replace(/<\/?loc>/gi, '').trim());
+                }
+            }
+
+            return urls;
+        } catch {
+            continue;
+        }
+    }
+
+    return [];
+}
+
+/** Fetch multiple pages in parallel. Returns { url, html } for each; html may be empty on failure */
+async function fetchPagesParallel(urls: string[], perPageTimeout: number): Promise<{ url: string; html: string }[]> {
+    const results = await Promise.allSettled(
+        urls.map(async (url) => {
+            const res = await fetch(url, {
+                headers: FETCH_HEADERS,
+                signal: AbortSignal.timeout(perPageTimeout),
+            });
+            if (!res.ok) return { url, html: '' };
+            const html = await res.text();
+            return { url, html };
+        })
+    );
+
+    return results.map((r) =>
+        r.status === 'fulfilled' ? r.value : { url: '', html: '' }
+    ).filter((p) => p.html.length > 0);
 }
 
 /**

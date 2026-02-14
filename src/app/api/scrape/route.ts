@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { url } = body;
+        const { url, multiPage = true } = body;
 
         const urlResult = validateUrl(url);
         if (!urlResult.valid) {
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const result: ScrapeResult = await scrapeWebsite(urlResult.url);
+        const result: ScrapeResult = await scrapeWebsite(urlResult.url, { multiPage });
 
         return NextResponse.json({
             success: true,

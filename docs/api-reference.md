@@ -188,8 +188,16 @@ data: [DONE]
 **Request:**
 
 ```json
-{ "url": "https://example.com" }
+{
+  "url": "https://example.com",
+  "multiPage": true
+}
 ```
+
+| Param | Required | Description |
+|-------|----------|--------------|
+| `url` | Yes | Website URL to scrape |
+| `multiPage` | No | When true (default), crawl up to 5 pages via sitemap/nav and merge context |
 
 **Response:** `200 OK`
 
