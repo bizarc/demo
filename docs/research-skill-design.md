@@ -1,7 +1,7 @@
 # RECON Research Skill Design
 
 > **Status:** Design complete (docs-only). Implementation is staged in `task.md`.
-> **Scope:** Workspace-scoped research in RECON, shared by RADAR, THE LAB, and BLUEPRINT.
+> **Scope:** Platform-global internal research in RECON, shared by RADAR, THE LAB, and BLUEPRINT.
 
 ---
 
@@ -13,14 +13,14 @@ The Research Skill generates structured company intelligence that can be reused 
 - **THE LAB:** richer demo setup context
 - **BLUEPRINT:** production workflow and prompt tuning inputs
 
-Research is not module-owned. It is a RECON asset. For internal LAB use, research uses a single internal scope (no workspace). For future BLUEPRINT client implementations, workspace scoping applies.
+Research is not module-owned. It is a RECON asset in a single internal scope. Workspace scoping applies only to BLUEPRINT client deployments and Client Portal views.
 
 ---
 
 ## 2. Ownership and Boundaries
 
 - **System of record:** RECON
-- **Scope boundary:** Workspace (`workspace_id`)
+- **Scope boundary:** Global internal (outside workspaces)
 - **Authoring:** Internal operators and automated jobs
 - **Consumption:** RADAR, THE LAB, BLUEPRINT
 - **Client Portal:** Read-only derived views only (not raw internal notes by default)
@@ -36,7 +36,6 @@ type ResearchStatus = 'draft' | 'validated' | 'production_approved' | 'archived'
 
 interface ResearchRecord {
   id: string;
-  workspace_id: string;
   target_id?: string; // prospect, account, or company profile id
   source: 'perplexity' | 'scrape' | 'manual' | 'import';
   title: string;
@@ -131,16 +130,16 @@ Prompt assembly order:
 
 ## 7. Governance and RBAC Notes
 
-- All records must include `workspace_id`.
-- Internal roles can read/write based on workspace assignment.
-- Client Viewer access should be restricted to curated summaries in CLIENT PORTAL.
-- Promotion to `production_approved` should require operator action and be auditable.
+- All RECON research records are internal-scope (no workspace key required).
+- Internal roles are role-scoped (`super_admin`, `operator`) for read/write behavior.
+- Client Viewer access is restricted to curated summaries in CLIENT PORTAL.
+- Promotion to `production_approved` requires operator action and auditability.
 
 ---
 
 ## 8. Implementation Sequencing (Future)
 
-1. Define DB schema for workspace-scoped research records and links.
+1. Define DB schema for internal-scope research records and links.
 2. Build `POST /api/research` and `GET /api/research` with status filters.
 3. Integrate RADAR campaign read/write hooks.
 4. Integrate THE LAB prefill and enrichment actions.

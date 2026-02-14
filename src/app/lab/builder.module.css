@@ -2,7 +2,7 @@
 
 .layout {
     display: flex;
-    height: 100vh;
+    min-height: 100%;
     background: var(--color-canvas);
 }
 
@@ -23,6 +23,11 @@
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    max-height: calc(100vh - 65px);
+    overflow-y: auto;
 }
 
 .center {

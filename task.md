@@ -308,8 +308,8 @@
   - Profiles + workspaces migration; AUTH_DISABLED for dev/E2E
 - [ ] Auth for external users (Client Viewer)
   - Required for Client Portal (read-only metrics, billing)
-- [ ] RBAC: separate internal vs. client workspaces per Funnel Spec
-  - Migration has profiles.role + workspace_id; full enforcement pending
+- [ ] RBAC: role-scoped internal access; tenant isolation for BLUEPRINT + Client Portal only
+  - Internal modules enforce `super_admin`/`operator`; workspace isolation applies to client-facing deployments/views
 
 #### Data Integrity
 - [x] Optimistic locking for concurrent draft edits
@@ -321,7 +321,7 @@
 
 ### 3.2 Research Skill (Company Intelligence)
 - [x] Research & design: AI-powered company research via Perplexity (OpenRouter)
-  - Scope: RECON-first (workspace-scoped), on-demand via LAB builder
+  - Scope: RECON-first (platform-global internal), on-demand via LAB builder
   - Output: summary, offerings, competitors, market_position, qualification_notes
 - [x] Implement RECON research API routes using Perplexity model via OpenRouter
   - POST /api/research, GET /api/research; stores in research_records; graceful fallback when tables missing
@@ -360,14 +360,14 @@
 - [x] Evaluate: demo-only (limited docs) vs. BLUEPRINT (full catalog support)
 
 ### 3.7 RECON (Shared Intelligence Module)
-- [x] Decide shared intelligence ownership model: RECON as workspace-scoped module
+- [x] Decide shared intelligence ownership model: RECON as platform-global internal module
 - [x] Update roadmap/spec/architecture/docs to align on RECON ownership and contracts
 - [x] Create `docs/research-skill-design.md` with schema, lifecycle, and module consumption rules
-- [x] Design workspace-scoped RECON data model (research + knowledge assets + link tables)
+- [x] Design RECON data model (research + knowledge assets + link tables) for internal global scope
   - `docs/recon-design.md` consolidates model, lifecycle, contracts, migration path
 - [x] Design asset lifecycle/promotion states (`draft` -> `validated` -> `production_approved`)
 - [x] Define RADAR/LAB/BLUEPRINT read-write contract as implementation acceptance criteria
-- [x] Plan migration path from demo-scoped KB ownership to RECON-scoped reusable assets
+- [x] Plan migration path from demo-scoped KB ownership to RECON-owned reusable assets
 
 ### 3.6 Voice AI Demos
 - [ ] Research & design: Voice AI demo architecture per mission

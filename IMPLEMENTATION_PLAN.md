@@ -96,7 +96,7 @@ Use Stitch to generate multiple design system options:
 | **Scraping** | Cheerio + Jina fallback | Free, fast, handles most sites |
 | **AI** | OpenRouter (user-selectable model) | Flexibility, cost control |
 | **Storage** | Supabase (PostgreSQL) | Persistent, real-time capable, generous free tier |
-| **Shared Intelligence Ownership** | RECON (workspace-scoped) | Reuse across RADAR, THE LAB, and BLUEPRINT |
+| **Shared Intelligence Ownership** | RECON (platform-global internal) | Reuse across RADAR, THE LAB, and BLUEPRINT |
 | **Link Expiration** | 7 days default | Configurable per demo |
 | **Rate Limiting** | Configurable from start | Prevent abuse, control costs |
 

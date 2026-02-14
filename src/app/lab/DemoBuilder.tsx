@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
 import { MissionStep } from './steps/MissionStep';
 import { WebsiteStep } from './steps/WebsiteStep';
 import { ContextStep } from './steps/ContextStep';
@@ -12,6 +14,7 @@ import { ChatPreview } from './ChatPreview';
 import { MissionProfile, Channel } from '@/lib/prompts';
 import { ScrapeResult } from '@/lib/scraper';
 import { useAutosave } from '@/lib/useAutosave';
+import { trackUxEvent } from '@/lib/uxMetrics';
 import styles from './builder.module.css';
 
 export interface DemoFormData {
@@ -137,6 +140,7 @@ export function DemoBuilder({ initialDraftId, initialFormData, initialStep, init
         draftId,
         saving,
         lastSavedAt,
+        error: autosaveError,
         createDraft,
         saveNow,
         saveDraft,
@@ -182,6 +186,11 @@ export function DemoBuilder({ initialDraftId, initialFormData, initialStep, init
 
         if (currentIndex < STEPS.length - 1) {
             setCurrentStep(nextStepId);
+            trackUxEvent('builder_step_advanced', {
+                fromStep: currentStep,
+                toStep: nextStepId,
+                stepIndex: currentIndex + 1,
+            });
         }
     }, [completedSteps, currentStep, currentIndex, draftId, formData, createDraft, saveNow]);
 
@@ -189,6 +198,10 @@ export function DemoBuilder({ initialDraftId, initialFormData, initialStep, init
         if (currentIndex > 0) {
             const prevStepId = STEPS[currentIndex - 1].id;
             setCurrentStep(prevStepId);
+            trackUxEvent('builder_step_back', {
+                fromStep: currentStep,
+                toStep: prevStepId,
+            });
             if (draftId) {
                 saveNow(formData, prevStepId);
             }
@@ -198,7 +211,17 @@ export function DemoBuilder({ initialDraftId, initialFormData, initialStep, init
     const handleActivate = useCallback(async () => {
         const result = await activate(formData);
         if (result) {
+            trackUxEvent('builder_demo_activated', {
+                draftId: result.id,
+                channel: formData.channel,
+                missionProfile: formData.missionProfile,
+            });
             router.push(`/lab/success?id=${result.id}`);
+        } else {
+            trackUxEvent('builder_activation_failed', {
+                channel: formData.channel,
+                missionProfile: formData.missionProfile,
+            });
         }
         return result;
     }, [activate, formData, router]);
@@ -399,7 +422,15 @@ export function DemoBuilder({ initialDraftId, initialFormData, initialStep, init
                     paddingTop: '16px',
                     borderTop: '1px solid var(--color-border)',
                 }}>
-                    {saving ? (
+                    {autosaveError ? (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-error)' }}>
+                            <span style={{
+                                width: '6px', height: '6px', borderRadius: '50%',
+                                background: 'var(--color-error)', display: 'inline-block',
+                            }} />
+                            Save failed, retrying...
+                        </span>
+                    ) : saving ? (
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <span style={{
                                 width: '6px', height: '6px', borderRadius: '50%',
@@ -424,6 +455,13 @@ export function DemoBuilder({ initialDraftId, initialFormData, initialStep, init
             {/* Center: Configuration Form */}
             <div className={styles.center}>
                 <div className={styles.centerInner}>
+                    <Link
+                        href="/lab"
+                        className="mb-6 flex items-center text-sm text-foreground-muted transition-colors hover:text-foreground-secondary"
+                    >
+                        <ChevronLeft className="mr-1 h-4 w-4" />
+                        Back to demos
+                    </Link>
                     {renderStep()}
                 </div>
             </div>

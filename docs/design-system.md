@@ -85,7 +85,7 @@ THE LAB uses a token-based design system implemented in CSS custom properties (`
 - **Breadcrumbs** — Clickable path with optional icons
 - **StepIndicator** — Numbered steps, active/completed/future states
 - **TopNav** — Header bar with back, title, status badge, actions
-- **Sidebar** — Collapsible with icons, labels, badges
+- **Sidebar** — Collapsible with icons, labels, badges, disabled `Soon` entries
 
 ### Feedback & Overlays
 - **Modal** — Dialog with backdrop, title, footer; `sm`/`md`/`lg`/`xl` sizes
@@ -114,3 +114,37 @@ Design tokens are defined in `:root` in `src/app/globals.css` and mapped to Tail
   /* ... */
 }
 ```
+
+## Shell layout patterns
+
+### Internal shell
+
+- Structure: `Sidebar` + `TopNav` + page content.
+- Use on authenticated internal routes (`/`, `/lab/*`, and future internal modules).
+- Sidebar owns section-level navigation. `TopNav` owns page title/subtitle and local actions.
+
+### Public minimal shell
+
+- Use `TopNav` + focused page content, no persistent sidebar.
+- Use on public flows like `/demo/*`, `/demo/expired`, and `/login`.
+
+## Sidebar disabled state spec
+
+- Disabled navigation items remain visible for roadmap orientation.
+- Visual treatment: reduced contrast + `Soon` badge.
+- Behavior:
+  - Not clickable
+  - `aria-disabled="true"`
+  - Do not move focus to unavailable routes
+- Copy convention: badge label must be `Soon` (not `Coming soon`) in constrained nav spaces.
+
+## Autosave feedback pattern
+
+- Use compact status copy near progress/steps:
+  - `Saving...` (in-progress)
+  - `Draft saved` (success)
+  - `Save failed, retrying...` (error)
+- Status indicator uses semantic colors:
+  - warning for in-progress
+  - success for saved
+  - error for failed/retry

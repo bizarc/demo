@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import Link from 'next/link';
 import { Badge } from './Badge';
 
 export interface TopNavProps {
@@ -33,19 +34,31 @@ export function TopNav({
     className = '',
 }: TopNavProps) {
     return (
-        <header className={`bg-surface border-b border-border ${className}`}>
+        <header className={`bg-surface border-b border-border-subtle ${className}`}>
             <div className="px-4 py-3">
                 {/* Back navigation */}
                 {(backHref || onBack) && (
                     <div className="mb-2">
                         {backHref ? (
-                            <a
-                                href={backHref}
-                                className="flex items-center text-sm text-foreground-secondary hover:text-foreground transition-colors"
-                            >
-                                <BackArrow />
-                                {backLabel}
-                            </a>
+                            backHref.startsWith('/') && !backHref.startsWith('//') ? (
+                                <Link
+                                    href={backHref}
+                                    className="flex items-center text-sm text-foreground-secondary hover:text-foreground transition-colors"
+                                >
+                                    <BackArrow />
+                                    {backLabel}
+                                </Link>
+                            ) : (
+                                <a
+                                    href={backHref}
+                                    className="flex items-center text-sm text-foreground-secondary hover:text-foreground transition-colors"
+                                    rel={backHref.startsWith('http') ? 'noopener noreferrer' : undefined}
+                                    target={backHref.startsWith('http') ? '_blank' : undefined}
+                                >
+                                    <BackArrow />
+                                    {backLabel}
+                                </a>
+                            )
                         ) : (
                             <button
                                 onClick={onBack}

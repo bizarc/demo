@@ -4,6 +4,8 @@ All endpoints are Next.js API Routes under `src/app/api/`.
 
 ## Demo Management
 
+> **Tenancy note:** Demo APIs are internal and role-scoped (`super_admin`, `operator`). They are not workspace-scoped.
+
 ### `POST /api/demo` — Create demo
 
 Creates a new demo (draft or active).
@@ -315,3 +317,17 @@ Deletes a document and its chunks.
 ---
 
 **RAG behavior:** When a demo has `knowledge_base_id` set, the chat API retrieves relevant chunks for each user message and injects them into the system prompt before generating a response.
+
+## RECON Research
+
+### `POST /api/research` — Run company intelligence research
+
+Runs AI research (Perplexity via OpenRouter) and returns structured company context. In environments with RECON research tables migrated, results are persisted to `research_records`.
+
+**Tenancy note:** RECON research is platform-global internal (outside workspaces). BLUEPRINT/client-portal tenant isolation is applied in downstream client-facing systems.
+
+---
+
+### `GET /api/research` — List research records
+
+Lists stored research records (when persistence tables are present), optionally filterable by status.

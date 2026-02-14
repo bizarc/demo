@@ -18,16 +18,16 @@ The existing system uses:
 
 **Gap:** No structured knowledge retrieval. Context comes only from scraped website content and manually entered products/offers/qualifications. Missions like Customer Service (FAQ) and Review Generation (templates) would benefit from document-based knowledge bases.
 
-### 1.1 RECON Alignment (Workspace Scope)
+### 1.1 RECON Alignment (Global Internal Scope)
 
-Funnel Finished now treats knowledge assets as part of **RECON**, a shared workspace-scoped intelligence module.
+Funnel Finished now treats knowledge assets as part of **RECON**, the platform-global internal shared intelligence module.
 
-- **Authoritative owner:** RECON (workspace-scoped), not a single LAB demo.
+- **Authoritative owner:** RECON (platform-global internal), not a single LAB demo.
 - **LAB role:** consume and enrich RECON assets while configuring demos.
 - **BLUEPRINT role:** consume production-approved RECON assets for deployment.
 - **RADAR role:** optional consumer for campaign context and prospect personalization.
 
-Implementation can remain demo-scoped as an interim shape, but target architecture is workspace-scoped reuse with explicit module contracts.
+Implementation can remain demo-scoped as an interim shape, but target architecture is RECON-owned internal reuse with explicit module contracts.
 
 ---
 
@@ -62,7 +62,7 @@ Implementation can remain demo-scoped as an interim shape, but target architectu
 ### 4.1 Data Model
 
 ```
-workspaces (1) ──── (*) knowledge_bases
+recon_internal_scope (1) ──── (*) knowledge_bases
 knowledge_bases (*) ──── (*) demos
 knowledge_bases (*) ──── (*) blueprint_configs
 knowledge_bases (1) ──── (*) documents
@@ -72,8 +72,8 @@ chunks ──── knowledge_bases (belongs_to)
 
 **Tables:**
 
-- **knowledge_bases**: Workspace-scoped and reusable across demos/campaigns/blueprints.
-  - `id`, `workspace_id`, `name`, `type`, `created_at`
+- **knowledge_bases**: RECON-owned and reusable across demos/campaigns/blueprints.
+  - `id`, `name`, `type`, `created_at`
   - `type`: `product_catalog` | `faq` | `service_menu` | `review_template` | `custom`
 
 For transition compatibility, demo-level linking can remain, but should evolve to association tables (e.g. `demo_knowledge_bases`, `blueprint_knowledge_bases`) rather than hard ownership by `demo_id`.
@@ -216,7 +216,7 @@ When `knowledge_base_id` is set, chat API runs retrieval before each response.
 | **Embedding** | OpenRouter | Same or dedicated embedding service |
 | **Reusability** | Per-demo KB | Shared KBs, versioning |
 | **Refresh** | Manual re-upload | Scheduled sync, webhooks |
-| **Multi-tenancy** | Single creator | Client isolation, RBAC |
+| **Access model** | Role-scoped internal access | Client isolation, RBAC |
 
 **Conclusion:** Design for LAB demo first with clear extension points (async ingestion, shared KBs, format expandability). BLUEPRINT can layer on scale and governance.
 

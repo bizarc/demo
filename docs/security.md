@@ -64,7 +64,7 @@ The server uses **service role** client, which bypasses RLS. RLS protects direct
 | Update | `deleted_at IS NULL` | Update only non-deleted |
 | Delete | `USING (true)` | Hard delete allowed (admin flows) |
 
-**Recommendation**: When auth is added (Phase 3), add `created_by` filtering so users only access their own demos. Currently `created_by` filtering is enforced in API routes only.
+**Recommendation**: Enforce role-scoped access for internal modules: `super_admin` can access all, `operator` is constrained by `created_by` (or explicit team rules). Currently `created_by` filtering is enforced in API routes only.
 
 ### leads, sessions, messages
 
@@ -90,4 +90,9 @@ Read-only config; acceptable.
 - **Sanitization**: Scraped content stripped of HTML/scripts
 - **CORS**: Explicit allowlist of origins
 - **Rate limiting**: All API routes rate limited by IP
-- **RLS**: Policies exclude soft-deleted demos; creator scoping deferred to Phase 3 auth
+- **RLS**: Policies exclude soft-deleted demos; role-based creator scoping is the internal model
+
+## Tenancy Model
+
+- Internal surfaces (RECON, RADAR, THE LAB, MISSION CONTROL) are role-scoped and do not require workspace scoping.
+- Tenant isolation (`workspace_id`) is reserved for BLUEPRINT client deployments and CLIENT PORTAL views.

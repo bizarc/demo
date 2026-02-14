@@ -4,7 +4,7 @@
 
 THE LAB is a Next.js application using the App Router pattern. All backend logic runs as serverless API routes. Data is stored in Supabase (PostgreSQL) and AI responses are streamed via OpenRouter.
 
-Within the broader Funnel Finished platform, research and knowledge assets are owned by **RECON**: the workspace-scoped shared intelligence module consumed by RADAR, THE LAB, and BLUEPRINT.
+Within the broader Funnel Finished platform, research and knowledge assets are owned by **RECON**: the platform-global internal shared intelligence module consumed by RADAR, THE LAB, and BLUEPRINT.
 
 ## System Diagram
 
@@ -151,7 +151,7 @@ THE LAB is one module in the broader Funnel Finished platform:
 | Module | Purpose | Status |
 |--------|---------|--------|
 | RADAR | Prospecting | Planned |
-| RECON | Shared workspace intelligence (research + knowledge bases) | Planned |
+| RECON | Platform-global internal intelligence (research + knowledge bases) | Planned |
 | **THE LAB** | **Sales demos** | **Active** |
 | BLUEPRINT | Production config | Planned |
 | MISSION CONTROL | Operations | Planned |

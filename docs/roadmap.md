@@ -112,7 +112,7 @@ Built the end-to-end demo creation and chat experience.
 ### 3.1 Home & Auth
 - **Home page** — Landing screen supporting LAB, existing demos, future modules
 - **Authentication** — Internal users (Super Admin, Operator) + External users (Client Viewer)
-- **RBAC** — Separate internal vs. client workspaces
+- **RBAC** — Role-scoped internal access; tenant isolation only for BLUEPRINT and Client Portal
 - **Data integrity** — Optimistic locking, audit trails, Push-to-BLUEPRINT action
 
 ### 3.2 Research Skill (Company Intelligence)
@@ -125,15 +125,16 @@ Completed: multi-page crawling, structured extraction (products, pricing, FAQs),
 Detailed prompt templates per mission (Reactivation, Nurture, Service, Review) crossed with channel (SMS, Voice, Website Chat, Messenger). Includes tone, length, CTA style, and compliance.
 
 ### 3.5 Knowledge Bases (RAG)
-Completed for LAB scope: mission-specific knowledge stores with Supabase pgvector, ingestion flow, and retrieval integration. Next step is RECON alignment for workspace-scoped reuse in RADAR and BLUEPRINT.
+Completed for LAB scope: mission-specific knowledge stores with Supabase pgvector, ingestion flow, and retrieval integration. Next step is RECON alignment for platform-global internal reuse in RADAR and THE LAB, with BLUEPRINT consuming approved assets.
 
 ### 3.7 RECON (Shared Intelligence Module)
-RECON is the shared intelligence module for client/workspace-scoped research and knowledge assets.
+RECON is the platform-global internal shared intelligence module for research and knowledge assets (outside workspaces).
 
 - Shared research records and reusable knowledge bases across modules
 - RADAR uses RECON context for personalized campaigns
 - THE LAB reads and enriches RECON during demo creation
 - BLUEPRINT consumes approved RECON assets for production deployments
+- Tenant isolation remains in BLUEPRINT client deployments and Client Portal views
 - Governance roadmap: versioning, promotion states, and RBAC-scoped access
 
 ### 3.6 Voice AI Demos

@@ -4,10 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { nanoid } from 'nanoid';
+import Link from 'next/link';
 import { Send, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { SkeletonChatPage } from '@/components/ui/Skeleton';
+import { trackUxEvent } from '@/lib/uxMetrics';
 import styles from './chat.module.css';
 
 interface Message {
@@ -72,10 +74,12 @@ function DemoChat() {
                     .single();
 
                 if (error || !data) {
+                    trackUxEvent('public_demo_invalid', { demoId });
                     router.replace('/demo/expired');
                     return;
                 }
                 if (data.expires_at && new Date(data.expires_at) < new Date()) {
+                    trackUxEvent('public_demo_expired', { demoId });
                     router.replace('/demo/expired');
                     return;
                 }
@@ -100,7 +104,7 @@ function DemoChat() {
             }
         })();
 
-    }, [demoId]);
+    }, [demoId, router]);
 
     // Scroll to bottom
     useEffect(() => {
@@ -116,6 +120,7 @@ function DemoChat() {
 
         const userMsg: Message = { role: 'user', content: text, created_at: new Date().toISOString() };
         setMessages(prev => [...prev, userMsg]);
+        trackUxEvent('public_demo_message_sent', { demoId, messageLength: text.trim().length });
         setInput('');
         setIsSending(true);
 
@@ -172,6 +177,7 @@ function DemoChat() {
         } catch (err) {
             console.error(err);
             setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
+            trackUxEvent('public_demo_message_error', { demoId });
         } finally {
             setIsSending(false);
             setTimeout(() => inputRef.current?.focus(), 100);
@@ -229,7 +235,7 @@ function DemoChat() {
                 ))}
 
                 {isSending && (
-                    <div className={`${styles.message} ${styles.assistantMessage}`}>
+                    <div className={`${styles.message} ${styles.assistantMessage}`} aria-live="polite">
                         <div className={styles.typingIndicator}>
                             <div className={styles.typingDot} />
                             <div className={styles.typingDot} />
@@ -285,9 +291,12 @@ function DemoChat() {
                         )}
                     </button>
                 </div>
-                <div style={{ textAlign: 'center', marginTop: 8, fontSize: 11, color: '#9CA3AF' }}>
-                    Powered by The Lab
-                </div>
+                <Link
+                    href="/"
+                    className="mt-2 block text-center text-xs text-foreground-muted transition-colors hover:text-foreground-secondary hover:underline"
+                >
+                    Powered by The Lab · Home
+                </Link>
             </div>
         </div>
     );

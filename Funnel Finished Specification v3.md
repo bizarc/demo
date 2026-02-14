@@ -30,7 +30,7 @@
   * **Cold Outreach:** Orchestrate email sequences and LinkedIn connection requests.  
   * **Signal Detection:** Highlight prospects who replied or visited the demo link.
 * **RECON Integration:**  
-  * RADAR reads workspace intelligence from RECON for personalization.
+  * RADAR reads RECON intelligence for personalization.
   * RADAR writes net-new prospect research and campaign signals back to RECON.
 
 ### **Phase 1.5: RECON (Shared Intelligence)**
@@ -38,14 +38,15 @@
 *The shared intelligence module used across Funnel Finished.*
 
 * **Ownership Scope:**  
-  * Workspace-scoped intelligence assets shared across RADAR, THE LAB, and BLUEPRINT.
+  * Platform-global internal intelligence assets shared across RADAR, THE LAB, and BLUEPRINT.
+  * Workspaces are reserved for BLUEPRINT client deployments and Client Portal tenant isolation.
 * **Research Store:**  
   * Company profiles, market notes, tech-stack observations, and campaign-relevant context.
 * **Knowledge Base Store:**  
   * Reusable document collections (catalogs, FAQs, service menus, review templates) with retrieval-ready indexing.
 * **Lifecycle & Governance:**  
   * Assets move through draft -> validated -> production-approved states.
-  * Access is RBAC-controlled by internal role and workspace.
+  * Access is RBAC-controlled by internal role (super_admin, operator).
 
 ### **Phase 2: THE LAB (Sales & Demos)**
 
@@ -54,7 +55,7 @@
 * **Asset Injection:**  
   * Upload Prospect Logo & Color Hex Codes.  
   * Scrape Prospect Website for context.  
-  * Read/enrich workspace intelligence in RECON (research + knowledge assets).  
+  * Read/enrich RECON intelligence (research + knowledge assets).  
 * **The "Magic Link":**  
   * Generates a unique, expiring URL (e.g., demo.funnelfinished.com/v/client-id).  
   * **Experience:** The prospect chats with the agent in a simulated environment (SMS/WhatsApp style).  
@@ -116,7 +117,7 @@
 **The "Push to Production" Flow:**
 
 1. **Prospecting:** Ops team identifies lead in **RADAR**, leveraging RECON context.  
-2. **Intelligence:** Ops team enriches workspace research/knowledge in **RECON** as needed.  
+2. **Intelligence:** Ops team enriches RECON research/knowledge as needed.  
 3. **Sales:** Ops team builds demo in **LAB**, consuming RECON assets and adding missing context when needed. Client says "Yes."  
 4. **Config:** Ops team configures deployment in **BLUEPRINT** using production-approved RECON knowledge assets.  
 5. **Ingest:** Ops team uploads client's CSV into **DATA AIRLOCK**.  

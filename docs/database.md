@@ -2,6 +2,12 @@
 
 THE LAB uses **Supabase** (managed PostgreSQL) with Row Level Security (RLS) enabled on all tables.
 
+## Tenancy Boundary
+
+- Internal modules (RADAR, RECON, THE LAB, MISSION CONTROL) are role-scoped, not workspace-scoped.
+- Demos and internal operations are governed by role and `created_by` policies.
+- Tenant isolation by `workspace_id` is reserved for BLUEPRINT client deployments and CLIENT PORTAL data.
+
 ## Tables
 
 ### `demos`
@@ -98,6 +104,8 @@ Individual messages within a session.
 ### `knowledge_bases`
 
 Stores RAG knowledge bases per demo.
+
+> Current implementation is demo-linked. Planned RECON evolution keeps KB ownership internal/global and shared by role-scoped internal modules; workspace isolation remains a BLUEPRINT/CLIENT PORTAL concern.
 
 | Column | Type | Default | Nullable | Description |
 |--------|------|---------|----------|-------------|

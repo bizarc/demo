@@ -1,11 +1,11 @@
 import Link from 'next/link';
-import { FlaskConical, Radar, BookOpen, Gauge } from 'lucide-react';
+import { FlaskConical, Radar, BookOpen, Gauge, Satellite, LayoutDashboard } from 'lucide-react';
 import { RecentDemos } from '@/components/home/HomePageContent';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
-import { TopNav } from '@/components/ui/TopNav';
 import { Divider } from '@/components/ui/Divider';
+import { InternalAppShell } from '@/components/layout/InternalAppShell';
 
 /**
  * Home / Landing Page — Funnel Finished Platform
@@ -18,12 +18,7 @@ import { Divider } from '@/components/ui/Divider';
  */
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-canvas">
-      <TopNav
-        title="Funnel Finished"
-        subtitle="AI-powered marketing delivery"
-      />
-
+    <InternalAppShell title="Funnel Finished" subtitle="AI-powered marketing delivery">
       <main className="mx-auto max-w-6xl px-6 py-10">
         {/* Hero — Display 36px per DESIGN.md */}
         <section className="mb-12">
@@ -41,7 +36,20 @@ export default function HomePage() {
           <h3 className="mb-4 text-xl font-medium text-foreground">
             Internal ops
           </h3>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Card variant="default" padding="lg" className="h-full opacity-80">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-border-subtle">
+                <Satellite size={20} strokeWidth={2} className="text-foreground-secondary" />
+              </div>
+              <h4 className="mb-1 text-base font-medium text-foreground">Recon</h4>
+              <p className="text-sm text-foreground-secondary">
+                Shared intelligence and research context.
+              </p>
+              <Badge variant="draft" size="sm" className="mt-3">
+                Soon
+              </Badge>
+            </Card>
+
             <Link href="/lab">
               <Card
                 variant="interactive"
@@ -51,7 +59,7 @@ export default function HomePage() {
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-primary [&_svg]:text-white">
                   <FlaskConical size={20} strokeWidth={2} />
                 </div>
-                <h4 className="mb-1 text-base font-medium text-foreground">THE LAB</h4>
+                <h4 className="mb-1 text-base font-medium text-foreground">Lab</h4>
                 <p className="text-sm text-foreground-secondary">
                   Build demos, scrape sites, generate Magic Links for prospects
                 </p>
@@ -67,12 +75,12 @@ export default function HomePage() {
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-border-subtle">
                 <Radar size={20} strokeWidth={2} className="text-foreground-secondary" />
               </div>
-              <h4 className="mb-1 text-base font-medium text-foreground">RADAR</h4>
+              <h4 className="mb-1 text-base font-medium text-foreground">Radar</h4>
               <p className="text-sm text-foreground-secondary">
                 Prospecting, target acquisition, campaign signals
               </p>
               <Badge variant="draft" size="sm" className="mt-3">
-                Coming soon
+                Soon
               </Badge>
             </Card>
 
@@ -80,12 +88,12 @@ export default function HomePage() {
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-border-subtle">
                 <BookOpen size={20} strokeWidth={2} className="text-foreground-secondary" />
               </div>
-              <h4 className="mb-1 text-base font-medium text-foreground">BLUEPRINT</h4>
+              <h4 className="mb-1 text-base font-medium text-foreground">Blueprint</h4>
               <p className="text-sm text-foreground-secondary">
                 Mission profiles, The Vault, logic mapping
               </p>
               <Badge variant="draft" size="sm" className="mt-3">
-                Coming soon
+                Soon
               </Badge>
             </Card>
 
@@ -100,7 +108,20 @@ export default function HomePage() {
                 Data Airlock, pilot execution, kill switch
               </p>
               <Badge variant="draft" size="sm" className="mt-3">
-                Coming soon
+                Soon
+              </Badge>
+            </Card>
+
+            <Card variant="default" padding="lg" className="h-full opacity-75">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-border-subtle">
+                <LayoutDashboard size={20} strokeWidth={2} className="text-foreground-secondary" />
+              </div>
+              <h4 className="mb-1 text-base font-medium text-foreground">Portals</h4>
+              <p className="text-sm text-foreground-secondary">
+                Client-facing scoreboard and delivery views.
+              </p>
+              <Badge variant="draft" size="sm" className="mt-3">
+                Soon
               </Badge>
             </Card>
           </div>
@@ -117,7 +138,7 @@ export default function HomePage() {
               conversation logs. White-label Scoreboard experience.
             </p>
             <Badge variant="draft" size="sm" className="mt-3">
-              Coming soon
+              Soon
             </Badge>
           </Card>
         </section>
@@ -148,6 +169,6 @@ export default function HomePage() {
           </Card>
         </section>
       </main>
-    </div>
+    </InternalAppShell>
   );
 }

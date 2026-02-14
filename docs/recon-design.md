@@ -1,14 +1,14 @@
 # RECON: Shared Intelligence Module Design
 
 > **Status:** Design complete. Implementation staged in `task.md` 3.2, 3.5, 3.7.
-> **Scope:** Research and knowledge assets shared by RADAR, THE LAB, and BLUEPRINT.
-> **Internal vs. Workspace:** LAB/RECON research uses a single internal scope. Workspaces are reserved for BLUEPRINT client implementations only.
+> **Scope:** Platform-global internal research and knowledge assets shared by RADAR, THE LAB, and BLUEPRINT.
+> **Internal vs. Workspace:** RECON is outside workspaces. Workspaces are reserved for BLUEPRINT client deployments and Client Portal multi-tenancy.
 
 ---
 
 ## 1. Overview
 
-RECON is the system of record for client/workspace-scoped intelligence:
+RECON is the system of record for platform-global internal intelligence:
 
 - **Research records:** AI-generated company intelligence (Perplexity, scrape, manual)
 - **Knowledge bases:** Document collections with vector retrieval (product catalogs, FAQs, etc.)
@@ -23,12 +23,12 @@ Modules reference RECON assets; they do not fork copies unless explicitly snapsh
 ### 2.1 Core Entities
 
 ```
-workspaces (existing)
+recon_internal_scope (single logical scope)
     │
-    ├── research_records (workspace_id)
+    ├── research_records
     │       └── research_links (record_id → demo_id | campaign_id | blueprint_id)
     │
-    └── knowledge_bases (workspace_id)  [target: migrate from demo_id]
+    └── knowledge_bases  [target: migrate from demo_id]
             ├── documents
             ├── chunks
             └── demo_knowledge_bases (demo_id, kb_id)  [link table]
@@ -39,7 +39,6 @@ workspaces (existing)
 | Column | Type | Description |
 |--------|------|-------------|
 | id | UUID | PK |
-| workspace_id | UUID | FK → workspaces |
 | target_id | UUID? | Prospect/account/company profile |
 | source | enum | `perplexity` \| `scrape` \| `manual` \| `import` |
 | title | text | Brief identifier |
@@ -68,12 +67,11 @@ workspaces (existing)
 
 **Current:** `knowledge_bases.demo_id` (demo-owned)
 
-**Target:** `knowledge_bases.workspace_id` + link table
+**Target:** `knowledge_bases` as RECON-owned (internal) + link table
 
 | Column | Type | Description |
 |--------|------|-------------|
 | id | UUID | PK |
-| workspace_id | UUID | FK → workspaces |
 | name | text | |
 | type | enum | product_catalog \| faq \| service_menu \| review_template \| custom |
 | status | enum | draft \| validated \| production_approved |
@@ -130,11 +128,10 @@ draft ──► validated ──► production_approved
 
 ## 5. Migration Path (Demo-Scoped → RECON-Scoped)
 
-### Phase 1: Add Workspace Context
-1. Ensure `workspaces` table exists (from auth migration)
-2. Add `workspace_id` to `knowledge_bases` (nullable initially)
-3. Backfill: `workspace_id = (SELECT workspace_id FROM profiles WHERE id = created_by)` or default workspace
-4. Add `status` to knowledge_bases (default `draft`)
+### Phase 1: Add RECON Internal Ownership
+1. Keep RECON assets in single internal scope (no workspace key)
+2. Add `status` to `knowledge_bases` (default `draft`)
+3. Ensure `created_by` is populated for role-scoped authorization and auditing
 
 ### Phase 2: Create Link Table
 1. Create `demo_knowledge_bases` (demo_id, kb_id)
@@ -148,21 +145,21 @@ draft ──► validated ──► production_approved
 3. Implement research API routes
 
 ### Phase 4: Cutover
-1. Make `knowledge_bases.workspace_id` NOT NULL
-2. Drop `knowledge_bases.demo_id`
-3. Make `demos.knowledge_base_id` resolve via `demo_knowledge_bases` (view or join)
-4. Update RLS policies for workspace-scoped access
+1. Drop `knowledge_bases.demo_id`
+2. Make `demos.knowledge_base_id` resolve via `demo_knowledge_bases` (view or join)
+3. Update RLS policies for role-scoped internal access (`super_admin` all, `operator` policy-based scope)
+4. Keep workspace-based RLS for BLUEPRINT/client portal data only
 
 ---
 
 ## 6. Acceptance Criteria (Implementation)
 
-- [ ] Research records CRUD with workspace_id and status
+- [ ] Research records CRUD with status and role-scoped access
 - [ ] Research lifecycle transitions (draft → validated → production_approved)
 - [ ] RADAR/LAB/BLUEPRINT read filters by status per contract
-- [ ] Knowledge bases: workspace_id column added; migration script for existing rows
-- [ ] demo_knowledge_bases link table; demos can reference workspace KBs
-- [ ] RBAC: workspace-scoped access enforced via RLS
+- [ ] Knowledge bases migrated from `demo_id` ownership to RECON ownership
+- [ ] demo_knowledge_bases link table; demos can reference RECON KBs
+- [ ] RBAC: role-scoped internal access enforced via RLS
 
 ---
 
