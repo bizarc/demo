@@ -39,6 +39,7 @@ Company Context:
 - Products/Services: {{products}}
 - Current Offers: {{offers}}
 {{qualificationCriteria}}
+{{knowledgeBaseContext}}
 
 Always be helpful, conversational, and focus on understanding their needs before pitching. If they're not interested, gracefully accept and offer to stay in touch.`,
         suggestedPrompts: [
@@ -69,6 +70,7 @@ Company Context:
 - Products/Services: {{products}}
 - Current Offers: {{offers}}
 {{qualificationCriteria}}
+{{knowledgeBaseContext}}
 
 Be helpful and informative without being pushy. Focus on education and value rather than aggressive sales tactics.`,
         suggestedPrompts: [
@@ -98,6 +100,7 @@ Company Context:
 - Industry: {{industry}}
 - Products/Services: {{products}}
 {{qualificationCriteria}}
+{{knowledgeBaseContext}}
 
 Always prioritize customer satisfaction. If you can't solve an issue, acknowledge it and offer to connect them with someone who can.`,
         suggestedPrompts: [
@@ -127,6 +130,7 @@ Company Context:
 - Industry: {{industry}}
 - Products/Services: {{products}}
 {{qualificationCriteria}}
+{{knowledgeBaseContext}}
 
 Be genuine and appreciative. Never pressure customers to leave reviews, and always handle negative experiences with empathy and a desire to improve.`,
         suggestedPrompts: [
@@ -149,6 +153,7 @@ export function buildSystemPrompt(
         products?: string[];
         offers?: string[];
         qualificationCriteria?: string;
+        knowledgeBaseContext?: string;
     }
 ): string {
     const config = MISSION_PROFILES[profile];
@@ -168,6 +173,12 @@ export function buildSystemPrompt(
     } else {
         prompt = prompt.replace(/\{\{qualificationCriteria\}\}/g, '');
     }
+
+    // Handle knowledge base context (RAG retrieval)
+    prompt = prompt.replace(
+        /\{\{knowledgeBaseContext\}\}/g,
+        context.knowledgeBaseContext || ''
+    );
 
     return prompt.trim();
 }

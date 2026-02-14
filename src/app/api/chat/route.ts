@@ -4,6 +4,7 @@ import { buildSystemPrompt, MissionProfile } from '@/lib/prompts';
 import { createServerClient } from '@/lib/supabase';
 import { isValidUuid, isValidLeadIdentifier, sanitizeString, LIMITS } from '@/lib/validation';
 import { getClientIp, checkRateLimit, CHAT_LIMIT } from '@/lib/rateLimit';
+import { retrieve, formatKnowledgeBaseContext } from '@/lib/retrieval';
 
 const TOKEN_LIMIT = 10000;
 const MAX_HISTORY_MESSAGES = 50; // Cap history sent to LLM
@@ -260,6 +261,19 @@ export async function POST(request: NextRequest) {
         } else {
             // Fallback for drafts without a mission profile
             systemPrompt = `You are a helpful AI assistant for ${demo.company_name || 'a company'}. Be professional and helpful.`;
+        }
+
+        // RAG: retrieve from knowledge base and inject context
+        const kbId = demo.knowledge_base_id as string | null | undefined;
+        if (kbId) {
+            try {
+                const retrieved = await retrieve(kbId, sanitizedMessage);
+                const kbContext = formatKnowledgeBaseContext(retrieved);
+                systemPrompt += kbContext;
+            } catch (err) {
+                console.warn('KB retrieval failed:', err);
+                // Continue without KB context
+            }
         }
 
         // Determine message history

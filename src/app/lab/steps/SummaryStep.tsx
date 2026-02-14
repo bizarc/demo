@@ -166,6 +166,14 @@ export function SummaryStep({ formData, onBack, onActivate }: SummaryStepProps) 
                     <div style={labelCol}>Model</div>
                     <div style={valueCol}>{selectedModel?.name || formData.model}</div>
                 </div>
+                <div style={rowStyle}>
+                    <div style={labelCol}>Knowledge base</div>
+                    <div style={valueCol}>
+                        {formData.knowledgeBaseId
+                            ? `${formData.knowledgeBaseDocuments?.length ?? 0} document(s)`
+                            : 'None'}
+                    </div>
+                </div>
                 <div style={{ ...rowStyle, borderBottom: 'none' }}>
                     <div style={labelCol}>Brand color</div>
                     <div style={{ ...valueCol, display: 'flex', alignItems: 'center', gap: '8px' }}>

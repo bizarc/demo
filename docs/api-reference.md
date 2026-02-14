@@ -87,9 +87,14 @@ Used for autosave (partial updates) and activation (draft → active).
 ```json
 {
   "company_name": "Updated Name",
-  "current_step": "context"
+  "current_step": "context",
+  "knowledge_base_id": "uuid"
 }
 ```
+
+| Field | Description |
+|-------|-------------|
+| `knowledge_base_id` | Optional. UUID of knowledge base for RAG. Set to `null` to detach. |
 
 **Request (activation):**
 
@@ -223,3 +228,90 @@ data: [DONE]
 **Rate limit:** 5 requests per minute
 
 **Errors:** `429` (rate limited), `500` (scrape failed)
+
+---
+
+## Knowledge Base (RAG)
+
+### `POST /api/knowledge-base` — Create knowledge base
+
+Creates a knowledge base for a demo.
+
+**Request:**
+
+```json
+{
+  "demoId": "uuid",
+  "name": "Default",
+  "type": "custom"
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `demoId` | Yes | Demo UUID |
+| `name` | No | Display name (default: "Default") |
+| `type` | No | `product_catalog`, `faq`, `service_menu`, `review_template`, or `custom` |
+
+**Response:** `201 Created`
+
+```json
+{ "id": "uuid", "demo_id": "uuid", "name": "Default", "type": "custom" }
+```
+
+---
+
+### `GET /api/knowledge-base/[id]` — List documents
+
+Returns knowledge base metadata and list of uploaded documents.
+
+**Response:** `200 OK`
+
+```json
+{
+  "id": "uuid",
+  "demo_id": "uuid",
+  "name": "Default",
+  "type": "custom",
+  "documents": [
+    { "id": "uuid", "filename": "faq.md", "chunk_count": 12, "created_at": "..." }
+  ],
+  "totalChunks": 45
+}
+```
+
+---
+
+### `POST /api/knowledge-base/[id]/upload` — Upload document
+
+Ingests a document (parse, chunk, embed, store). Multipart form-data.
+
+**Request:** `Content-Type: multipart/form-data`
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `file` | Yes | File (.txt, .md, .csv, .pdf, max 2 MB) |
+
+**Response:** `201 Created`
+
+```json
+{ "id": "uuid", "filename": "faq.md", "chunk_count": 12 }
+```
+
+**Limits:** 10 files per KB, 500 chunks per KB
+
+---
+
+### `DELETE /api/knowledge-base/[id]/documents/[docId]` — Remove document
+
+Deletes a document and its chunks.
+
+**Response:** `200 OK`
+
+```json
+{ "deleted": true }
+```
+
+---
+
+**RAG behavior:** When a demo has `knowledge_base_id` set, the chat API retrieves relevant chunks for each user message and injects them into the system prompt before generating a response.

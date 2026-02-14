@@ -14,6 +14,7 @@ interface AutosaveFormData {
     qualificationCriteria: string;
     logoUrl: string;
     primaryColor: string;
+    knowledgeBaseId?: string | null;
     model: string;
 }
 
@@ -53,6 +54,7 @@ function buildPayload(formData: AutosaveFormData, currentStep: string) {
         qualification_criteria: formData.qualificationCriteria || undefined,
         logo_url: formData.logoUrl || undefined,
         primary_color: formData.primaryColor || undefined,
+        knowledge_base_id: formData.knowledgeBaseId || undefined,
         openrouter_model: formData.model || undefined,
         current_step: currentStep,
     };

@@ -81,6 +81,7 @@ export async function GET(
             status: demo.status,
             current_step: demo.current_step,
             system_prompt: demo.system_prompt,
+            knowledge_base_id: demo.knowledge_base_id,
         });
     } catch (error) {
         console.error('Demo GET error:', error);
@@ -150,6 +151,11 @@ export async function PATCH(
         if (body.secondary_color !== undefined) updatePayload.secondary_color = (body.secondary_color && isValidHexColor(body.secondary_color)) ? body.secondary_color : null;
         if (body.openrouter_model !== undefined) updatePayload.openrouter_model = sanitizeString(body.openrouter_model, LIMITS.openrouterModel) || null;
         if (body.current_step !== undefined) updatePayload.current_step = sanitizeString(body.current_step, LIMITS.currentStep) || null;
+        if (body.knowledge_base_id !== undefined) {
+            updatePayload.knowledge_base_id = body.knowledge_base_id && isValidUuid(body.knowledge_base_id)
+                ? body.knowledge_base_id
+                : null;
+        }
 
         // Handle mission_profile conversion
         if (body.mission_profile !== undefined) {

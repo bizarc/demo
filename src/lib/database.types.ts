@@ -37,6 +37,7 @@ export interface Database {
                     updated_at: string
                     deleted_at: string | null
                     current_step: string | null
+                    knowledge_base_id: string | null
                 }
                 Insert: {
                     id?: string
@@ -59,6 +60,7 @@ export interface Database {
                     updated_at?: string
                     deleted_at?: string | null
                     current_step?: string | null
+                    knowledge_base_id?: string | null
                 }
                 Update: {
                     id?: string
@@ -81,6 +83,88 @@ export interface Database {
                     updated_at?: string
                     deleted_at?: string | null
                     current_step?: string | null
+                    knowledge_base_id?: string | null
+                }
+                Relationships: []
+            }
+            knowledge_bases: {
+                Row: {
+                    id: string
+                    demo_id: string
+                    name: string
+                    type: string
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    demo_id: string
+                    name?: string
+                    type?: string
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    demo_id?: string
+                    name?: string
+                    type?: string
+                    created_at?: string
+                }
+                Relationships: []
+            }
+            documents: {
+                Row: {
+                    id: string
+                    kb_id: string
+                    filename: string
+                    content: string
+                    chunk_count: number
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    kb_id: string
+                    filename: string
+                    content: string
+                    chunk_count?: number
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    kb_id?: string
+                    filename?: string
+                    content?: string
+                    chunk_count?: number
+                    created_at?: string
+                }
+                Relationships: []
+            }
+            chunks: {
+                Row: {
+                    id: string
+                    kb_id: string
+                    document_id: string
+                    content: string
+                    embedding: number[]
+                    chunk_index: number
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    kb_id: string
+                    document_id: string
+                    content: string
+                    embedding: number[]
+                    chunk_index: number
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    kb_id?: string
+                    document_id?: string
+                    content?: string
+                    embedding?: number[]
+                    chunk_index?: number
+                    created_at?: string
                 }
                 Relationships: []
             }
@@ -200,7 +284,15 @@ export interface Database {
             [_ in never]: never
         }
         Functions: {
-            [_ in never]: never
+            match_chunks: {
+                Args: {
+                    p_kb_id: string
+                    p_query_embedding: number[]
+                    p_match_threshold?: number
+                    p_match_count?: number
+                }
+                Returns: { id: string; content: string; similarity: number }[]
+            }
         }
         Enums: {
             [_ in never]: never

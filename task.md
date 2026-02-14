@@ -342,14 +342,14 @@
 - [ ] Evaluate: demo-only feature vs. BLUEPRINT production requirement
 
 ### 3.5 Knowledge Bases (RAG)
-- [ ] Research & design: RAG architecture for mission-specific knowledge
+- [x] Research & design: RAG architecture for mission-specific knowledge
   - Use cases: product catalogs, FAQ databases, service menus, review templates
   - Evaluate vector DB options (Supabase pgvector, Pinecone, etc.)
   - Define upload/ingestion flow for operators
-- [ ] Implement knowledge base CRUD (create, upload documents, manage)
-- [ ] Implement retrieval pipeline (embedding, search, context injection)
-- [ ] Integrate knowledge base selection into builder flow
-- [ ] Evaluate: demo-only (limited docs) vs. BLUEPRINT (full catalog support)
+- [x] Implement knowledge base CRUD (create, upload documents, manage)
+- [x] Implement retrieval pipeline (embedding, search, context injection)
+- [x] Integrate knowledge base selection into builder flow
+- [x] Evaluate: demo-only (limited docs) vs. BLUEPRINT (full catalog support)
 
 ### 3.6 Voice AI Demos
 - [ ] Research & design: Voice AI demo architecture per mission

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { MissionStep } from './steps/MissionStep';
 import { WebsiteStep } from './steps/WebsiteStep';
 import { ContextStep } from './steps/ContextStep';
+import { KnowledgeBaseStep } from './steps/KnowledgeBaseStep';
 import { ModelStep } from './steps/ModelStep';
 import { SummaryStep } from './steps/SummaryStep';
 import { ChatPreview } from './ChatPreview';
@@ -24,6 +25,8 @@ export interface DemoFormData {
     qualificationCriteria: string;
     logoUrl: string;
     primaryColor: string;
+    knowledgeBaseId: string | null;
+    knowledgeBaseDocuments: { id: string; filename: string; chunk_count: number }[];
     model: string;
     systemPrompt: string;
 }
@@ -32,8 +35,9 @@ export const STEPS = [
     { id: 'mission', label: 'Mission Profile', num: 1 },
     { id: 'website', label: 'Target Website', num: 2 },
     { id: 'context', label: 'Context', num: 3 },
-    { id: 'model', label: 'Model', num: 4 },
-    { id: 'summary', label: 'Create', num: 5 },
+    { id: 'knowledge', label: 'Knowledge Base', num: 4 },
+    { id: 'model', label: 'Model', num: 5 },
+    { id: 'summary', label: 'Create', num: 6 },
 ];
 
 export const INITIAL_FORM_DATA: DemoFormData = {
@@ -47,6 +51,8 @@ export const INITIAL_FORM_DATA: DemoFormData = {
     qualificationCriteria: '',
     logoUrl: '',
     primaryColor: '#2563EB',
+    knowledgeBaseId: null,
+    knowledgeBaseDocuments: [],
     model: 'openai/gpt-4o-mini',
     systemPrompt: '',
 };
@@ -101,6 +107,8 @@ export function demoRowToFormData(demo: Record<string, unknown>): DemoFormData {
             : '',
         logoUrl: (demo.logo_url as string) || '',
         primaryColor: (demo.primary_color as string) || '#2563EB',
+        knowledgeBaseId: (demo.knowledge_base_id as string) || null,
+        knowledgeBaseDocuments: [],
         model: (demo.openrouter_model as string) || 'openai/gpt-4o-mini',
         systemPrompt: (demo.system_prompt as string) || '',
     };
@@ -233,6 +241,20 @@ export function DemoBuilder({ initialDraftId, initialFormData, initialStep }: De
                     <ContextStep
                         formData={formData}
                         onUpdate={updateFormData}
+                        onNext={nextStep}
+                        onBack={prevStep}
+                    />
+                );
+            case 'knowledge':
+                return (
+                    <KnowledgeBaseStep
+                        draftId={draftId}
+                        knowledgeBaseId={formData.knowledgeBaseId}
+                        documents={formData.knowledgeBaseDocuments}
+                        onUpdate={(u) => updateFormData({
+                            ...(u.knowledgeBaseId !== undefined && { knowledgeBaseId: u.knowledgeBaseId }),
+                            ...(u.documents !== undefined && { knowledgeBaseDocuments: u.documents }),
+                        })}
                         onNext={nextStep}
                         onBack={prevStep}
                     />

@@ -30,6 +30,7 @@ Stores demo configurations, drafts, and active demos.
 | `updated_at` | TIMESTAMPTZ | `NOW()` | No | Auto-updated via trigger |
 | `deleted_at` | TIMESTAMPTZ | — | Yes | Soft delete timestamp |
 | `current_step` | TEXT | `'mission'` | Yes | Builder step for draft resume |
+| `knowledge_base_id` | UUID | — | Yes | FK → knowledge_bases (RAG) |
 
 **Indexes:** `status`, `created_by`, `deleted_at`
 
@@ -94,6 +95,59 @@ Individual messages within a session.
 
 ---
 
+### `knowledge_bases`
+
+Stores RAG knowledge bases per demo.
+
+| Column | Type | Default | Nullable | Description |
+|--------|------|---------|----------|-------------|
+| `id` | UUID | `uuid_generate_v4()` | No | Primary key |
+| `demo_id` | UUID | — | No | FK → demos |
+| `name` | TEXT | `'Default'` | No | Display name |
+| `type` | TEXT | `'custom'` | No | `product_catalog`, `faq`, `service_menu`, `review_template`, `custom` |
+| `created_at` | TIMESTAMPTZ | `NOW()` | No | Creation timestamp |
+
+**Indexes:** `demo_id`
+
+---
+
+### `documents`
+
+Uploaded documents within a knowledge base.
+
+| Column | Type | Default | Nullable | Description |
+|--------|------|---------|----------|-------------|
+| `id` | UUID | `uuid_generate_v4()` | No | Primary key |
+| `kb_id` | UUID | — | No | FK → knowledge_bases |
+| `filename` | TEXT | — | No | Original filename |
+| `content` | TEXT | — | No | Extracted text |
+| `chunk_count` | INTEGER | `0` | No | Number of chunks |
+| `created_at` | TIMESTAMPTZ | `NOW()` | No | Upload timestamp |
+
+**Indexes:** `kb_id`
+
+---
+
+### `chunks`
+
+Text chunks with vector embeddings for similarity search (pgvector).
+
+| Column | Type | Default | Nullable | Description |
+|--------|------|---------|----------|-------------|
+| `id` | UUID | `uuid_generate_v4()` | No | Primary key |
+| `kb_id` | UUID | — | No | FK → knowledge_bases |
+| `document_id` | UUID | — | No | FK → documents |
+| `content` | TEXT | — | No | Chunk text |
+| `embedding` | vector(1536) | — | No | OpenRouter text-embedding-3-small |
+| `chunk_index` | INTEGER | — | No | Order within document |
+| `created_at` | TIMESTAMPTZ | `NOW()` | No | Creation timestamp |
+
+**Indexes:** `kb_id`, `document_id`, HNSW on `embedding`
+
+**RPC:** `match_chunks(kb_id, query_embedding, match_threshold, match_count)` — similarity search
+
+---
+
 ### `rate_limits`
 
 Configurable rate limit values.
@@ -129,6 +183,9 @@ Configurable rate limit values.
 
 ```
 demos (1) ──── (*) leads
+demos (1) ──── (0..1) knowledge_bases
+knowledge_bases (1) ──── (*) documents
+documents (1) ──── (*) chunks
 leads (1) ──── (*) sessions
 sessions (1) ── (*) messages
 ```
