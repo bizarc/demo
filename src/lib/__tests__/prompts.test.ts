@@ -83,15 +83,27 @@ describe('buildSystemPrompt', () => {
         expect(reactivation).not.toBe(nurture);
     });
 
-    it('appends channel-specific instructions when channel is provided', () => {
+    it('appends mission-channel strategy when channel is provided', () => {
         const context = { companyName: 'Test' };
         const website = buildSystemPrompt('database-reactivation', context, 'website');
         const sms = buildSystemPrompt('database-reactivation', context, 'sms');
 
-        expect(website).toContain('[CHANNEL: Website Chat]');
-        expect(sms).toContain('[CHANNEL: SMS]');
-        expect(sms).toContain('160 characters');
-        expect(website).not.toContain('160 characters');
+        expect(website).toContain('[WEBSITE STRATEGY — Reactivation]');
+        expect(sms).toContain('[SMS STRATEGY — Reactivation]');
+        expect(sms).toContain('under 160 chars');
+        expect(sms).toContain('Reply YES to claim');
+        expect(website).not.toContain('[SMS STRATEGY');
+    });
+
+    it('appends correct strategy for different missions on the same channel', () => {
+        const context = { companyName: 'Test' };
+        const service = buildSystemPrompt('customer-service', context, 'website');
+        const review = buildSystemPrompt('review-generation', context, 'sms');
+
+        expect(service).toContain('[WEBSITE STRATEGY — Customer Service]');
+        expect(service).toContain('step-by-step');
+        expect(review).toContain('[SMS STRATEGY — Review Generation]');
+        expect(review).toContain('Reply 1–5 to rate us');
     });
 });
 
@@ -102,6 +114,21 @@ describe('getSuggestedPrompts', () => {
 
         expect(sms[0]).not.toBe(website[0]);
         expect(sms[0].length).toBeLessThanOrEqual(website[0].length + 20); // SMS tends shorter
+    });
+
+    it('returns voice variants for voice channel', () => {
+        const voice = getSuggestedPrompts('customer-service', 'voice');
+        const website = getSuggestedPrompts('customer-service', 'website');
+
+        expect(voice[0]).not.toBe(website[0]);
+        expect(voice[0]).toContain('calling');
+    });
+
+    it('falls back to default prompts for channels without specific variants', () => {
+        const messenger = getSuggestedPrompts('database-reactivation', 'messenger');
+        const website = getSuggestedPrompts('database-reactivation', 'website');
+
+        expect(messenger).toEqual(website);
     });
 });
 

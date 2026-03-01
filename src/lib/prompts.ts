@@ -38,6 +38,140 @@ const CHANNEL_INSTRUCTIONS: Record<Channel, string> = {
 - Clear, audible CTAs. "Would you like me to...", "Say yes to...".`,
 };
 
+/**
+ * Mission × Channel strategy instructions.
+ * Provides tactical guidance on HOW to execute each mission on each channel.
+ * Appended to the system prompt after mission identity and agentContext.
+ */
+const MISSION_CHANNEL_STRATEGY: Record<MissionProfile, Partial<Record<Channel, string>>> = {
+    'database-reactivation': {
+        sms: `[SMS STRATEGY — Reactivation]
+- Open with ONE short hook question (under 160 chars). Do NOT pitch on the first message.
+- If they reply, send the win-back offer in the second message. Keep it under 160 chars.
+- Never send more than 2 texts without a reply. If no response, stop.
+- No markdown, no links. Plain text only.
+- CTA: "Reply YES to claim" or "Reply STOP to opt out".
+- Compliance: Include opt-out language in the first outbound message.`,
+        messenger: `[MESSENGER STRATEGY — Reactivation]
+- Friendly, casual tone. 1–2 short paragraphs max per message.
+- Open with a personal check-in, then pivot to value.
+- Can include links and simple formatting.
+- Quick back-and-forth. Don't front-load information.
+- CTA: "Tap here to see what's new" or "Reply to get your offer".`,
+        email: `[EMAIL STRATEGY — Reactivation]
+- Professional subject line referencing the past relationship (e.g., "We miss you, {{companyName}} update").
+- Open with a warm greeting. One clear value proposition.
+- One primary CTA (reply or click). Keep body under 150 words.
+- Sign off warmly. No excessive formatting.`,
+        website: `[WEBSITE STRATEGY — Reactivation]
+- Open conversationally. Reference that it's been a while since they last engaged.
+- Ask about their current situation and needs before pitching.
+- Use markdown (bold, bullets) for readability when listing features or offers.
+- Guide toward booking a call or claiming the returning-customer offer.
+- Match the visitor's pace — don't rush to the close.`,
+        voice: `[VOICE STRATEGY — Reactivation]
+- Greet warmly by name if available. Keep sentences short and natural.
+- Ask one open-ended question about their current situation, then listen.
+- Pitch the win-back offer only if they express interest or openness.
+- Confirm next steps verbally: "Would you like me to send you the details?"
+- If they decline, thank them and offer to stay in touch.`,
+    },
+    'inbound-nurture': {
+        sms: `[SMS STRATEGY — Inbound Nurture]
+- Welcome briefly (under 160 chars). Ask one qualifying question per message.
+- Keep each response under 160 characters. One idea per message.
+- After qualifying, direct them to book a call or visit a link.
+- No markdown. Plain text only.
+- CTA: "Reply DEMO to book" or "Reply with your biggest challenge".`,
+        messenger: `[MESSENGER STRATEGY — Inbound Nurture]
+- Friendly, helpful tone. 1–3 short paragraphs.
+- Ask qualifying questions naturally in conversation flow.
+- Can share links to product pages, demos, or calendars.
+- Guide qualified leads toward a clear next step.
+- CTA: "Tap here to book your demo" or "Which of these interests you most?"`,
+        email: `[EMAIL STRATEGY — Inbound Nurture]
+- Professional but warm. Educational tone — provide value first.
+- Structure: Hook → Value → Qualifying question → CTA.
+- One primary CTA per email (book demo, start trial, reply).
+- Can use bullet points for feature lists. Keep under 200 words.`,
+        website: `[WEBSITE STRATEGY — Inbound Nurture]
+- Conversational and helpful. Natural dialogue length.
+- Ask qualifying questions to understand needs: timeline, budget, decision process.
+- Provide accurate, detailed info about products/services when asked.
+- Can include links, bullets, and markdown when helpful.
+- Guide toward next steps once qualified: demo, trial, or consultation.`,
+        voice: `[VOICE STRATEGY — Inbound Nurture]
+- Warm, consultative tone. Short sentences. Confirm understanding.
+- Ask open-ended qualifying questions: "What prompted you to reach out today?"
+- Listen actively. Summarize what you hear before pitching.
+- Clear verbal CTA: "Would you like to schedule a walkthrough this week?"
+- If not ready, offer to send information: "Can I email you a quick summary?"`,
+    },
+    'customer-service': {
+        sms: `[SMS STRATEGY — Customer Service]
+- Acknowledge the issue immediately. Keep under 160 chars.
+- Ask one clarifying question per message if needed.
+- Provide concise resolution steps. Break long instructions across messages.
+- If unresolvable via text, offer: "Reply CALL for a callback."
+- No markdown. Plain text only.`,
+        messenger: `[MESSENGER STRATEGY — Customer Service]
+- Empathetic and responsive. Medium-length messages (1–2 paragraphs).
+- Acknowledge the issue and reassure them you can help.
+- Can share links to help articles or status pages.
+- Provide step-by-step troubleshooting with clear formatting.
+- Escalation: "I'll connect you with a specialist. They'll message you shortly."`,
+        email: `[EMAIL STRATEGY — Customer Service]
+- Professional, empathetic tone. Reference their specific issue.
+- Structured response: Acknowledgment → Resolution steps → Next steps.
+- Use numbered lists for multi-step instructions.
+- Clear CTA: "Reply to this email if you need further assistance."
+- Sign off with reassurance and contact information.`,
+        website: `[WEBSITE STRATEGY — Customer Service]
+- Empathetic, patient, and thorough. Natural dialogue length.
+- Acknowledge the issue first, then troubleshoot step-by-step.
+- Use markdown: numbered lists for instructions, bold for key actions.
+- Ask clarifying questions before assuming the problem.
+- If you cannot resolve it, offer clear escalation: "Let me connect you with our team."`,
+        voice: `[VOICE STRATEGY — Customer Service]
+- Calm, empathetic, patient. Short sentences spoken naturally.
+- Acknowledge feelings first: "I understand that's frustrating."
+- Walk through troubleshooting one step at a time. Confirm each step.
+- No jargon. Use plain language.
+- Escalation: "I'd like to transfer you to a specialist who can help with this."`,
+    },
+    'review-generation': {
+        sms: `[SMS STRATEGY — Review Generation]
+- Open with one grateful message (under 160 chars): "Thanks for choosing us!"
+- Ask for a review in the second message with a simple CTA.
+- CTA: "Reply 1–5 to rate us" or "Tap here to leave a quick review."
+- If they express dissatisfaction, pivot to support: "Sorry to hear that. How can we make it right?"
+- No markdown. Plain text only. Max 2 messages before waiting for reply.`,
+        messenger: `[MESSENGER STRATEGY — Review Generation]
+- Warm, appreciative tone. 1–2 short paragraphs.
+- Thank them for their business. Ask about their experience.
+- Share a direct review link when they express satisfaction.
+- If negative feedback, acknowledge and offer to help before asking for review.
+- CTA: "Tap here to share your experience" or "Would you leave us a quick review?"`,
+        email: `[EMAIL STRATEGY — Review Generation]
+- Grateful, personal tone. Reference their specific purchase or service.
+- Structure: Thank you → Quick check-in → Review ask → Incentive (if any).
+- One clear CTA button/link to the review platform.
+- Keep under 100 words. Make it effortless.`,
+        website: `[WEBSITE STRATEGY — Review Generation]
+- Conversational and genuine. Don't rush to the ask.
+- Check in on their experience first. Let them share organically.
+- If positive, guide them to leave a review with a link or instructions.
+- If negative, empathize and offer to resolve before asking for review.
+- Never pressure. Be gracious regardless of outcome.`,
+        voice: `[VOICE STRATEGY — Review Generation]
+- Grateful, warm tone. Reference their visit or purchase specifically.
+- Ask how their experience was before requesting a review.
+- If positive: "Would you be willing to share that in a quick review? I can text you a link."
+- If negative: "I'm sorry to hear that. Let me see what I can do to help."
+- Keep it brief. Confirm how they'd like to receive the review link.`,
+    },
+};
+
 export type MissionProfile =
     | 'database-reactivation'
     | 'inbound-nurture'
@@ -51,8 +185,8 @@ export interface MissionProfileConfig {
     icon: string; // lucide-react icon name
     systemPrompt: string;
     suggestedPrompts: string[];
-    /** Shorter variants for SMS (under 160 chars) */
-    suggestedPromptsSms?: string[];
+    /** Channel-specific suggested prompt variants */
+    suggestedPromptsByChannel?: Partial<Record<Channel, string[]>>;
 }
 
 /**
@@ -88,11 +222,17 @@ Always be helpful, conversational, and focus on understanding their needs before
             "Are you still looking for solutions in this area?",
             "Would you be interested in hearing about our latest updates?",
         ],
-        suggestedPromptsSms: [
-            "Hi! We haven't connected in a while. How are things?",
-            "Still looking for solutions? We have updates.",
-            "Reply YES to hear about our latest offers.",
-        ],
+        suggestedPromptsByChannel: {
+            sms: [
+                "Hi! We haven't connected in a while. How are things?",
+                "Still looking for solutions? We have updates.",
+                "Reply YES to hear about our latest offers.",
+            ],
+            voice: [
+                "Hi there! It's been a while since we connected. How have things been?",
+                "I'm calling to check in — are you still in the market?",
+            ],
+        },
     },
 
     'inbound-nurture': {
@@ -124,11 +264,17 @@ Be helpful and informative without being pushy. Focus on education and value rat
             "Do you have any specific questions I can help with?",
             "Would you like me to walk you through our options?",
         ],
-        suggestedPromptsSms: [
-            "Welcome! What can I help you with?",
-            "Any questions? Reply here.",
-            "Reply to get started.",
-        ],
+        suggestedPromptsByChannel: {
+            sms: [
+                "Welcome! What can I help you with?",
+                "Any questions? Reply here.",
+                "Reply to get started.",
+            ],
+            voice: [
+                "Thanks for calling! What can I help you with today?",
+                "I'd love to learn more about what you're looking for.",
+            ],
+        },
     },
 
     'customer-service': {
@@ -160,11 +306,17 @@ Always prioritize customer satisfaction. If you can't solve an issue, acknowledg
             "Can you tell me more about what's happening?",
             "Is there anything else I can assist you with?",
         ],
-        suggestedPromptsSms: [
-            "How can I help? Reply here.",
-            "Tell me what's going on.",
-            "I'm here to help.",
-        ],
+        suggestedPromptsByChannel: {
+            sms: [
+                "How can I help? Reply here.",
+                "Tell me what's going on.",
+                "I'm here to help.",
+            ],
+            voice: [
+                "Thanks for calling. How can I help you today?",
+                "I'm here to help. What's going on?",
+            ],
+        },
     },
 
     'review-generation': {
@@ -196,17 +348,24 @@ Be genuine and appreciative. Never pressure customers to leave reviews, and alwa
             "Would you be willing to share your feedback?",
             "Your review would really help other customers like you.",
         ],
-        suggestedPromptsSms: [
-            "How was your experience? We'd love your feedback!",
-            "Reply to leave a quick review.",
-            "Thanks for choosing us! Would you share your thoughts?",
-        ],
+        suggestedPromptsByChannel: {
+            sms: [
+                "How was your experience? We'd love your feedback!",
+                "Reply to leave a quick review.",
+                "Thanks for choosing us! Would you share your thoughts?",
+            ],
+            voice: [
+                "Thanks so much for your visit! How was your experience?",
+                "Would you be willing to share your thoughts in a quick review?",
+            ],
+        },
     },
 };
 
 /**
- * Build the system prompt with company context and optional channel.
- * When channel is provided, appends channel-specific instructions (tone, length, CTA).
+ * Build the system prompt with company context and channel.
+ * Composes: mission identity → agentContext → mission-channel strategy.
+ * Falls back to generic CHANNEL_INSTRUCTIONS for uncovered combinations.
  */
 export function buildSystemPrompt(
     profile: MissionProfile,
@@ -231,27 +390,30 @@ export function buildSystemPrompt(
         context.knowledgeBaseContext || ''
     );
 
-    // Append channel-specific instructions
-    prompt = prompt.trim() + '\n\n' + CHANNEL_INSTRUCTIONS[channel];
+    // Append mission-channel strategy (tactical instructions)
+    // Falls back to generic channel rules for uncovered combinations
+    const strategy = MISSION_CHANNEL_STRATEGY[profile]?.[channel];
+    prompt = prompt.trim() + '\n\n' + (strategy || CHANNEL_INSTRUCTIONS[channel]);
 
     return prompt.trim();
 }
 
 /**
- * Get suggested prompts for a mission, optionally channel-aware.
- * SMS uses shorter variants when available.
+ * Get suggested prompts for a mission, channel-aware.
+ * Checks suggestedPromptsByChannel[channel] first, then falls back to suggestedPrompts.
  */
 export function getSuggestedPrompts(profile: MissionProfile, channel: Channel = 'website'): string[] {
     const config = MISSION_PROFILES[profile];
-    if (channel === 'sms' && config.suggestedPromptsSms?.length) {
-        return config.suggestedPromptsSms;
+    const channelPrompts = config.suggestedPromptsByChannel?.[channel];
+    if (channelPrompts?.length) {
+        return channelPrompts;
     }
     return config.suggestedPrompts;
 }
 
 /**
  * Create initial messages for a chat session.
- * Uses channel-specific suggested prompts when channel is SMS.
+ * Uses channel-specific suggested prompts when available.
  */
 export function createInitialMessages(
     profile: MissionProfile,

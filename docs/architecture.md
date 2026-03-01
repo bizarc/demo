@@ -135,13 +135,20 @@ Leads are identified per-demo using a `nanoid` stored in `localStorage`. Each un
 
 ### Mission Profiles
 
-System prompts are templated with company context:
+System prompts are composed in three layers:
 
+1. **Mission identity** — core persona and goals, with template variables:
 ```
 {{companyName}} → "Acme Corp"
 {{industry}}    → "Technology"
-{{agentContext}} → "Offerings: Widget Pro, Widget Lite\nSpecial Offers: 20% off annual plans\nQualifications: Budget > $10k"
+{{agentContext}} → operator-provided context block
 ```
+
+2. **Agent context** — mission-specific knowledge from the operator (products, offers, policies).
+
+3. **Mission-channel strategy** — tactical instructions per mission × channel combination.
+   Each of the 4 missions has 5 channel strategies (SMS, Messenger, Email, Website, Voice) = 20 strategy blocks.
+   Example: Reactivation + SMS = "Open with ONE hook question under 160 chars. Reply YES to claim."
 
 ## Funnel Finished Context
 

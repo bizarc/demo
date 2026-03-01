@@ -121,8 +121,8 @@ AI-powered company research via Perplexity (OpenRouter), implemented as part of 
 ### 3.3 Improved Scraping & Context Generation (Complete)
 Completed: multi-page crawling, structured extraction (products, pricing, FAQs), and logo/color improvements. Fixed array struct (`products`, `offers`, `qualifications`) replaced with single mission-aware `agent_context` prose block to match RECON research output better.
 
-### 3.4 Advanced Prompt Engineering (Missions x Channels)
-Detailed prompt templates per mission (Reactivation, Nurture, Service, Review) crossed with channel (SMS, Voice, Website Chat, Messenger). Includes tone, length, CTA style, and compliance.
+### 3.4 Advanced Prompt Engineering (Missions x Channels) (Complete)
+Implemented `MISSION_CHANNEL_STRATEGY` — 20 tactical prompt blocks (4 missions × 5 channels). Each block provides channel-specific behavior instructions (tone, length, CTA style, compliance). `buildSystemPrompt()` now composes mission identity → agentContext → mission-channel strategy. `suggestedPromptsByChannel` replaces the old SMS-only variants.
 
 ### 3.5 Knowledge Bases (RAG)
 Completed for LAB scope: mission-specific knowledge stores with Supabase pgvector, ingestion flow, and retrieval integration. Next step is RECON alignment for platform-global internal reuse in RADAR and THE LAB, with BLUEPRINT consuming approved assets.
