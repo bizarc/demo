@@ -9,6 +9,15 @@ ALTER TABLE knowledge_bases ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAUL
 ALTER TABLE knowledge_bases ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE knowledge_bases ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 
+-- Ensure update_updated_at_column function exists
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
 -- Add updated_at trigger for knowledge_bases
 CREATE OR REPLACE TRIGGER knowledge_bases_updated_at
     BEFORE UPDATE ON knowledge_bases

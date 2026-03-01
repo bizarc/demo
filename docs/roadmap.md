@@ -39,17 +39,16 @@ Design system (23 UI components), full demo builder with 5-step wizard, branded 
 
 RECON is the platform-global system of record for shared intelligence. It is consumed by the LAB (already), RADAR, and BLUEPRINT.
 
-**What exists today:**
-- Research records (`research_records` table, `POST/GET /api/research`)
-- Knowledge bases with pgvector (scoped to LAB demos)
-- AI enrichment via Perplexity (OpenRouter)
-
-**What needs to be built:**
-- [ ] **RECON UI** — Standalone dashboard at `/recon` to browse, search, and manage research records and knowledge bases independent of any demo
-- [ ] **Knowledge base promotion** — Decouple KBs from individual demos; make them RECON-owned assets that demos *reference* (FK) rather than own
-- [ ] **Research record lifecycle** — Status workflow: `draft` → `reviewed` → `approved` → `archived`
-- [ ] **Asset versioning** — Version tracking for KBs and research records so downstream consumers (demos, campaigns) can pin to a specific version
-- [ ] **RECON API expansion** — `PATCH /api/research/[id]`, bulk operations, search/filter, tagging
+## Phase 4: Foundational Intelligence & Tooling (Q2)
+#### 4.1 RECON Module Buildout 🏁
+*Status: Complete*
+- Decouples Knowledge Bases from individual demos.
+- Establishes global `knowledge_bases` managed by `role` instead of `workspace_id`.
+- Creates specialized `/recon` UI for managing:
+  - Global Prompts & System Instructions
+  - Shared Knowledge Bases (docs, embeddings)
+  - Research Records 
+- Enables "Select Existing KB" in Demo Builder.
 
 **Dependencies:** None — can start immediately. Existing `/api/research` and KB routes are the foundation.
 

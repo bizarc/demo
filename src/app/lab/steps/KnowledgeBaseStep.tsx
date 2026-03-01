@@ -1,7 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Database, Upload, FileText, X } from 'lucide-react';
+import { Database, Upload, FileText, X, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+
+interface KB {
+    id: string;
+    name: string;
+    description: string | null;
+}
 
 interface KnowledgeBaseStepProps {
     draftId: string | null;
@@ -39,11 +46,32 @@ export function KnowledgeBaseStep({
     onNext,
     onBack,
 }: KnowledgeBaseStepProps) {
+    const [availableKbs, setAvailableKbs] = useState<KB[]>([]);
+    const [loadingKbs, setLoadingKbs] = useState(true);
     const [creating, setCreating] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isCreatingInline, setIsCreatingInline] = useState(false);
+    const [newKbName, setNewKbName] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Fetch available approved KBs from RECON
+    useEffect(() => {
+        async function fetchKbs() {
+            try {
+                const res = await fetch('/api/knowledge-base?status=approved');
+                const data = await res.json();
+                setAvailableKbs(data.knowledgeBases || []);
+            } catch (err) {
+                console.error('Failed to fetch KBs:', err);
+            } finally {
+                setLoadingKbs(false);
+            }
+        }
+        fetchKbs();
+    }, []);
+
+    // Fetch documents if an existing KB is selected but docs aren't loaded
     useEffect(() => {
         if (knowledgeBaseId && documents.length === 0) {
             fetch(`/api/knowledge-base/${knowledgeBaseId}`)
@@ -53,22 +81,43 @@ export function KnowledgeBaseStep({
                         onUpdate({ documents: data.documents });
                     }
                 })
-                .catch(() => {});
+                .catch(() => { });
         }
     }, [knowledgeBaseId]);
 
-    const createKnowledgeBase = async () => {
-        if (!draftId) return;
+    const handleSelectExisting = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const val = e.target.value;
+        if (!val) {
+            onUpdate({ knowledgeBaseId: null, documents: [] });
+            return;
+        }
+        if (val === 'CREATE_NEW') {
+            setIsCreatingInline(true);
+            return;
+        }
+        setIsCreatingInline(false);
+        onUpdate({ knowledgeBaseId: val, documents: [] });
+    };
+
+    const createInlineKnowledgeBase = async () => {
+        if (!newKbName.trim()) {
+            setError('Please provide a name for the new knowledge base.');
+            return;
+        }
         setCreating(true);
         setError(null);
         try {
             const res = await fetch('/api/knowledge-base', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ demoId: draftId, name: 'Default', type: 'custom' }),
+                body: JSON.stringify({ name: newKbName.trim(), type: 'custom' }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to create knowledge base');
+
+            setAvailableKbs(prev => [data, ...prev]);
+            setIsCreatingInline(false);
+            setNewKbName('');
             onUpdate({ knowledgeBaseId: data.id, documents: [] });
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to create');
@@ -130,48 +179,81 @@ export function KnowledgeBaseStep({
 
     return (
         <div>
-            <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                Knowledge base
+            <h2 className="mb-2 text-2xl font-semibold text-foreground">
+                Knowledge Base (RECON)
             </h2>
-            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '24px' }}>
-                Upload documents (FAQs, product catalogs, etc.) to give your agent additional context. Optional.
+            <p className="mb-6 text-sm text-foreground-secondary">
+                Connect a RECON Knowledge Base to give your agent additional context. You can select an existing approved KB or create a new global asset inline.
             </p>
 
-            {!knowledgeBaseId ? (
-                <div style={{
-                    border: '2px dashed var(--color-border)',
-                    borderRadius: '8px',
-                    padding: '32px',
-                    textAlign: 'center',
-                    marginBottom: '24px',
-                }}>
-                    <Database size={40} style={{ color: 'var(--color-text-muted)', marginBottom: '12px' }} />
-                    <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
-                        Add a knowledge base to enhance your agent with document-based answers
-                    </p>
-                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <button
-                            onClick={createKnowledgeBase}
-                            disabled={!draftId || creating}
-                            style={{
-                                ...btnBase,
-                                background: 'var(--color-primary)',
-                                color: '#FFFFFF',
-                                opacity: draftId && !creating ? 1 : 0.6,
-                            }}
-                        >
-                            {creating ? 'Creating...' : 'Create knowledge base'}
-                        </button>
-                        <button
-                            onClick={skipAndNext}
-                            style={{ ...btnBase, background: 'transparent', color: 'var(--color-text-secondary)' }}
-                        >
-                            Skip
-                        </button>
-                    </div>
+            <div className="mb-6 rounded-lg border border-border p-6 shadow-sm">
+                <label className="mb-2 block text-sm font-medium text-foreground">
+                    Connect Knowledge Base
+                </label>
+
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                    {!isCreatingInline ? (
+                        <div className="flex-1">
+                            <select
+                                className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+                                value={knowledgeBaseId || ''}
+                                onChange={handleSelectExisting}
+                                disabled={loadingKbs}
+                            >
+                                <option value="">None (Skip)</option>
+                                {availableKbs.map((kb) => (
+                                    <option key={kb.id} value={kb.id}>
+                                        {kb.name}
+                                    </option>
+                                ))}
+                                <option disabled>──────────</option>
+                                <option value="CREATE_NEW">+ Create new KB...</option>
+                            </select>
+                            {loadingKbs && <p className="mt-1 text-xs text-foreground-tertiary">Loading KBs...</p>}
+                        </div>
+                    ) : (
+                        <div className="flex-1 space-y-3">
+                            <div>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. Acme Sales Playbook"
+                                    className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                    value={newKbName}
+                                    onChange={(e) => setNewKbName(e.target.value)}
+                                    autoFocus
+                                />
+                                <p className="mt-1 text-xs text-foreground-tertiary">
+                                    This KB will be created in RECON as a 'draft' global asset.
+                                </p>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="primary"
+                                    size="sm"
+                                    onClick={createInlineKnowledgeBase}
+                                    disabled={creating || !newKbName.trim()}
+                                >
+                                    {creating ? 'Creating...' : 'Create KB'}
+                                </Button>
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => {
+                                        setIsCreatingInline(false);
+                                        setNewKbName('');
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </div>
-            ) : (
+            </div>
+
+            {knowledgeBaseId && !isCreatingInline && (
                 <>
+                    <h3 className="mb-3 text-sm font-medium text-foreground">Manage Documents</h3>
                     <div style={{
                         border: '2px dashed var(--color-border)',
                         borderRadius: '8px',
@@ -240,42 +322,53 @@ export function KnowledgeBaseStep({
                             ))}
                         </ul>
                     )}
-
-                    {error && (
-                        <div style={{
-                            padding: '12px',
-                            background: 'var(--color-error-bg)',
-                            borderRadius: '6px',
-                            color: 'var(--color-error-text)',
-                            fontSize: '14px',
-                            marginBottom: '16px',
-                        }}>
-                            {error}
-                        </div>
-                    )}
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <button
-                            onClick={onBack}
-                            style={{ ...btnBase, background: 'transparent', color: 'var(--color-text-secondary)' }}
-                        >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M15 19l-7-7 7-7" />
-                            </svg>
-                            Back
-                        </button>
-                        <button
-                            onClick={onNext}
-                            style={{ ...btnBase, background: 'var(--color-primary)', color: '#FFFFFF' }}
-                        >
-                            Continue
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-                    </div>
                 </>
             )}
+
+            {error && (
+                <div style={{
+                    padding: '12px',
+                    background: 'var(--color-error-bg)',
+                    borderRadius: '6px',
+                    color: 'var(--color-error-text)',
+                    fontSize: '14px',
+                    marginBottom: '16px',
+                }}>
+                    {error}
+                </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px' }}>
+                <button
+                    onClick={onBack}
+                    style={{ ...btnBase, background: 'transparent', color: 'var(--color-text-secondary)' }}
+                >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back
+                </button>
+                <div className="flex gap-3">
+                    {!knowledgeBaseId && !isCreatingInline && (
+                        <button
+                            onClick={skipAndNext}
+                            style={{ ...btnBase, background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}
+                        >
+                            Skip Content
+                        </button>
+                    )}
+                    <button
+                        onClick={onNext}
+                        style={{ ...btnBase, background: 'var(--color-primary)', color: '#FFFFFF' }}
+                    >
+                        Continue
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
+
