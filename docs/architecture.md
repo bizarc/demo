@@ -140,8 +140,7 @@ System prompts are templated with company context:
 ```
 {{companyName}} → "Acme Corp"
 {{industry}}    → "Technology"
-{{products}}    → "Widget Pro, Widget Lite"
-{{offers}}      → "20% off annual plans"
+{{agentContext}} → "Offerings: Widget Pro, Widget Lite\nSpecial Offers: 20% off annual plans\nQualifications: Budget > $10k"
 ```
 
 ## Funnel Finished Context
@@ -167,9 +166,9 @@ RECON is the system of record for shared intelligence assets:
 
 ### RECON Research Integration
 
-- **POST /api/research** — Runs AI research via Perplexity (OpenRouter) for a company. Input: `companyName`, optional `websiteUrl`, `industry`. Stores results in `research_records` when migrations are applied; returns enrichment (summary, offerings, competitors, market_position, qualification_notes) in all cases.
+- **POST /api/research** — Runs AI research via Perplexity (OpenRouter) for a company. Input: `companyName`, optional `websiteUrl`, `industry`, `missionProfile`. Stores results in `research_records` when migrations are applied; returns enrichment (`context_block`, `summary`, `competitors`) in all cases.
 - **GET /api/research** — Lists research records (filterable by status).
-- **LAB Builder Step 3 (Context)** — "Run AI Research" button merges Perplexity output into products, offers, and qualification criteria fields. Requires `OPENROUTER_API_KEY`.
+- **LAB Builder Step 3 (Context)** — "Run AI Research" button merges Perplexity output into the `agentContext` block. Requires `OPENROUTER_API_KEY`.
 
 Module contracts:
 

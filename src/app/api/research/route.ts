@@ -36,11 +36,12 @@ export async function POST(request: NextRequest) {
     if (authResult instanceof Response) return authResult;
 
     const body = await request.json().catch(() => ({}));
-    const { companyName, websiteUrl, industry, demoId } = body as {
+    const { companyName, websiteUrl, industry, demoId, missionProfile } = body as {
         companyName?: string;
         websiteUrl?: string;
         industry?: string;
         demoId?: string;
+        missionProfile?: string;
     };
 
     const company = typeof companyName === 'string' ? companyName.trim() : '';
@@ -57,14 +58,23 @@ export async function POST(request: NextRequest) {
     const url = typeof websiteUrl === 'string' ? websiteUrl.trim() : '';
     const ind = typeof industry === 'string' ? industry.trim() : '';
 
+    let contextInstructions = `- "context_block": 2-3 paragraphs describing the company's offerings and target audience`;
+    if (missionProfile === 'database-reactivation') {
+        contextInstructions = `- "context_block": describe offerings to re-pitch, win-back deals/incentives for returning customers, and signals of a good reactivation candidate`;
+    } else if (missionProfile === 'inbound-nurture') {
+        contextInstructions = `- "context_block": describe core products/services, trial/demo offers, and key qualification questions (budget, timeline, authority)`;
+    } else if (missionProfile === 'customer-service') {
+        contextInstructions = `- "context_block": describe services supported, common customer issues, and standard escalation policies`;
+    } else if (missionProfile === 'review-generation') {
+        contextInstructions = `- "context_block": describe the typical service delivered, review incentives (if any seen), and target audience for feedback`;
+    }
+
     const prompt = `You are a business research assistant. Research the company "${company}"${url ? ` (website: ${url})` : ''}${ind ? ` in the ${ind} industry` : ''}.
 
 Return a JSON object with these exact keys (no other keys):
 - "summary": 2-4 sentence company overview
-- "offerings": array of strings (products/services - max 10 items)
 - "competitors": array of strings (competitor names - max 5)
-- "market_position": brief 1-2 sentence market positioning
-- "qualification_notes": brief notes on what makes a qualified lead (optional)
+${contextInstructions}
 
 Output ONLY valid JSON, no markdown or extra text.`;
 
@@ -77,10 +87,8 @@ Output ONLY valid JSON, no markdown or extra text.`;
 
         let parsed: {
             summary?: string;
-            offerings?: string[];
             competitors?: string[];
-            market_position?: string;
-            qualification_notes?: string;
+            context_block?: string;
         } = {};
         const jsonMatch = response.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
@@ -94,16 +102,13 @@ Output ONLY valid JSON, no markdown or extra text.`;
         }
 
         const summary = typeof parsed.summary === 'string' ? parsed.summary : '';
-        const offerings = Array.isArray(parsed.offerings) ? parsed.offerings : [];
         const competitors = Array.isArray(parsed.competitors) ? parsed.competitors : [];
-        const marketPosition = typeof parsed.market_position === 'string' ? parsed.market_position : null;
+        const context_block = typeof parsed.context_block === 'string' ? parsed.context_block : '';
 
         const enrichment = {
             summary,
-            offerings,
             competitors,
-            market_position: marketPosition,
-            qualification_notes: typeof parsed.qualification_notes === 'string' ? parsed.qualification_notes : '',
+            context_block,
         };
 
         const { data: record, error } = await supabase
@@ -115,8 +120,6 @@ Output ONLY valid JSON, no markdown or extra text.`;
                 title: `${company} - AI Research`,
                 summary: summary || 'No summary generated',
                 competitors,
-                market_position: marketPosition,
-                offerings,
                 tech_stack: [],
                 evidence: [],
                 status: 'draft',

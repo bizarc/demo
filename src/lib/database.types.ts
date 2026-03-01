@@ -23,9 +23,7 @@ export interface Database {
                     company_name: string | null
                     industry: string | null
                     website_url: string | null
-                    products_services: string[]
-                    offers: string[]
-                    qualification_criteria: string[]
+                    agent_context: string | null
                     logo_url: string | null
                     primary_color: string
                     secondary_color: string
@@ -52,9 +50,7 @@ export interface Database {
                     company_name?: string | null
                     industry?: string | null
                     website_url?: string | null
-                    products_services?: string[]
-                    offers?: string[]
-                    qualification_criteria?: string[]
+                    agent_context?: string | null
                     logo_url?: string | null
                     primary_color?: string
                     secondary_color?: string
@@ -81,9 +77,7 @@ export interface Database {
                     company_name?: string | null
                     industry?: string | null
                     website_url?: string | null
-                    products_services?: string[]
-                    offers?: string[]
-                    qualification_criteria?: string[]
+                    agent_context?: string | null
                     logo_url?: string | null
                     primary_color?: string
                     secondary_color?: string

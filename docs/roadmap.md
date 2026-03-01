@@ -118,8 +118,8 @@ Built the end-to-end demo creation and chat experience.
 ### 3.2 Research Skill (Company Intelligence)
 AI-powered company research via Perplexity (OpenRouter), implemented as part of **RECON**. POST/GET `/api/research`; "Run AI Research" in LAB builder Step 3 enriches context. Research can be auto-run or on-demand and consumed by RADAR, THE LAB, and BLUEPRINT.
 
-### 3.3 Improved Scraping & Context Generation
-Completed: multi-page crawling, structured extraction (products, pricing, FAQs), and logo/color improvements. Output is designed to merge with RECON research context.
+### 3.3 Improved Scraping & Context Generation (Complete)
+Completed: multi-page crawling, structured extraction (products, pricing, FAQs), and logo/color improvements. Fixed array struct (`products`, `offers`, `qualifications`) replaced with single mission-aware `agent_context` prose block to match RECON research output better.
 
 ### 3.4 Advanced Prompt Engineering (Missions x Channels)
 Detailed prompt templates per mission (Reactivation, Nurture, Service, Review) crossed with channel (SMS, Voice, Website Chat, Messenger). Includes tone, length, CTA style, and compliance.

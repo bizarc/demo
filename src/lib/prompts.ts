@@ -76,9 +76,9 @@ Your goal is to reconnect with past customers or leads who haven't engaged recen
 Company Context:
 - Company: {{companyName}}
 - Industry: {{industry}}
-- Products/Services: {{products}}
-- Current Offers: {{offers}}
-{{qualificationCriteria}}
+
+Context:
+{{agentContext}}
 {{knowledgeBaseContext}}
 
 Always be helpful, conversational, and focus on understanding their needs before pitching. If they're not interested, gracefully accept and offer to stay in touch.`,
@@ -112,9 +112,9 @@ Your goal is to help inbound leads by answering questions, understanding their n
 Company Context:
 - Company: {{companyName}}
 - Industry: {{industry}}
-- Products/Services: {{products}}
-- Current Offers: {{offers}}
-{{qualificationCriteria}}
+
+Context:
+{{agentContext}}
 {{knowledgeBaseContext}}
 
 Be helpful and informative without being pushy. Focus on education and value rather than aggressive sales tactics.`,
@@ -148,8 +148,9 @@ Your goal is to assist existing customers with their questions, issues, and need
 Company Context:
 - Company: {{companyName}}
 - Industry: {{industry}}
-- Products/Services: {{products}}
-{{qualificationCriteria}}
+
+Context:
+{{agentContext}}
 {{knowledgeBaseContext}}
 
 Always prioritize customer satisfaction. If you can't solve an issue, acknowledge it and offer to connect them with someone who can.`,
@@ -183,8 +184,9 @@ Your goal is to encourage satisfied customers to share their experiences and lea
 Company Context:
 - Company: {{companyName}}
 - Industry: {{industry}}
-- Products/Services: {{products}}
-{{qualificationCriteria}}
+
+Context:
+{{agentContext}}
 {{knowledgeBaseContext}}
 
 Be genuine and appreciative. Never pressure customers to leave reviews, and always handle negative experiences with empathy and a desire to improve.`,
@@ -211,9 +213,7 @@ export function buildSystemPrompt(
     context: {
         companyName: string;
         industry?: string | null;
-        products?: string[];
-        offers?: string[];
-        qualificationCriteria?: string;
+        agentContext?: string;
         knowledgeBaseContext?: string;
     },
     channel: Channel = 'website'
@@ -223,18 +223,7 @@ export function buildSystemPrompt(
     let prompt = config.systemPrompt
         .replace(/\{\{companyName\}\}/g, context.companyName)
         .replace(/\{\{industry\}\}/g, context.industry || 'General Business')
-        .replace(/\{\{products\}\}/g, context.products?.join(', ') || 'Various products and services')
-        .replace(/\{\{offers\}\}/g, context.offers?.join(', ') || 'Contact us for current offers');
-
-    // Handle qualification criteria
-    if (context.qualificationCriteria) {
-        prompt = prompt.replace(
-            /\{\{qualificationCriteria\}\}/g,
-            `- Qualification Criteria: ${context.qualificationCriteria}`
-        );
-    } else {
-        prompt = prompt.replace(/\{\{qualificationCriteria\}\}/g, '');
-    }
+        .replace(/\{\{agentContext\}\}/g, context.agentContext || 'No additional context provided.');
 
     // Handle knowledge base context (RAG retrieval)
     prompt = prompt.replace(
@@ -274,4 +263,71 @@ export function createInitialMessages(
         { role: 'system', content: systemPrompt },
         { role: 'assistant', content: prompts[0] },
     ];
+}
+
+/**
+ * Pre-filled templates for the builder UI context step.
+ */
+export const MISSION_CONTEXT_TEMPLATES: Record<MissionProfile, string> = {
+    'database-reactivation': `Offerings:
+[List products or services to re-pitch]
+
+Win-back offer:
+[Incentive for returning customers, e.g., 20% off your next order]
+
+Target re-engagement signals:
+[e.g., Previously purchased X, hasn't bought in 6 months]`,
+
+    'inbound-nurture': `Products/Services:
+[List products or services available]
+
+Trial or demo offer:
+[e.g., 14-day free trial, Book a free consultation]
+
+Qualification questions:
+[e.g., What is your timeline? What is your budget?]`,
+
+    'customer-service': `Services supported:
+[List products or services the agent can troubleshoot]
+
+Common issues:
+[e.g., Billing questions, Password resets, Delivery delays]
+
+Escalation policy:
+[e.g., If the customer asks for a refund, transfer to human]`,
+
+    'review-generation': `Service delivered:
+[What did the customer buy or experience?]
+
+Review incentive (optional):
+[e.g., Get 10% off your next order for leaving a review]
+
+Target audience:
+[e.g., Recent purchasers, High satisfaction rating]`,
+};
+
+/**
+ * Build the initial text for the ContextStep textarea based on scrape results.
+ */
+export function buildMissionContextTemplate(profile: MissionProfile, scrapeResult: any): string {
+    const template = MISSION_CONTEXT_TEMPLATES[profile];
+
+    // Simple replacement if scrape data exists
+    let context = template;
+
+    if (scrapeResult.products && scrapeResult.products.length > 0) {
+        context = context.replace(
+            /\[List products or services.*?\]/i,
+            scrapeResult.products.join(', ')
+        );
+    }
+
+    if (scrapeResult.offers && scrapeResult.offers.length > 0) {
+        context = context.replace(
+            /\[(?:Incentive|e\.g\.,.*?discount|Trial or demo).*?\]/i,
+            scrapeResult.offers.join(', ')
+        );
+    }
+
+    return context;
 }

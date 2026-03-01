@@ -258,9 +258,7 @@ export async function POST(request: NextRequest) {
             systemPrompt = buildSystemPrompt(fullProfile, {
                 companyName: demo.company_name || 'Company',
                 industry: demo.industry,
-                products: demo.products_services || [],
-                offers: demo.offers || [],
-                qualificationCriteria: demo.qualification_criteria?.join(', '),
+                agentContext: demo.agent_context || undefined,
             }, channel);
         } else {
             // Fallback for drafts without a mission profile

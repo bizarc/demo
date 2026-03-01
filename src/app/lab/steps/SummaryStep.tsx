@@ -86,9 +86,7 @@ export function SummaryStep({ formData, onBack, onActivate }: SummaryStepProps) 
                         company_name: formData.companyName,
                         industry: formData.industry,
                         website_url: formData.websiteUrl,
-                        products_services: formData.productsServices,
-                        offers: formData.offers,
-                        qualification_criteria: formData.qualificationCriteria,
+                        agent_context: formData.agentContext,
                         logo_url: formData.logoUrl,
                         primary_color: formData.primaryColor,
                         openrouter_model: formData.model,
@@ -156,12 +154,14 @@ export function SummaryStep({ formData, onBack, onActivate }: SummaryStepProps) 
                     <div style={valueCol}>{formData.websiteUrl || '—'}</div>
                 </div>
                 <div style={rowStyle}>
-                    <div style={labelCol}>Products</div>
-                    <div style={valueCol}>{formData.productsServices || '—'}</div>
-                </div>
-                <div style={rowStyle}>
-                    <div style={labelCol}>Offers</div>
-                    <div style={valueCol}>{formData.offers || '—'}</div>
+                    <div style={labelCol}>Agent Context</div>
+                    <div style={{ ...valueCol, whiteSpace: 'pre-wrap' }}>
+                        {formData.agentContext ? (
+                            formData.agentContext.length > 150
+                                ? formData.agentContext.substring(0, 150) + '...'
+                                : formData.agentContext
+                        ) : '—'}
+                    </div>
                 </div>
                 <div style={rowStyle}>
                     <div style={labelCol}>Model</div>

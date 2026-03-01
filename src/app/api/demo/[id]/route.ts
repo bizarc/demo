@@ -73,9 +73,7 @@ export async function GET(
             company_name: demo.company_name,
             industry: demo.industry,
             website_url: demo.website_url,
-            products_services: demo.products_services,
-            offers: demo.offers,
-            qualification_criteria: demo.qualification_criteria,
+            agent_context: demo.agent_context,
             logo_url: demo.logo_url,
             primary_color: demo.primary_color,
             secondary_color: demo.secondary_color,
@@ -153,9 +151,6 @@ export async function PATCH(
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        const toArray = (val: string | string[] | undefined) =>
-            val === undefined ? undefined : sanitizeStringArray(val, LIMITS.productsServicesItems, LIMITS.itemLength);
-
         // Build update payload (only include fields that are provided)
         const updatePayload: Record<string, unknown> = {};
 
@@ -165,9 +160,7 @@ export async function PATCH(
             const urlResult = validateUrl(body.website_url);
             updatePayload.website_url = urlResult.valid ? urlResult.url : null;
         }
-        if (body.products_services !== undefined) updatePayload.products_services = toArray(body.products_services);
-        if (body.offers !== undefined) updatePayload.offers = toArray(body.offers);
-        if (body.qualification_criteria !== undefined) updatePayload.qualification_criteria = toArray(body.qualification_criteria);
+        if (body.agent_context !== undefined) updatePayload.agent_context = sanitizeString(body.agent_context, LIMITS.agentContext) || null;
         if (body.logo_url !== undefined) {
             const r = validateUrl(body.logo_url);
             updatePayload.logo_url = r.valid ? r.url : null;
@@ -222,15 +215,9 @@ export async function PATCH(
             // Merge body updates with existing data
             const mergedCompanyName = body.company_name || fullDemo.company_name;
             const mergedIndustry = body.industry !== undefined ? body.industry : fullDemo.industry;
-            const mergedProducts = body.products_services !== undefined
-                ? toArray(body.products_services) || []
-                : fullDemo.products_services || [];
-            const mergedOffers = body.offers !== undefined
-                ? toArray(body.offers) || []
-                : fullDemo.offers || [];
-            const mergedQualCriteria = body.qualification_criteria !== undefined
-                ? body.qualification_criteria
-                : fullDemo.qualification_criteria?.join(', ');
+            const mergedContext = body.agent_context !== undefined
+                ? body.agent_context
+                : fullDemo.agent_context;
             const mergedChannel: Channel = (body.channel && VALID_CHANNELS.includes(body.channel))
                 ? body.channel
                 : (fullDemo.channel && VALID_CHANNELS.includes(fullDemo.channel as Channel) ? (fullDemo.channel as Channel) : 'website');
@@ -241,9 +228,7 @@ export async function PATCH(
             const system_prompt = buildSystemPrompt(promptProfile, {
                 companyName: mergedCompanyName,
                 industry: mergedIndustry,
-                products: mergedProducts,
-                offers: mergedOffers,
-                qualificationCriteria: mergedQualCriteria,
+                agentContext: mergedContext || undefined,
             }, mergedChannel);
 
             if (mergedChannel === 'sms') {

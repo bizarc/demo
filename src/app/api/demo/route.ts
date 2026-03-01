@@ -47,9 +47,7 @@ export async function POST(request: NextRequest) {
             company_name,
             industry,
             website_url,
-            products_services,
-            offers,
-            qualification_criteria,
+            agent_context,
             logo_url,
             primary_color,
             secondary_color,
@@ -60,10 +58,6 @@ export async function POST(request: NextRequest) {
         const channel = bodyChannel && VALID_CHANNELS.includes(bodyChannel) ? bodyChannel : 'website';
 
         const created_by = userId !== null ? userId : (sanitizeString(bodyCreatedBy, LIMITS.creatorId) || null);
-
-        const toArray = (val: string | string[] | undefined, maxItems = LIMITS.productsServicesItems): string[] => {
-            return sanitizeStringArray(val, maxItems, LIMITS.itemLength);
-        };
 
         const supabase = createServerClient();
 
@@ -90,9 +84,7 @@ export async function POST(request: NextRequest) {
                     company_name: sanitizeString(company_name, LIMITS.companyName) || null,
                     industry: sanitizeString(industry, LIMITS.industry) || null,
                     website_url: safeWebsiteUrl,
-                    products_services: toArray(products_services),
-                    offers: toArray(offers),
-                    qualification_criteria: toArray(qualification_criteria),
+                    agent_context: sanitizeString(agent_context, LIMITS.agentContext) || null,
                     logo_url: (() => {
                         if (!logo_url) return null;
                         const r = validateUrl(logo_url);
@@ -151,9 +143,7 @@ export async function POST(request: NextRequest) {
             {
                 companyName: company_name,
                 industry,
-                products: toArray(products_services),
-                offers: toArray(offers),
-                qualificationCriteria: qualification_criteria,
+                agentContext: agent_context || undefined,
             },
             channel as Channel
         );
@@ -167,9 +157,7 @@ export async function POST(request: NextRequest) {
                 company_name: sanitizeString(company_name, LIMITS.companyName),
                 industry: sanitizeString(industry, LIMITS.industry) || null,
                 website_url: safeWebsiteUrl,
-                products_services: toArray(products_services),
-                offers: toArray(offers),
-                qualification_criteria: toArray(qualification_criteria, LIMITS.qualificationItems),
+                agent_context: sanitizeString(agent_context, LIMITS.agentContext) || null,
                 logo_url: (() => {
                     if (!logo_url) return null;
                     const r = validateUrl(logo_url);

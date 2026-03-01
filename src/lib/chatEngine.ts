@@ -24,9 +24,7 @@ export async function processMessageSync(
             id: string;
             company_name: string | null;
             industry: string | null;
-            products_services?: string[] | null;
-            offers?: string[] | null;
-            qualification_criteria?: string[] | null;
+            agent_context?: string | null;
             mission_profile?: string | null;
             system_prompt?: string | null;
             openrouter_model?: string | null;
@@ -63,9 +61,7 @@ export async function processMessageSync(
         systemPrompt = buildSystemPrompt(fullProfile, {
             companyName: demo.company_name || 'Company',
             industry: demo.industry,
-            products: demo.products_services || [],
-            offers: demo.offers || [],
-            qualificationCriteria: demo.qualification_criteria?.join(', '),
+            agentContext: demo.agent_context || undefined,
         }, ch);
     } else {
         systemPrompt = `You are a helpful AI assistant for ${demo.company_name || 'a company'}. Be professional and helpful.`;

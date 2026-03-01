@@ -11,7 +11,7 @@ import { KnowledgeBaseStep } from './steps/KnowledgeBaseStep';
 import { ModelStep } from './steps/ModelStep';
 import { SummaryStep } from './steps/SummaryStep';
 import { ChatPreview } from './ChatPreview';
-import { MissionProfile, Channel } from '@/lib/prompts';
+import { MissionProfile, Channel, buildMissionContextTemplate } from '@/lib/prompts';
 import { ScrapeResult } from '@/lib/scraper';
 import { useAutosave } from '@/lib/useAutosave';
 import { trackUxEvent } from '@/lib/uxMetrics';
@@ -24,9 +24,7 @@ export interface DemoFormData {
     scrapeResult: ScrapeResult | null;
     companyName: string;
     industry: string;
-    productsServices: string;
-    offers: string;
-    qualificationCriteria: string;
+    agentContext: string;
     logoUrl: string;
     primaryColor: string;
     knowledgeBaseId: string | null;
@@ -51,9 +49,7 @@ export const INITIAL_FORM_DATA: DemoFormData = {
     scrapeResult: null,
     companyName: '',
     industry: '',
-    productsServices: '',
-    offers: '',
-    qualificationCriteria: '',
+    agentContext: '',
     logoUrl: '',
     primaryColor: '#2563EB',
     knowledgeBaseId: null,
@@ -105,15 +101,7 @@ export function demoRowToFormData(demo: Record<string, unknown>): DemoFormData {
         scrapeResult: null, // Not stored in DB
         companyName: (demo.company_name as string) || '',
         industry: (demo.industry as string) || '',
-        productsServices: Array.isArray(demo.products_services)
-            ? (demo.products_services as string[]).join(', ')
-            : '',
-        offers: Array.isArray(demo.offers)
-            ? (demo.offers as string[]).join(', ')
-            : '',
-        qualificationCriteria: Array.isArray(demo.qualification_criteria)
-            ? (demo.qualification_criteria as string[]).join(', ')
-            : '',
+        agentContext: (demo.agent_context as string) || '',
         logoUrl: (demo.logo_url as string) || '',
         primaryColor: (demo.primary_color as string) || '#2563EB',
         knowledgeBaseId: (demo.knowledge_base_id as string) || null,
@@ -256,9 +244,7 @@ export function DemoBuilder({ initialDraftId, initialFormData, initialStep, init
                                 scrapeResult: result,
                                 companyName: result.companyName,
                                 industry: result.industry || '',
-                                productsServices: result.products.join(', '),
-                                offers: result.offers.join(', '),
-                                qualificationCriteria: result.qualifications?.join(', ') || '',
+                                agentContext: formData.missionProfile ? buildMissionContextTemplate(formData.missionProfile, result) : '',
                                 logoUrl: result.logoUrl || '',
                                 primaryColor: result.primaryColor || '#2563EB',
                             });

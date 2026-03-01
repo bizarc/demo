@@ -10,9 +10,7 @@ interface AutosaveFormData {
     websiteUrl: string;
     companyName: string;
     industry: string;
-    productsServices: string;
-    offers: string;
-    qualificationCriteria: string;
+    agentContext: string;
     logoUrl: string;
     primaryColor: string;
     knowledgeBaseId?: string | null;
@@ -53,9 +51,7 @@ function buildPayload(formData: AutosaveFormData, currentStep: string) {
         company_name: formData.companyName || undefined,
         industry: formData.industry || undefined,
         website_url: formData.websiteUrl || undefined,
-        products_services: formData.productsServices || undefined,
-        offers: formData.offers || undefined,
-        qualification_criteria: formData.qualificationCriteria || undefined,
+        agent_context: formData.agentContext || undefined,
         logo_url: formData.logoUrl || undefined,
         primary_color: formData.primaryColor || undefined,
         knowledge_base_id: formData.knowledgeBaseId || undefined,

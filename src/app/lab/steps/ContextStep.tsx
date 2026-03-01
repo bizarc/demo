@@ -12,10 +12,8 @@ interface ContextStepProps {
 
 interface ResearchEnrichment {
     summary: string;
-    offerings: string[];
     competitors: string[];
-    market_position: string | null;
-    qualification_notes: string;
+    context_block: string;
 }
 
 const labelStyle: React.CSSProperties = {
@@ -62,14 +60,7 @@ const btnBase: React.CSSProperties = {
     transition: 'background 150ms',
 };
 
-function mergeList(existing: string, add: string[]): string {
-    const a = existing
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
-    const combined = [...new Set([...a, ...add])];
-    return combined.join(', ');
-}
+// No list merging needed for context block
 
 export function ContextStep({ formData, onUpdate, onNext, onBack }: ContextStepProps) {
     const [researchLoading, setResearchLoading] = useState(false);
@@ -94,14 +85,12 @@ export function ContextStep({ formData, onUpdate, onNext, onBack }: ContextStepP
             if (!res.ok) throw new Error(data.error || 'Research failed');
             const { enrichment } = data as { enrichment?: ResearchEnrichment };
             if (enrichment) {
+                const newContext = [formData.agentContext, enrichment.context_block]
+                    .filter(Boolean)
+                    .join('\n\n--- AI Enrichment ---\n\n');
+
                 onUpdate({
-                    productsServices: mergeList(formData.productsServices, enrichment.offerings ?? []),
-                    offers: enrichment.market_position
-                        ? mergeList(formData.offers, [enrichment.market_position])
-                        : formData.offers,
-                    qualificationCriteria: enrichment.qualification_notes
-                        ? mergeList(formData.qualificationCriteria, [enrichment.qualification_notes])
-                        : formData.qualificationCriteria,
+                    agentContext: newContext,
                 });
             }
         } catch (e) {
@@ -114,10 +103,13 @@ export function ContextStep({ formData, onUpdate, onNext, onBack }: ContextStepP
     return (
         <div>
             <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                Review company context
+                {formData.missionProfile === 'customer-service' ? 'Customize your support agent'
+                    : formData.missionProfile === 'inbound-nurture' ? 'Customize your sales assistant'
+                        : formData.missionProfile === 'database-reactivation' ? 'Customize your reactivation agent'
+                            : 'Review company context'}
             </h2>
             <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '24px' }}>
-                Edit the extracted information to customize your AI agent
+                Edit the information below to guide your AI agent's conversations
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
@@ -175,39 +167,15 @@ export function ContextStep({ formData, onUpdate, onNext, onBack }: ContextStepP
                 </div>
 
                 <div>
-                    <label style={labelStyle}>Products &amp; services</label>
+                    <label style={labelStyle}>Agent Context</label>
                     <textarea
                         style={textareaStyle}
-                        value={formData.productsServices}
-                        onChange={(e) => onUpdate({ productsServices: e.target.value })}
-                        placeholder="Describe the main products or services..."
-                        rows={3}
+                        value={formData.agentContext}
+                        onChange={(e) => onUpdate({ agentContext: e.target.value })}
+                        placeholder="Describe what the agent needs to know. The AI Research button will refine this."
+                        rows={10}
                     />
-                    <p style={helperStyle}>Separate multiple items with commas</p>
-                </div>
-
-                <div>
-                    <label style={labelStyle}>Special offers</label>
-                    <textarea
-                        style={textareaStyle}
-                        value={formData.offers}
-                        onChange={(e) => onUpdate({ offers: e.target.value })}
-                        placeholder="Current promotions, discounts, or special deals..."
-                        rows={2}
-                    />
-                    <p style={helperStyle}>Leave blank if none</p>
-                </div>
-
-                <div>
-                    <label style={labelStyle}>Qualification criteria</label>
-                    <textarea
-                        style={textareaStyle}
-                        value={formData.qualificationCriteria}
-                        onChange={(e) => onUpdate({ qualificationCriteria: e.target.value })}
-                        placeholder="What makes a lead qualified? Budget, timeline, decision-maker..."
-                        rows={2}
-                    />
-                    <p style={helperStyle}>Helps the AI identify good prospects</p>
+                    <p style={helperStyle}>Mission-specific context block for the agent prompt.</p>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>

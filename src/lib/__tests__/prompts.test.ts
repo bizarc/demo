@@ -36,9 +36,7 @@ describe('buildSystemPrompt', () => {
         const result = buildSystemPrompt('database-reactivation', {
             companyName: 'Acme Corp',
             industry: 'Technology',
-            products: ['Widget Pro', 'Widget Lite'],
-            offers: ['20% off', 'Free trial'],
-            qualificationCriteria: 'Budget > $10k',
+            agentContext: 'Products: Widget Pro, Widget Lite\nOffers: 20% off, Free trial\nQualifications: Budget > $10k'
         });
 
         expect(result).toContain('Acme Corp');
@@ -56,8 +54,7 @@ describe('buildSystemPrompt', () => {
 
         expect(result).toContain('Test Co');
         expect(result).toContain('General Business');
-        expect(result).toContain('Various products and services');
-        expect(result).toContain('Contact us for current offers');
+        expect(result).toContain('No additional context provided.');
         expect(result).not.toContain('{{');
     });
 
@@ -70,13 +67,12 @@ describe('buildSystemPrompt', () => {
         expect(result).toContain('General Business');
     });
 
-    it('strips qualification criteria placeholder when not provided', () => {
+    it('uses default fallback for agentContext if none is provided', () => {
         const result = buildSystemPrompt('review-generation', {
             companyName: 'Test',
         });
 
-        expect(result).not.toContain('{{qualificationCriteria}}');
-        expect(result).not.toContain('Qualification Criteria');
+        expect(result).toContain('No additional context provided.');
     });
 
     it('generates different prompts for different profiles', () => {

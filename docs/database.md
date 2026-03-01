@@ -22,9 +22,7 @@ Stores demo configurations, drafts, and active demos.
 | `company_name` | TEXT | — | Yes | Target company name |
 | `industry` | TEXT | — | Yes | Detected/entered industry |
 | `website_url` | TEXT | — | Yes | Scraped website URL |
-| `products_services` | TEXT[] | `'{}'` | No | Products/services list |
-| `offers` | TEXT[] | `'{}'` | No | Current offers list |
-| `qualification_criteria` | TEXT[] | `'{}'` | No | Lead qualification criteria |
+| `agent_context` | TEXT | — | Yes | Mission-contextual block |
 | `logo_url` | TEXT | — | Yes | Company logo URL |
 | `primary_color` | TEXT | `'#2563EB'` | No | Brand primary color |
 | `secondary_color` | TEXT | `'#F8F9FA'` | No | Brand secondary color |
