@@ -37,18 +37,22 @@ export default function HomePage() {
             Internal ops
           </h3>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Card variant="default" padding="lg" className="h-full opacity-80">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-border-subtle">
-                <Satellite size={20} strokeWidth={2} className="text-foreground-secondary" />
-              </div>
-              <h4 className="mb-1 text-base font-medium text-foreground">Recon</h4>
-              <p className="text-sm text-foreground-secondary">
-                Shared intelligence and research context.
-              </p>
-              <Badge variant="draft" size="sm" className="mt-3">
-                Soon
-              </Badge>
-            </Card>
+            <Link href="/recon">
+              <Card variant="interactive" padding="lg" className="h-full transition-all hover:shadow-sm">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-primary [&_svg]:text-white">
+                  <Satellite size={20} strokeWidth={2} />
+                </div>
+                <h4 className="mb-1 text-base font-medium text-foreground">Recon</h4>
+                <p className="text-sm text-foreground-secondary">
+                  Shared intelligence and research context.
+                </p>
+                <div className="mt-3">
+                  <Badge variant="live" size="sm">
+                    Active
+                  </Badge>
+                </div>
+              </Card>
+            </Link>
 
             <Link href="/lab">
               <Card

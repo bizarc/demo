@@ -145,7 +145,7 @@ Output ONLY valid JSON, no markdown or extra text.`;
             });
         }
 
-        return Response.json({ record: record as ResearchRecord, enrichment });
+        return Response.json({ record: record as unknown as ResearchRecord, enrichment });
     } catch (err) {
         console.error('Research API error:', err);
         return Response.json(
@@ -186,5 +186,5 @@ export async function GET(request: NextRequest) {
         return Response.json({ error: 'Failed to list research' }, { status: 500 });
     }
 
-    return Response.json({ records: (data ?? []) as ResearchRecord[] });
+    return Response.json({ records: (data ?? []) as unknown as ResearchRecord[] });
 }

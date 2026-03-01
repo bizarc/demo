@@ -25,7 +25,7 @@ interface InternalAppShellProps {
 }
 
 const MODULES: SidebarItem[] = [
-  { id: 'recon', label: 'Recon', icon: <Satellite size={18} />, href: '/recon', badge: 'Soon', disabled: true },
+  { id: 'recon', label: 'Recon', icon: <Satellite size={18} />, href: '/recon' },
   { id: 'lab', label: 'Lab', icon: <FlaskConical size={18} />, href: '/lab' },
   { id: 'radar', label: 'Radar', icon: <Radar size={18} />, href: '/radar', badge: 'Soon', disabled: true },
   { id: 'blueprint', label: 'Blueprint', icon: <BookOpen size={18} />, href: '/blueprint', badge: 'Soon', disabled: true },

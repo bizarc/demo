@@ -102,24 +102,36 @@ export interface Database {
             knowledge_bases: {
                 Row: {
                     id: string
-                    demo_id: string
                     name: string
                     type: string
+                    description: string | null
+                    status: string
+                    version: number
+                    created_by: string | null
                     created_at: string
+                    updated_at: string
                 }
                 Insert: {
                     id?: string
-                    demo_id: string
                     name?: string
                     type?: string
+                    description?: string | null
+                    status?: string
+                    version?: number
+                    created_by?: string | null
                     created_at?: string
+                    updated_at?: string
                 }
                 Update: {
                     id?: string
-                    demo_id?: string
                     name?: string
                     type?: string
+                    description?: string | null
+                    status?: string
+                    version?: number
+                    created_by?: string | null
                     created_at?: string
+                    updated_at?: string
                 }
                 Relationships: []
             }
@@ -328,6 +340,7 @@ export interface Database {
                     evidence: Json
                     confidence_score: number | null
                     status: string
+                    version: number
                     created_by: string | null
                     created_at: string
                     updated_at: string
@@ -346,6 +359,7 @@ export interface Database {
                     evidence?: Json
                     confidence_score?: number | null
                     status?: string
+                    version?: number
                     created_by?: string | null
                     created_at?: string
                     updated_at?: string
@@ -406,3 +420,8 @@ export type Session = Database['public']['Tables']['sessions']['Row'];
 export type SessionInsert = Database['public']['Tables']['sessions']['Insert'];
 export type Message = Database['public']['Tables']['messages']['Row'];
 export type MessageInsert = Database['public']['Tables']['messages']['Insert'];
+export type KnowledgeBase = Database['public']['Tables']['knowledge_bases']['Row'];
+export type KnowledgeBaseInsert = Database['public']['Tables']['knowledge_bases']['Insert'];
+export type KnowledgeBaseUpdate = Database['public']['Tables']['knowledge_bases']['Update'];
+export type ResearchRecord = Database['public']['Tables']['research_records']['Row'];
+export type ResearchRecordInsert = Database['public']['Tables']['research_records']['Insert'];

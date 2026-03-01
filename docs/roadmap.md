@@ -5,155 +5,123 @@
 | Phase | Name | Status |
 |-------|------|--------|
 | Phase 0 | Design System & UI | Complete |
-| Phase 1 | Core Implementation | Complete |
+| Phase 1 | Core Implementation (THE LAB) | Complete |
 | Phase 2 | Polish & Deploy | Complete |
-| Phase 3 | Platform Expansion & Intelligence | In Progress |
+| Phase 3 | Platform Intelligence & Channels | Complete |
+| Phase 4 | Module Buildout (RECON → RADAR → BLUEPRINT) | Next |
+| Phase 5 | Operations & Voice AI | Planned |
 
 ---
 
-## Phase 0 — Design System & UI (Complete)
+## Phase 0–2 — THE LAB Foundation (Complete)
 
-Established the foundational design system, implemented 23 UI components, and defined the visual language based on a Palantir AIP-inspired enterprise aesthetic.
-
-### Deliverables
-- CSS custom property token system (colors, typography, spacing)
-- 23 reusable UI components in `src/components/ui/`
-- Component API definitions (props, variants, sizes, states)
-- Tailwind CSS v4 integration with custom `@theme` mapping
+Design system (23 UI components), full demo builder with 5-step wizard, branded chat experience, autosave, Storybook, Vitest/Playwright testing, Vercel deployment, error handling, and security hardening. See [archived roadmap](archive/roadmap_phase0-3.md) for full details.
 
 ---
 
-## Phase 1 — Core Implementation (Complete)
+## Phase 3 — Platform Intelligence & Channels (Complete)
 
-Built the end-to-end demo creation and chat experience.
-
-### 1.1 Database Setup
-- Supabase tables: `demos`, `leads`, `sessions`, `messages`, `rate_limits`
-- Row Level Security policies
-- Auto-updating `updated_at` trigger
-
-### 1.2 Web Scraping
-- Cheerio-based scraper with Jina AI fallback
-- Extracts: company name, industry, products, offers, logo, colors
-- Rate limited (5 req/min)
-
-### 1.3 Demo Builder (5-Step Wizard)
-- Step 1: Mission Profile selection
-- Step 2: URL scraping and context extraction
-- Step 3: Context review (products, offers, qualifications)
-- Step 4: Model selection (OpenRouter)
-- Step 5: Preview and launch
-
-### 1.4 AI Chat
-- Streaming chat via OpenRouter (SSE)
-- Mission-specific system prompts with template variables
-- Token tracking and rate limiting
-
-### 1.5 External Demo Experience
-- Branded chat interface at `/demo/[id]`
-- Dynamic branding (logo, colors, company name)
-- Lead tracking (anonymous via nanoid)
-- Conversation persistence across refreshes
-
-### 1.5+ Draft Autosave, Live Preview, LAB Home
-- Draft autosave with debounced PATCH
-- Live chat preview in Step 5 (builder)
-- LAB home page with demo list, status management
-- URL-based routing for draft resume (`/lab/[id]`)
-
-### 1.10 End-to-End Verification & Polish
-- Full flow verification (Builder → Success → Chat → DB)
-- Mobile responsiveness (builder, home, success, chat)
-- UI animations and focus states
+| Item | Description | Status |
+|------|-------------|--------|
+| 3.1 Home & Auth | Home page, RBAC, optimistic locking, audit trails | ✅ Complete |
+| 3.2 Research Skill | AI research via Perplexity, RECON integration | ✅ Complete |
+| 3.3 Context Redesign | `agent_context` replaces fixed arrays, mission-aware templates | ✅ Complete |
+| 3.4 Prompt Engineering | 20 mission×channel strategy blocks, layered prompt composition | ✅ Complete |
+| 3.5 Knowledge Bases (RAG) | pgvector, ingestion, retrieval for LAB scope | ✅ Complete |
 
 ---
 
-## Phase 2 — Polish & Deploy (Complete)
+## Phase 4 — Module Buildout (Next)
 
-### 2.1 Testing & Component Documentation (Complete)
-- [x] Storybook setup with 65+ stories for all 23 components
-- [x] Vitest unit tests for utilities and 3 UI components
-- [x] Interaction tests for 7 key components
-- [x] Integration tests for API routes
-- [x] E2E tests with Playwright
+> Build out the core Funnel Finished platform modules. Each module is a distinct workspace within the same Next.js application, sharing the design system, auth, and RECON intelligence layer.
 
-### 2.2 Error Handling
-- [x] Error boundary component
-- [x] Custom 404 page
-- [x] Expired demo page with operator contact
-- [x] Toast notifications for user feedback
-- [x] Retry logic for failed API calls
+### 4.1 RECON — Shared Intelligence Module
 
-### 2.3 Performance
-- [x] Image optimization (logos, assets)
-- [x] Skeleton loading states for data fetching
-- [x] Add loading states to all buttons
-- [x] Core Web Vitals measurement and optimization
+RECON is the platform-global system of record for shared intelligence. It is consumed by the LAB (already), RADAR, and BLUEPRINT.
 
-### 2.4 Security
-- [x] CORS configuration
-- [x] Rate limiting enforcement on all routes
-- [x] Supabase RLS audit
-- [x] Input sanitization review
+**What exists today:**
+- Research records (`research_records` table, `POST/GET /api/research`)
+- Knowledge bases with pgvector (scoped to LAB demos)
+- AI enrichment via Perplexity (OpenRouter)
 
-### 2.5 Deployment
-- [x] Vercel deployment configuration
-- [x] Environment variable setup
-- [x] Preview builds for PRs
-- [x] Production deployment
-- [x] Smoke test all critical paths
+**What needs to be built:**
+- [ ] **RECON UI** — Standalone dashboard at `/recon` to browse, search, and manage research records and knowledge bases independent of any demo
+- [ ] **Knowledge base promotion** — Decouple KBs from individual demos; make them RECON-owned assets that demos *reference* (FK) rather than own
+- [ ] **Research record lifecycle** — Status workflow: `draft` → `reviewed` → `approved` → `archived`
+- [ ] **Asset versioning** — Version tracking for KBs and research records so downstream consumers (demos, campaigns) can pin to a specific version
+- [ ] **RECON API expansion** — `PATCH /api/research/[id]`, bulk operations, search/filter, tagging
+
+**Dependencies:** None — can start immediately. Existing `/api/research` and KB routes are the foundation.
 
 ---
 
-## Phase 3 — Platform Expansion & Intelligence (In Progress)
+### 4.2 RADAR — Prospecting & Campaigns
 
-> Features under consideration for LAB demo functionality, BLUEPRINT production flows, or both. Each item requires research and design before implementation.
+RADAR is the prospecting engine. It finds, enriches, and engages leads using RECON intelligence.
 
-### 3.1 Home & Auth (Complete)
-- **Home page** — Landing screen supporting LAB, existing demos, future modules
-- **Authentication** — Internal users (Super Admin, Operator) + External users (Client Viewer); currently toggled off via `AUTH_DISABLED`
-- **RBAC** — Role-scoped internal access; tenant isolation only for BLUEPRINT and Client Portal
-- **Data integrity** — Optimistic locking, audit trails, Push-to-BLUEPRINT action
+**What needs to be built:**
+- [ ] **RADAR UI** — Dashboard at `/radar` for managing prospect lists and campaigns
+- [ ] **Prospect management** — Import, enrich, segment, and score leads
+- [ ] **Campaign builder** — Multi-step outreach sequences (email, SMS) using mission-aware prompts
+- [ ] **RECON integration** — Campaigns reference RECON research and KBs for personalized outreach
+- [ ] **Analytics** — Open rates, reply rates, conversion tracking per campaign
+- [ ] **Twilio/SendGrid integration** — Production SMS/email delivery (webhook endpoints already exist)
 
-### 3.2 Research Skill (Company Intelligence)
-AI-powered company research via Perplexity (OpenRouter), implemented as part of **RECON**. POST/GET `/api/research`; "Run AI Research" in LAB builder Step 3 enriches context. Research can be auto-run or on-demand and consumed by RADAR, THE LAB, and BLUEPRINT.
-
-### 3.3 Improved Scraping & Context Generation (Complete)
-Completed: multi-page crawling, structured extraction (products, pricing, FAQs), and logo/color improvements. Fixed array struct (`products`, `offers`, `qualifications`) replaced with single mission-aware `agent_context` prose block to match RECON research output better.
-
-### 3.4 Advanced Prompt Engineering (Missions x Channels) (Complete)
-Implemented `MISSION_CHANNEL_STRATEGY` — 20 tactical prompt blocks (4 missions × 5 channels). Each block provides channel-specific behavior instructions (tone, length, CTA style, compliance). `buildSystemPrompt()` now composes mission identity → agentContext → mission-channel strategy. `suggestedPromptsByChannel` replaces the old SMS-only variants.
-
-### 3.5 Knowledge Bases (RAG)
-Completed for LAB scope: mission-specific knowledge stores with Supabase pgvector, ingestion flow, and retrieval integration. Next step is RECON alignment for platform-global internal reuse in RADAR and THE LAB, with BLUEPRINT consuming approved assets.
-
-### 3.7 RECON (Shared Intelligence Module)
-RECON is the platform-global internal shared intelligence module for research and knowledge assets (outside workspaces).
-
-- Shared research records and reusable knowledge bases across modules
-- RADAR uses RECON context for personalized campaigns
-- THE LAB reads and enriches RECON during demo creation
-- BLUEPRINT consumes approved RECON assets for production deployments
-- Tenant isolation remains in BLUEPRINT client deployments and Client Portal views
-- Governance roadmap: versioning, promotion states, and RBAC-scoped access
-
-### 3.6 Voice AI Demos
-Voice AI demo architecture per mission. Evaluate providers (ElevenLabs, OpenAI TTS/STT, Deepgram). Browser-based and/or phone call UX.
+**Dependencies:** RECON (4.1) should be at least partially complete so RADAR can reference shared intelligence assets.
 
 ---
 
-## Product Context
+### 4.3 BLUEPRINT — Production Configuration
 
-THE LAB fits within the larger **Funnel Finished** platform lifecycle:
+BLUEPRINT converts approved LAB demos into production-ready agent deployments for clients.
+
+**What needs to be built:**
+- [ ] **BLUEPRINT UI** — Dashboard at `/blueprint` for managing production configurations
+- [ ] **Demo → Blueprint promotion** — Workflow to copy an approved LAB demo into a production config (Push-to-BLUEPRINT action already exists in schema)
+- [ ] **Workspace scoping** — Tenant isolation via `workspace_id` for client-specific deployments
+- [ ] **Configuration management** — Production agent settings, branding, domain mapping
+- [ ] **RECON consumption** — Production agents reference approved RECON assets (pinned versions)
+- [ ] **Client provisioning** — Onboarding workflow to set up new client workspaces
+
+**Dependencies:** RECON (4.1) for shared intelligence, LAB Push-to-BLUEPRINT action.
+
+---
+
+## Phase 5 — Operations & Voice AI (Planned)
+
+### 5.1 MISSION CONTROL — Operations Dashboard
+- Unified operational view across all modules
+- Real-time metrics: active demos, live conversations, campaign performance
+- Alert system for expiring demos, rate limit spikes, client issues
+- Team management and assignment
+
+### 5.2 CLIENT PORTAL — Client Dashboard
+- Client-facing view of their deployed agents (BLUEPRINT configs)
+- Analytics: conversation volumes, satisfaction scores, lead quality
+- Self-service configuration (within guardrails)
+- Workspace-scoped with tenant isolation
+
+### 5.3 Voice AI Demos
+- Voice AI demo architecture per mission
+- Provider evaluation: ElevenLabs, OpenAI TTS/STT, Deepgram
+- Browser-based and/or phone call UX
+- Integration with existing conversation engine and Twilio voice webhook
+
+---
+
+## Platform Architecture
 
 ```
 RADAR (Prospecting)
     ↓
-THE LAB (Sales Demos)    ← You are here
+THE LAB (Sales Demos)        ← Complete
     ↓
 BLUEPRINT (Production Config)
     ↓
 MISSION CONTROL (Operations)
     ↓
 CLIENT PORTAL (Retention)
+
+    ↕ All modules share ↕
+    RECON (Intelligence)
 ```

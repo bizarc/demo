@@ -101,19 +101,23 @@ Individual messages within a session.
 
 ### `knowledge_bases`
 
-Stores RAG knowledge bases per demo.
+Stores global RAG knowledge bases managed by RECON (role-scoped, not workspace-scoped).
 
-> Current implementation is demo-linked. Planned RECON evolution keeps KB ownership internal/global and shared by role-scoped internal modules; workspace isolation remains a BLUEPRINT/CLIENT PORTAL concern.
+> Knowledge bases are global platform assets. Demos reference them via `demos.knowledge_base_id`. KBs can be created inline from THE LAB or directly in RECON.
 
 | Column | Type | Default | Nullable | Description |
 |--------|------|---------|----------|-------------|
 | `id` | UUID | `uuid_generate_v4()` | No | Primary key |
-| `demo_id` | UUID | — | No | FK → demos |
 | `name` | TEXT | `'Default'` | No | Display name |
 | `type` | TEXT | `'custom'` | No | `product_catalog`, `faq`, `service_menu`, `review_template`, `custom` |
+| `description` | TEXT | — | Yes | Human-readable description |
+| `status` | TEXT | `'draft'` | No | Lifecycle: `draft`, `reviewed`, `approved`, `archived` |
+| `version` | INTEGER | `1` | No | Optimistic locking version |
+| `created_by` | TEXT | — | Yes | Creator identifier (role-based ownership) |
 | `created_at` | TIMESTAMPTZ | `NOW()` | No | Creation timestamp |
+| `updated_at` | TIMESTAMPTZ | `NOW()` | No | Auto-updated via trigger |
 
-**Indexes:** `demo_id`
+**Indexes:** `status`, `created_by`
 
 ---
 
