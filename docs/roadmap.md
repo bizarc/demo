@@ -109,9 +109,9 @@ Built the end-to-end demo creation and chat experience.
 
 > Features under consideration for LAB demo functionality, BLUEPRINT production flows, or both. Each item requires research and design before implementation.
 
-### 3.1 Home & Auth
+### 3.1 Home & Auth (Complete)
 - **Home page** — Landing screen supporting LAB, existing demos, future modules
-- **Authentication** — Internal users (Super Admin, Operator) + External users (Client Viewer)
+- **Authentication** — Internal users (Super Admin, Operator) + External users (Client Viewer); currently toggled off via `AUTH_DISABLED`
 - **RBAC** — Role-scoped internal access; tenant isolation only for BLUEPRINT and Client Portal
 - **Data integrity** — Optimistic locking, audit trails, Push-to-BLUEPRINT action
 
