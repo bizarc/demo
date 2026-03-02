@@ -9,6 +9,7 @@ import { Send, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { SkeletonChatPage } from '@/components/ui/Skeleton';
+import { getTextColorForBackground } from '@/lib/colorContrast';
 import { trackUxEvent } from '@/lib/uxMetrics';
 import styles from './chat.module.css';
 
@@ -195,8 +196,17 @@ function DemoChat() {
         return <SkeletonChatPage />;
     }
 
+    const textOnBrand = getTextColorForBackground(config.primary_color || '#2563EB');
     return (
-        <div className={styles.container} style={{ '--brand-color': config.primary_color } as React.CSSProperties}>
+        <div
+            className={styles.container}
+            style={
+                {
+                    '--brand-color': config.primary_color,
+                    '--brand-text-on-color': textOnBrand,
+                } as React.CSSProperties
+            }
+        >
             {/* Header */}
             <div className={styles.header}>
                 {config.logo_url ? (

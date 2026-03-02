@@ -122,16 +122,24 @@ export default function ReconPage() {
                         <section className="mb-10">
                             <div className="mb-4 flex items-center justify-between">
                                 <h3 className="text-xl font-medium text-foreground">Recent Research</h3>
-                                <Link href="/recon/research">
-                                    <Button variant="ghost" size="sm">
-                                        View all <ArrowRight size={14} className="ml-1" />
-                                    </Button>
-                                </Link>
+                                <div className="flex gap-2">
+                                    <Link href="/recon/research/new">
+                                        <Button variant="primary" size="sm">
+                                            <Plus size={14} className="mr-1" /> New Research
+                                        </Button>
+                                    </Link>
+                                    <Link href="/recon/research">
+                                        <Button variant="ghost" size="sm">
+                                            View all <ArrowRight size={14} className="ml-1" />
+                                        </Button>
+                                    </Link>
+                                </div>
                             </div>
                             {records.length === 0 ? (
                                 <Card variant="default" padding="lg">
                                     <p className="text-sm text-foreground-secondary">
-                                        No research records yet. Run AI research from THE LAB or create one directly.
+                                        No research records yet. Create one with New Research or run AI research from
+                                        THE LAB.
                                     </p>
                                 </Card>
                             ) : (

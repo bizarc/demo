@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { FileSearch, ArrowLeft, Loader2 } from 'lucide-react';
+import { FileSearch, ArrowLeft, Loader2, Plus } from 'lucide-react';
 import { InternalAppShell } from '@/components/layout/InternalAppShell';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -66,14 +66,21 @@ export default function ResearchListPage() {
     return (
         <InternalAppShell title="RECON" subtitle="Research Records">
             <main className="mx-auto max-w-6xl px-6 py-10">
-                <div className="mb-6 flex items-center gap-3">
-                    <Link href="/recon">
-                        <Button variant="ghost" size="sm">
-                            <ArrowLeft size={14} className="mr-1" /> Back
+                <div className="mb-6 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Link href="/recon">
+                            <Button variant="ghost" size="sm">
+                                <ArrowLeft size={14} className="mr-1" /> Back
+                            </Button>
+                        </Link>
+                        <h2 className="text-2xl font-semibold text-foreground">Research Records</h2>
+                        <span className="text-sm text-foreground-secondary">({total})</span>
+                    </div>
+                    <Link href="/recon/research/new">
+                        <Button variant="primary" size="sm">
+                            <Plus size={14} className="mr-1" /> New Research
                         </Button>
                     </Link>
-                    <h2 className="text-2xl font-semibold text-foreground">Research Records</h2>
-                    <span className="text-sm text-foreground-secondary">({total})</span>
                 </div>
 
                 {/* Filters */}
@@ -106,7 +113,7 @@ export default function ResearchListPage() {
                 ) : records.length === 0 ? (
                     <Card variant="default" padding="lg">
                         <p className="text-sm text-foreground-secondary">
-                            No research records found. Run AI research from THE LAB to create intelligence assets.
+                            No research records found. Create one with New Research or run AI research from THE LAB.
                         </p>
                     </Card>
                 ) : (

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { DemoFormData } from './DemoBuilder';
+import { getTextColorForBackground } from '@/lib/colorContrast';
 import { MISSION_PROFILES, MissionProfile, getSuggestedPrompts } from '@/lib/prompts';
 
 interface ChatPreviewProps {
@@ -129,6 +130,7 @@ export function ChatPreview({ demoId, formData }: ChatPreviewProps) {
     }
 
     const brandColor = formData.primaryColor || '#2563EB';
+    const textOnBrand = useMemo(() => getTextColorForBackground(brandColor), [brandColor]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -147,7 +149,7 @@ export function ChatPreview({ demoId, formData }: ChatPreviewProps) {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#FFFFFF',
+                        color: textOnBrand,
                         fontSize: '14px',
                         fontWeight: 600,
                     }}>
@@ -186,7 +188,7 @@ export function ChatPreview({ demoId, formData }: ChatPreviewProps) {
                             padding: '10px 14px',
                             borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
                             background: msg.role === 'user' ? brandColor : 'var(--color-border-subtle)',
-                            color: msg.role === 'user' ? '#FFFFFF' : 'var(--color-text-primary)',
+                            color: msg.role === 'user' ? textOnBrand : 'var(--color-text-primary)',
                             fontSize: '14px',
                             lineHeight: 1.5,
                         }}>
@@ -282,7 +284,7 @@ export function ChatPreview({ demoId, formData }: ChatPreviewProps) {
                         style={{
                             padding: '10px 14px',
                             background: brandColor,
-                            color: '#FFFFFF',
+                            color: textOnBrand,
                             border: 'none',
                             borderRadius: '8px',
                             cursor: (!input.trim() || loading) ? 'not-allowed' : 'pointer',

@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { FilterTab } from '@/components/ui/FilterTab';
 import { trackUxEvent } from '@/lib/uxMetrics';
 
 interface DemoListItem {
@@ -331,35 +332,6 @@ export default function LabHomePage() {
 }
 
 // --- Sub-components ---
-
-function FilterTab({
-    label,
-    count,
-    active,
-    onClick,
-}: {
-    label: string;
-    count: number;
-    active: boolean;
-    onClick: () => void;
-}) {
-    return (
-        <Button
-            type="button"
-            onClick={onClick}
-            variant={active ? 'ghost' : 'secondary'}
-            size="sm"
-            className={active ? 'border border-primary bg-primary-highlight text-primary' : ''}
-        >
-            {label}
-            {count > 0 && (
-                <span className={`rounded-full px-1.5 text-[11px] leading-[18px] ${active ? 'bg-primary text-white' : 'bg-border-subtle text-foreground-muted'}`}>
-                    {count}
-                </span>
-            )}
-        </Button>
-    );
-}
 
 function ActionButton({
     label,

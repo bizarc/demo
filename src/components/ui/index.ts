@@ -80,3 +80,6 @@ export type { IconButtonProps } from './IconButton';
 
 export { ChatBubble, TypingIndicator } from './ChatBubble';
 export type { ChatBubbleProps } from './ChatBubble';
+
+export { FilterTab } from './FilterTab';
+export type { FilterTabProps } from './FilterTab';
