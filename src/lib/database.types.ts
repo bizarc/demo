@@ -35,7 +35,6 @@ export interface Database {
                     updated_at: string
                     deleted_at: string | null
                     current_step: string | null
-                    knowledge_base_id: string | null
                     version: number
                     channel: string | null
                     sms_short_code: string | null
@@ -62,7 +61,6 @@ export interface Database {
                     updated_at?: string
                     deleted_at?: string | null
                     current_step?: string | null
-                    knowledge_base_id?: string | null
                     version?: number
                     channel?: string | null
                     sms_short_code?: string | null
@@ -89,13 +87,30 @@ export interface Database {
                     updated_at?: string
                     deleted_at?: string | null
                     current_step?: string | null
-                    knowledge_base_id?: string | null
                     version?: number
                     channel?: string | null
                     sms_short_code?: string | null
                     whatsapp_short_code?: string | null
                     email_short_code?: string | null
                     voice_short_code?: string | null
+                }
+                Relationships: []
+            }
+            demo_knowledge_bases: {
+                Row: {
+                    demo_id: string
+                    kb_id: string
+                    created_at: string
+                }
+                Insert: {
+                    demo_id: string
+                    kb_id: string
+                    created_at?: string
+                }
+                Update: {
+                    demo_id?: string
+                    kb_id?: string
+                    created_at?: string
                 }
                 Relationships: []
             }

@@ -84,9 +84,10 @@ export async function POST(request: NextRequest) {
 
     const supabase = createServerClient();
 
-    const { data: demo, error: demoError } = await supabase.from('demos').select('*').eq('id', demoId).single();
+    const { getDemoWithKb } = await import('@/lib/getDemoWithKb');
+    const demo = await getDemoWithKb(supabase, demoId);
 
-    if (demoError || !demo) {
+    if (!demo) {
         return new NextResponse(twiml(say('Demo not found. Goodbye.')), {
             headers: { 'Content-Type': 'text/xml' },
         });

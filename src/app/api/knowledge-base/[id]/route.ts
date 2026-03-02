@@ -179,7 +179,7 @@ export async function PATCH(
 /**
  * DELETE /api/knowledge-base/[id] — Delete a knowledge base.
  * Documents and chunks are removed via ON DELETE CASCADE.
- * Demos referencing this KB get knowledge_base_id set to NULL via ON DELETE SET NULL.
+ * Links in demo_knowledge_bases are removed via ON DELETE CASCADE.
  */
 export async function DELETE(
     request: NextRequest,

@@ -157,7 +157,7 @@ Output ONLY valid JSON, no markdown or extra text.`;
 
 /**
  * GET /api/research
- * List research records for the workspace. Query: ?status=draft|validated|production_approved
+ * List research records for the workspace. Query: ?status=draft|reviewed|approved|archived
  */
 export async function GET(request: NextRequest) {
     const authResult = await requireAuth();

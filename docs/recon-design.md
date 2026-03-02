@@ -74,7 +74,7 @@ recon_internal_scope (single logical scope)
 | id | UUID | PK |
 | name | text | |
 | type | enum | product_catalog \| faq \| service_menu \| review_template \| custom |
-| status | enum | draft \| validated \| production_approved |
+| status | enum | draft \| reviewed \| approved \| archived |
 | created_by | UUID | FK → auth.users |
 | created_at, updated_at | timestamptz | |
 
@@ -93,7 +93,7 @@ Primary key: (demo_id, kb_id). A demo can reference one KB for MVP; link table a
 ## 3. Asset Lifecycle
 
 ```
-draft ──► validated ──► production_approved
+draft ──► reviewed ──► approved
    │            │                │
    └────────────┴────────────────┴──► archived
 ```
@@ -101,17 +101,17 @@ draft ──► validated ──► production_approved
 | State | Description | RADAR | LAB | BLUEPRINT |
 |-------|-------------|-------|-----|-----------|
 | draft | Initial output | read/write | read/write | — |
-| validated | Operator reviewed | read | read | read* |
-| production_approved | Approved for prod | read | read | read |
+| reviewed | Operator reviewed | read | read | read* |
+| approved | Approved for prod | read | read | read |
 
-*BLUEPRINT can reference `validated` with explicit operator confirmation.
+*BLUEPRINT can reference `reviewed` with explicit operator confirmation.
 
 ---
 
 ## 4. Module Contracts
 
 ### RADAR (Prospecting)
-- **Read:** `validated`, `production_approved` research for campaign context
+- **Read:** `reviewed`, `approved` research for campaign context
 - **Write:** Draft research from campaign discovery/signals
 
 ### THE LAB (Demos)
@@ -120,7 +120,7 @@ draft ──► validated ──► production_approved
 - **Link:** Associate demos with research/KB via link tables
 
 ### BLUEPRINT (Production)
-- **Read:** Only `production_approved` by default; `validated` with operator confirmation
+- **Read:** Only `approved` by default; `reviewed` with operator confirmation
 - **Write:** None (consumes only)
 - **Link:** Select approved KBs for deployment config
 
@@ -133,32 +133,32 @@ draft ──► validated ──► production_approved
 2. Add `status` to `knowledge_bases` (default `draft`)
 3. Ensure `created_by` is populated for role-scoped authorization and auditing
 
-### Phase 2: Create Link Table
+### Phase 2: Create Link Table (done)
 1. Create `demo_knowledge_bases` (demo_id, kb_id)
 2. Migrate: For each demo with `knowledge_base_id`, insert into `demo_knowledge_bases`
-3. Keep `demos.knowledge_base_id` for backward compatibility during transition
-4. Update API to read from link table when present
+3. Drop `demos.knowledge_base_id`; demos reference KBs only via link table
+4. API reads/writes via link table; response shape still exposes `knowledge_base_id` for the linked KB
 
 ### Phase 3: Research Tables
 1. Create `research_records` table
 2. Create `research_links` table
 3. Implement research API routes
 
-### Phase 4: Cutover
-1. Drop `knowledge_bases.demo_id`
-2. Make `demos.knowledge_base_id` resolve via `demo_knowledge_bases` (view or join)
-3. Update RLS policies for role-scoped internal access (`super_admin` all, `operator` policy-based scope)
-4. Keep workspace-based RLS for BLUEPRINT/client portal data only
+### Phase 4: Cutover (done for KBs)
+1. `knowledge_bases.demo_id` already dropped (RECON-owned).
+2. Demos reference KBs only via `demo_knowledge_bases`; no `demos.knowledge_base_id` column.
+3. Update RLS policies for role-scoped internal access (`super_admin` all, `operator` policy-based scope) — see 4.0 in roadmap.
+4. Keep workspace-based RLS for BLUEPRINT/client portal data only.
 
 ---
 
 ## 6. Acceptance Criteria (Implementation)
 
 - [ ] Research records CRUD with status and role-scoped access
-- [ ] Research lifecycle transitions (draft → validated → production_approved)
+- [x] Research lifecycle transitions (draft → reviewed → approved) — status values in DB, API, and UI
 - [ ] RADAR/LAB/BLUEPRINT read filters by status per contract
 - [ ] Knowledge bases migrated from `demo_id` ownership to RECON ownership
-- [ ] demo_knowledge_bases link table; demos can reference RECON KBs
+- [x] demo_knowledge_bases link table; demos reference RECON KBs only via this table
 - [ ] RBAC: role-scoped internal access enforced via RLS
 
 ---

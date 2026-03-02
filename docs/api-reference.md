@@ -94,7 +94,7 @@ Used for autosave (partial updates) and activation (draft → active).
 
 | Field | Description |
 |-------|-------------|
-| `knowledge_base_id` | Optional. UUID of knowledge base for RAG. Set to `null` to detach. |
+| `knowledge_base_id` | Optional. UUID of knowledge base for RAG (stored in `demo_knowledge_bases`). Set to `null` to detach. |
 
 **Request (activation):**
 
@@ -314,7 +314,7 @@ Deletes a document and its chunks.
 
 ---
 
-**RAG behavior:** When a demo has `knowledge_base_id` set, the chat API retrieves relevant chunks for each user message and injects them into the system prompt before generating a response.
+**RAG behavior:** When a demo is linked to a KB via `demo_knowledge_bases`, the chat API retrieves relevant chunks for each user message and injects them into the system prompt before generating a response.
 
 ## RECON Research
 

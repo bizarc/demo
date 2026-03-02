@@ -201,13 +201,10 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const { data: demo, error: demoError } = await supabase
-        .from('demos')
-        .select('*')
-        .eq('id', demoId)
-        .single();
+    const { getDemoWithKb } = await import('@/lib/getDemoWithKb');
+    const demo = await getDemoWithKb(supabase, demoId);
 
-    if (demoError || !demo) {
+    if (!demo) {
         return new NextResponse(
             '<?xml version="1.0" encoding="UTF-8"?><Response><Message>Demo not found.</Message></Response>',
             { headers: { 'Content-Type': 'text/xml' } }

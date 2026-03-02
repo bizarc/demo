@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { getOpenRouterClient, ChatMessage, OpenRouterClient } from '@/lib/openrouter';
 import { buildSystemPrompt, MissionProfile, Channel } from '@/lib/prompts';
 import { createServerClient } from '@/lib/supabase';
+import { getDemoWithKb } from '@/lib/getDemoWithKb';
 import { isValidUuid, isValidLeadIdentifier, sanitizeString, LIMITS } from '@/lib/validation';
 import { getClientIp, checkRateLimit, CHAT_LIMIT } from '@/lib/rateLimit';
 import { retrieve, formatKnowledgeBaseContext } from '@/lib/retrieval';
@@ -208,14 +209,10 @@ export async function POST(request: NextRequest) {
 
         const supabase = createServerClient();
 
-        // Fetch demo configuration
-        const { data: demo, error: fetchError } = await supabase
-            .from('demos')
-            .select('*')
-            .eq('id', demoId)
-            .single();
+        // Fetch demo configuration (with linked KB from demo_knowledge_bases)
+        const demo = await getDemoWithKb(supabase, demoId);
 
-        if (fetchError || !demo) {
+        if (!demo) {
             return Response.json({ error: 'Demo not found' }, { status: 404 });
         }
 

@@ -24,7 +24,7 @@ Funnel Finished now treats knowledge assets as part of **RECON**, the platform-g
 
 - **Authoritative owner:** RECON (platform-global internal), not a single LAB demo.
 - **LAB role:** consume and enrich RECON assets while configuring demos.
-- **BLUEPRINT role:** consume production-approved RECON assets for deployment.
+- **BLUEPRINT role:** consume approved RECON assets for deployment.
 - **RADAR role:** optional consumer for campaign context and prospect personalization.
 
 Implementation can remain demo-scoped as an interim shape, but target architecture is RECON-owned internal reuse with explicit module contracts.
@@ -91,7 +91,7 @@ For transition compatibility, demo-level linking can remain, but should evolve t
 
 ```
 1. User sends message to chat
-2. Chat API loads demo (with knowledge_base_id if set)
+2. Chat API loads demo (with linked KB from demo_knowledge_bases if set)
 3. If KB attached: Retrieval pipeline runs
    a. Embed user message via OpenRouter /embeddings
    b. Call match_chunks(kb_id, query_embedding)
@@ -176,19 +176,15 @@ Step order: Mission → Website → Context → **Knowledge Base** → Model →
 - **Preview:** Optional "test retrieval" with sample query
 - **Skip:** "No knowledge base" option (current behavior)
 
-### 6.3 Data Model Change
+### 6.3 Data Model (implemented)
 
-Add to `demos` table:
-
-- `knowledge_base_id` (UUID, nullable, FK → knowledge_bases)
-
-When `knowledge_base_id` is set, chat API runs retrieval before each response.
+Demos reference KBs via the `demo_knowledge_bases` link table (demo_id, kb_id). No `knowledge_base_id` column on `demos`. When a demo is linked to a KB, the chat API runs retrieval before each response.
 
 ### 6.4 Module Contracts (RECON)
 
 - **RADAR**: reads RECON for messaging context; may write research-derived KB drafts.
 - **THE LAB**: reads RECON by default; may create/update KB content during demo prep.
-- **BLUEPRINT**: selects production-approved RECON KBs; does not depend on demo-scoped ownership.
+- **BLUEPRINT**: selects approved RECON KBs; does not depend on demo-scoped ownership.
 
 ---
 
@@ -228,7 +224,7 @@ When `knowledge_base_id` is set, chat API runs retrieval before each response.
 
 - Enable pgvector in Supabase
 - Create `knowledge_bases`, `documents`, `chunks` tables + RPC `match_chunks`
-- Add `knowledge_base_id` to `demos`
+- Create `demo_knowledge_bases` link table; demos reference KBs only via this table
 - Create OpenRouter embeddings client in `src/lib/`
 
 ### Phase B: Ingestion

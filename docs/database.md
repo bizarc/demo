@@ -34,11 +34,25 @@ Stores demo configurations, drafts, and active demos.
 | `updated_at` | TIMESTAMPTZ | `NOW()` | No | Auto-updated via trigger |
 | `deleted_at` | TIMESTAMPTZ | — | Yes | Soft delete timestamp |
 | `current_step` | TEXT | `'mission'` | Yes | Builder step for draft resume |
-| `knowledge_base_id` | UUID | — | Yes | FK → knowledge_bases (RAG) |
+| — | — | — | — | Demos link to KBs via `demo_knowledge_bases` (no column on demos) |
 
 **Indexes:** `status`, `created_by`, `deleted_at`
 
 **Trigger:** `demos_updated_at` — auto-sets `updated_at` on every update.
+
+---
+
+### `demo_knowledge_bases`
+
+Link table: demos reference knowledge bases (many-to-many; API currently supports one KB per demo).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `demo_id` | UUID | FK → demos |
+| `kb_id` | UUID | FK → knowledge_bases |
+| `created_at` | TIMESTAMPTZ | When the link was created |
+
+**Primary key:** `(demo_id, kb_id)`. **Indexes:** `demo_id`, `kb_id`.
 
 ---
 
@@ -103,7 +117,7 @@ Individual messages within a session.
 
 Stores global RAG knowledge bases managed by RECON (role-scoped, not workspace-scoped).
 
-> Knowledge bases are global platform assets. Demos reference them via `demos.knowledge_base_id`. KBs can be created inline from THE LAB or directly in RECON.
+> Knowledge bases are global platform assets. Demos reference them via the `demo_knowledge_bases` link table. KBs can be created inline from THE LAB or directly in RECON.
 
 | Column | Type | Default | Nullable | Description |
 |--------|------|---------|----------|-------------|
@@ -193,7 +207,7 @@ Configurable rate limit values.
 
 ```
 demos (1) ──── (*) leads
-demos (1) ──── (0..1) knowledge_bases
+demos (1) ──── (*) demo_knowledge_bases (*) ──── (1) knowledge_bases
 knowledge_bases (1) ──── (*) documents
 documents (1) ──── (*) chunks
 leads (1) ──── (*) sessions

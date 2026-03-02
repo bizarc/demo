@@ -35,15 +35,32 @@ Design system (23 UI components), full demo builder with 5-step wizard, branded 
 
 > Build out the core Funnel Finished platform modules. Each module is a distinct workspace within the same Next.js application, sharing the design system, auth, and RECON intelligence layer.
 
+### 4.0 Platform scope and RBAC (role vs workspace)
+
+**Principle:** RECON, RADAR, THE LAB, and MISSION CONTROL are managed by **roles** (e.g. `super_admin`, `operator`), not by workspace. **Workspace separation is only for client implementations** (BLUEPRINT production configs, Client Portal tenant isolation).
+
+**Tasks (implementable now):**
+- [ ] **Research records: role-scoped, not workspace-scoped** — Migrate `research_records` off `workspace_id` (e.g. make nullable and use NULL for internal scope, or drop column). Internal RECON data must not depend on workspace. Update RLS so access is determined by `profiles.role` (e.g. super_admin: all; operator: read/write by created_by or shared internal scope).
+- [ ] **Knowledge bases: enforce role-scoped RLS** — Ensure `knowledge_bases` RLS policies use role (and optionally `created_by`) only; no workspace_id in policy. KBs are already RECON-owned (no demo_id); tighten policies to match.
+- [ ] **THE LAB demos: role-scoped only** — Confirm demos are filtered by role (super_admin sees all, operator sees own via `created_by`). Remove or avoid any demo–workspace coupling for internal LAB use. Workspace is not used for LAB.
+- [ ] **API and UI: consistent scope checks** — All RECON/LAB APIs (research, knowledge-base, demo list) enforce role-based scope in middleware or RLS; do not filter by workspace for internal modules.
+- [ ] **Document workspace boundary** — In architecture/database docs, state explicitly: `workspace_id` is used only for BLUEPRINT client deployments and Client Portal; internal ops tables (research_records, knowledge_bases, demos for LAB) do not use workspace for access control.
+- [x] **demo_knowledge_bases link table** — Demos reference KBs only via `demo_knowledge_bases`; `demos.knowledge_base_id` has been removed (no backward compatibility).
+- [x] **Research and KB lifecycle: reviewed/approved** — Status values are `draft`, `reviewed`, `approved`, `archived` in DB, API, and UI everywhere.
+
+**Dependencies:** None. Aligns existing schema and RLS with the intended role-vs-workspace model.
+
+---
+
 ### 4.1 RECON — Shared Intelligence Module
 
-RECON is the platform-global system of record for shared intelligence. It is consumed by the LAB (already), RADAR, and BLUEPRINT.
+RECON is the platform-global system of record for shared intelligence. It is consumed by the LAB (already), RADAR, and BLUEPRINT. Full role-only scope (no workspace) is completed via **4.0** tasks above.
 
 ## Phase 4: Foundational Intelligence & Tooling (Q2)
 #### 4.1 RECON Module Buildout 🏁
 *Status: Complete*
 - Decouples Knowledge Bases from individual demos.
-- Establishes global `knowledge_bases` managed by `role` instead of `workspace_id`.
+- Establishes global `knowledge_bases` (RECON-owned); access should be enforced by role per **4.0**.
 - Creates specialized `/recon` UI for managing:
   - Global Prompts & System Instructions
   - Shared Knowledge Bases (docs, embeddings)
@@ -58,13 +75,19 @@ RECON is the platform-global system of record for shared intelligence. It is con
 
 RADAR is the prospecting engine. It finds, enriches, and engages leads using RECON intelligence.
 
+**Prospecting channels (priority order):**
+1. **Email** — Primary outreach via SendGrid
+2. **Instagram DMs** — Social media messaging
+3. **LinkedIn messages** — Professional outreach
+4. **Everything else later** — TikTok DMs, other social platforms
+
 **What needs to be built:**
 - [ ] **RADAR UI** — Dashboard at `/radar` for managing prospect lists and campaigns
 - [ ] **Prospect management** — Import, enrich, segment, and score leads
-- [ ] **Campaign builder** — Multi-step outreach sequences (email, SMS) using mission-aware prompts
+- [ ] **Campaign builder** — Multi-step outreach sequences (email, Instagram DMs, LinkedIn messages) using mission-aware prompts
 - [ ] **RECON integration** — Campaigns reference RECON research and KBs for personalized outreach
 - [ ] **Analytics** — Open rates, reply rates, conversion tracking per campaign
-- [ ] **Twilio/SendGrid integration** — Production SMS/email delivery (webhook endpoints already exist)
+- [ ] **Channel integrations** — SendGrid (email), Instagram Graph API / Meta Business Suite (DMs), LinkedIn Messaging API (messages)
 
 **Dependencies:** RECON (4.1) should be at least partially complete so RADAR can reference shared intelligence assets.
 

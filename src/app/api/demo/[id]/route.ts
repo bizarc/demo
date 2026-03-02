@@ -13,6 +13,7 @@ import {
 } from '@/lib/validation';
 import { getClientIp, checkRateLimit, DEMO_LIMIT } from '@/lib/rateLimit';
 import { customAlphabet } from 'nanoid';
+import { getDemoWithKb } from '@/lib/getDemoWithKb';
 
 const VALID_PROFILES = Object.keys(MISSION_PROFILES) as MissionProfile[];
 const VALID_CHANNELS = ['sms', 'messenger', 'email', 'website', 'voice'] as const;
@@ -45,15 +46,9 @@ export async function GET(
 
     try {
         const supabase = createServerClient();
+        const demo = await getDemoWithKb(supabase, id);
 
-        const { data: demo, error } = await supabase
-            .from('demos')
-            .select('*')
-            .eq('id', id)
-            .is('deleted_at', null)
-            .single();
-
-        if (error || !demo) {
+        if (!demo) {
             return NextResponse.json({ error: 'Demo not found' }, { status: 404 });
         }
 
@@ -169,10 +164,14 @@ export async function PATCH(
         if (body.secondary_color !== undefined) updatePayload.secondary_color = (body.secondary_color && isValidHexColor(body.secondary_color)) ? body.secondary_color : null;
         if (body.openrouter_model !== undefined) updatePayload.openrouter_model = sanitizeString(body.openrouter_model, LIMITS.openrouterModel) || null;
         if (body.current_step !== undefined) updatePayload.current_step = sanitizeString(body.current_step, LIMITS.currentStep) || null;
+
+        // Sync demo_knowledge_bases link table (demos reference KBs only via this table)
         if (body.knowledge_base_id !== undefined) {
-            updatePayload.knowledge_base_id = body.knowledge_base_id && isValidUuid(body.knowledge_base_id)
-                ? body.knowledge_base_id
-                : null;
+            await supabase.from('demo_knowledge_bases').delete().eq('demo_id', id);
+            const kbId = body.knowledge_base_id && isValidUuid(body.knowledge_base_id) ? body.knowledge_base_id : null;
+            if (kbId) {
+                await supabase.from('demo_knowledge_bases').insert({ demo_id: id, kb_id: kbId });
+            }
         }
 
         // Handle mission_profile conversion

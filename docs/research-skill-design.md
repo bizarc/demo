@@ -32,7 +32,7 @@ Guiding rule: modules reference research assets; they do not fork copies unless 
 ## 3. Data Model (Proposed)
 
 ```typescript
-type ResearchStatus = 'draft' | 'validated' | 'production_approved' | 'archived';
+type ResearchStatus = 'draft' | 'reviewed' | 'approved' | 'archived';
 
 interface ResearchRecord {
   id: string;
@@ -65,20 +65,20 @@ Optional companion entities for traceability:
 ```mermaid
 flowchart LR
   draft[Draft]
-  validated[Validated]
-  approved[ProductionApproved]
+  reviewed[Reviewed]
+  approved[Approved]
   archived[Archived]
 
-  draft --> validated
-  validated --> approved
+  draft --> reviewed
+  reviewed --> approved
   draft --> archived
-  validated --> archived
+  reviewed --> archived
   approved --> archived
 ```
 
 - **Draft:** initial AI/manual output
-- **Validated:** reviewed by operator, safe for internal use
-- **ProductionApproved:** allowed for BLUEPRINT production use
+- **Reviewed:** reviewed by operator, safe for internal use
+- **Approved:** allowed for BLUEPRINT production use
 - **Archived:** retained for history, excluded from defaults
 
 ---
@@ -86,7 +86,7 @@ flowchart LR
 ## 5. Module Contracts
 
 ### RADAR
-- Reads `validated` and `production_approved` records for messaging context.
+- Reads `reviewed` and `approved` records for messaging context.
 - Writes draft research from campaign discovery/signal workflows.
 
 ### THE LAB
@@ -94,8 +94,8 @@ flowchart LR
 - Writes draft updates when new business context is discovered during demo prep.
 
 ### BLUEPRINT
-- Reads only `production_approved` records by default.
-- Can reference `validated` records with explicit operator confirmation.
+- Reads only `approved` records by default.
+- Can reference `reviewed` records with explicit operator confirmation.
 
 ---
 
@@ -133,7 +133,7 @@ Prompt assembly order:
 - All RECON research records are internal-scope (no workspace key required).
 - Internal roles are role-scoped (`super_admin`, `operator`) for read/write behavior.
 - Client Viewer access is restricted to curated summaries in CLIENT PORTAL.
-- Promotion to `production_approved` requires operator action and auditability.
+- Promotion to `approved` requires operator action and auditability.
 
 ---
 
@@ -143,4 +143,4 @@ Prompt assembly order:
 2. Build `POST /api/research` and `GET /api/research` with status filters.
 3. Integrate RADAR campaign read/write hooks.
 4. Integrate THE LAB prefill and enrichment actions.
-5. Gate BLUEPRINT on `production_approved` data for production deploys.
+5. Gate BLUEPRINT on `approved` data for production deploys.

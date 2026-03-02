@@ -162,13 +162,19 @@ export async function POST(request: NextRequest) {
 
     const supabase = createServerClient();
 
-    const { data: demo, error: demoError } = await supabase
+    const { data: demoByCode, error: demoError } = await supabase
         .from('demos')
-        .select('*')
+        .select('id, status, expires_at')
         .eq('email_short_code', shortCode)
         .single();
 
-    if (demoError || !demo || demo.status !== 'active') {
+    if (demoError || !demoByCode || demoByCode.status !== 'active') {
+        return new NextResponse('OK', { status: 200 });
+    }
+
+    const { getDemoWithKb } = await import('@/lib/getDemoWithKb');
+    const demo = await getDemoWithKb(supabase, demoByCode.id);
+    if (!demo) {
         return new NextResponse('OK', { status: 200 });
     }
 
