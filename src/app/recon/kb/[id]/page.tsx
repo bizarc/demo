@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Loader2, Database, Upload, FileText, X } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Database, Upload, FileText, X, Trash2 } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { InternalAppShell } from '@/components/layout/InternalAppShell';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -25,10 +26,12 @@ const ACCEPT_FORMATS = '.txt,.md,.csv,.pdf';
 export default function KBDetailPage() {
     const router = useRouter();
     const params = useParams();
+    const { addToast } = useToast();
     const [kb, setKb] = useState<KnowledgeBase | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     // Editable fields
@@ -124,6 +127,39 @@ export default function KBDetailPage() {
         }
     };
 
+    const performDelete = async () => {
+        if (!kb) return;
+        setDeleting(true);
+        setError(null);
+        try {
+            const res = await fetch(`/api/knowledge-base/${kb.id}`, { method: 'DELETE' });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || 'Failed to delete');
+            }
+            addToast({ title: 'Knowledge base deleted', variant: 'success' });
+            router.push('/recon/kb');
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Delete failed');
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    const handleDelete = () => {
+        if (!kb) return;
+        addToast({
+            title: 'Delete this knowledge base?',
+            description: 'All documents and chunks will be removed. Demos using this KB will have it unlinked.',
+            variant: 'warning',
+            duration: 0,
+            actions: [
+                { label: 'Cancel', onClick: dismiss => dismiss() },
+                { label: 'Delete', variant: 'danger', onClick: dismiss => { dismiss(); performDelete(); } },
+            ],
+        });
+    };
+
     if (loading) return (
         <InternalAppShell title="RECON" subtitle="Knowledge Base">
             <div className="flex justify-center py-20"><Loader2 className="animate-spin text-foreground-secondary" /></div>
@@ -151,9 +187,20 @@ export default function KBDetailPage() {
                             {kb.type}
                         </span>
                     </div>
-                    <Button variant="primary" size="sm" onClick={handleSave} disabled={saving}>
-                        <Save size={14} className="mr-1" /> {saving ? 'Saving...' : 'Save Changes'}
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleDelete}
+                            disabled={deleting}
+                            className="text-error hover:bg-error-bg hover:text-error"
+                        >
+                            <Trash2 size={14} className="mr-1" /> {deleting ? 'Deleting...' : 'Delete'}
+                        </Button>
+                        <Button variant="primary" size="sm" onClick={handleSave} disabled={saving}>
+                            <Save size={14} className="mr-1" /> {saving ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                    </div>
                 </div>
 
                 {error && (
