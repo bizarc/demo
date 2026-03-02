@@ -1,6 +1,6 @@
 # Task 3.3: Improved Scraping & Context Generation
 
-> **Status:** Research & design complete. Implementation in progress.
+> **Status:** Phase A and B implemented; Phase C (FAQs, pricing as structured fields) optional/deferred.
 > **Related:** Task 3.2 (Research Skill), `docs/architecture.md`, `src/lib/scraper.ts`
 
 ---
@@ -138,10 +138,12 @@ researchResult: { summary?, competitors?, marketPosition? }
    - Merge and deduplicate products, offers, qualifications, rawText
    - `multiPage` option (default: true) via API body and `ScrapeOptions`
 
-3. **Phase C (3.3.3):** Optional FAQs and pricing
+3. **Phase C (3.3.3):** Optional FAQs and pricing (deferred)
    - Extract FAQ structure
    - Extract pricing snippets
    - Include in `rawText` or as structured fields for prompts
+
+Phase C is optional/future; Phases A and B cover current builder and research integration needs.
 
 ---
 

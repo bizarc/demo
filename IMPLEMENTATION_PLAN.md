@@ -7,17 +7,25 @@ Build a working demo environment where operators can create branded, AI-powered 
 
 ## Project Phases
 
-### Phase 0: Design System & UI (Current Priority)
-Generate and iterate on designs in Stitch before any implementation.
+**Status:** Phases 0–2 and Phase 3 are complete. Phase 4 (RECON, RADAR, BLUEPRINT module buildout) is next.
 
-### Phase 1: Core Implementation
-Build the approved designs with full functionality.
+### Phase 0: Design System & UI — Complete
+Design system (23 UI components), Stitch exploration, approved designs.
 
-### Phase 2: Polish & Deploy
-Testing, refinement, and production deployment.
+### Phase 1: Core Implementation — Complete
+Demo builder, Magic Link, chat experience, scraping, OpenRouter integration.
 
-### Phase 3: Platform Expansion & Intelligence
-Shared intelligence, auth/RBAC, and production deployment workflows across RADAR, THE LAB, BLUEPRINT, and MISSION CONTROL.
+### Phase 2: Polish & Deploy — Complete
+Testing (Storybook, Vitest, Playwright), deployment, error handling.
+
+### Phase 3: Platform Expansion & Intelligence — Complete
+Home & auth, research skill (Perplexity), context redesign, mission×channel prompts, knowledge bases (RAG).
+
+### Phase 4: Module Buildout (RECON → RADAR → BLUEPRINT) — Next
+
+- **4.1 RECON — Complete.** Shared intelligence module: `/recon` UI for research records and knowledge bases; "Select Existing KB" in Demo Builder; demos reference RECON KBs via `demo_knowledge_bases` (no demo-owned KBs). Lifecycle: draft → reviewed → approved.
+- **4.2 RADAR — Planned.** Prospecting engine. Channels (priority): 1 Email, 2 Instagram DMs, 3 LinkedIn messages, 4 everything else (no SMS). **Target acquisition** (from Funnel Finished spec): Google Maps/Places API and LinkedIn scrapers; input e.g. "Roofers in Austin, TX"; output list of targets with phone, email, and "Current Tech Stack" analysis. **Campaign manager:** cold outreach (email, LinkedIn), signal detection. **RECON:** read for personalization; write net-new research and campaign signals.
+- **4.3 BLUEPRINT — Planned.** Production config from promoted LAB demos; workspace scoping for client deployments only.
 
 ---
 
@@ -150,7 +158,7 @@ interface Session {
   id: string;              // UUID
   lead_id: string;         // FK → leads
   demo_id: string;         // FK → demos
-  channel: 'chat' | 'voice' | 'sms';
+  channel: 'chat' | 'voice' | 'sms' | 'messenger' | 'email' | 'website';
   created_at: Date;
   ended_at?: Date;
   metadata: Record<string, unknown>;  // user agent, device, etc.
@@ -191,28 +199,56 @@ interface Message {
 ```
 src/
 ├── app/
-│   ├── lab/page.tsx              # Demo Builder
-│   ├── lab/success/page.tsx      # Magic Link Display
+│   ├── page.tsx                  # Home (internal ops hub)
+│   ├── login/page.tsx
+│   ├── auth/callback/            # Auth callback
+│   ├── lab/
+│   │   ├── page.tsx              # LAB home / demo list
+│   │   ├── new/page.tsx          # New demo
+│   │   ├── [id]/page.tsx         # Demo builder (resume draft)
+│   │   └── success/page.tsx     # Magic Link Display
+│   ├── recon/
+│   │   ├── page.tsx              # RECON home
+│   │   ├── research/             # Research list, [id], new
+│   │   └── kb/                   # Knowledge base list, [id], new
 │   ├── demo/[id]/page.tsx        # Magic Link Chat
 │   └── api/
 │       ├── scrape/route.ts
 │       ├── demo/route.ts         # POST create demo
-│       ├── demo/[id]/route.ts    # GET demo by ID
-│       └── chat/route.ts         # POST chat (session-aware)
+│       ├── demo/[id]/route.ts    # GET/PATCH/DELETE demo
+│       ├── chat/route.ts         # POST chat (session-aware)
+│       ├── research/route.ts     # POST run research, GET list
+│       ├── recon/research/       # GET list, [id] GET/PATCH/DELETE
+│       ├── knowledge-base/       # CRUD KBs, documents, upload
+│       ├── sendgrid/inbound/     # Email channel
+│       └── twilio/               # sms, voice, whatsapp
 ├── components/
 │   ├── ui/                       # Design system
 │   ├── lab/                      # Demo builder
+│   ├── layout/                   # InternalAppShell, etc.
 │   └── demo/                     # Chat experience
 ├── lib/
 │   ├── openrouter.ts
 │   ├── scraper.ts
 │   ├── prompts.ts
 │   ├── supabase.ts
+│   ├── getDemoWithKb.ts          # Demo + linked KB from demo_knowledge_bases
 │   └── database.types.ts
 ├── supabase/
 │   └── migrations/
 └── styles/
 ```
+
+---
+
+## What's implemented (current state)
+
+- **Design system:** 23 UI components, Storybook, Tailwind.
+- **THE LAB:** Demo builder (5-step wizard), autosave, LAB home, draft resume; Magic Link + QR; multi-channel (website, SMS, email, voice, WhatsApp).
+- **RECON:** Research records (Perplexity, CRUD, status draft/reviewed/approved); knowledge bases (RECON-owned, status, documents, RAG); demos reference KBs via `demo_knowledge_bases`.
+- **Auth/RBAC:** Home page, login, auth callback; role-based access (super_admin, operator); demos and RECON are role-scoped, not workspace-scoped.
+- **Channels:** Mission×channel prompt strategies; SendGrid inbound, Twilio SMS/voice/WhatsApp webhooks; conversation engine (leads, sessions, messages).
+- **Not yet:** RADAR UI, BLUEPRINT UI, role-scoped RLS (currently permissive).
 
 ---
 

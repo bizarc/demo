@@ -1,7 +1,8 @@
 # RECON Research Skill Design
 
-> **Status:** Design complete (docs-only). Implementation is staged in `task.md`.
+> **Status:** Design complete. Implementation done for LAB scope; RADAR/BLUEPRINT hooks when those modules exist.
 > **Scope:** Platform-global internal research in RECON, shared by RADAR, THE LAB, and BLUEPRINT.
+> **Lifecycle:** Implemented as `draft` → `reviewed` → `approved` → `archived` in DB, API, and UI.
 
 ---
 

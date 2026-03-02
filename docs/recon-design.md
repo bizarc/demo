@@ -154,12 +154,14 @@ draft ──► reviewed ──► approved
 
 ## 6. Acceptance Criteria (Implementation)
 
-- [ ] Research records CRUD with status and role-scoped access
+- [x] Research records CRUD with status (role-scoped RLS deferred)
 - [x] Research lifecycle transitions (draft → reviewed → approved) — status values in DB, API, and UI
-- [ ] RADAR/LAB/BLUEPRINT read filters by status per contract
-- [ ] Knowledge bases migrated from `demo_id` ownership to RECON ownership
+- [ ] RADAR/LAB/BLUEPRINT read filters by status per contract (GET supports `?status=`; RADAR/BLUEPRINT not built)
+- [x] Knowledge bases migrated from `demo_id` ownership to RECON ownership
 - [x] demo_knowledge_bases link table; demos reference RECON KBs only via this table
-- [ ] RBAC: role-scoped internal access enforced via RLS
+- [ ] RBAC: role-scoped internal access enforced via RLS (currently permissive)
+
+**Implementation notes:** Research uses internal scope (fixed workspace_id for storage; app treats as single internal scope). Lifecycle uses `reviewed` and `approved` everywhere (DB, API, UI). Role-scoped RLS is deferred; see roadmap 4.0 for tasks.
 
 ---
 
