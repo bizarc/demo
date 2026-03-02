@@ -149,3 +149,55 @@ export async function PATCH(
         );
     }
 }
+
+/**
+ * DELETE /api/recon/research/[id] — Delete a research record (hard delete).
+ * research_links are removed via ON DELETE CASCADE.
+ */
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+
+        if (!id || !isValidUuid(id)) {
+            return NextResponse.json(
+                { error: 'Invalid research record ID' },
+                { status: 400 }
+            );
+        }
+
+        const ip = getClientIp(request);
+        const { allowed } = checkRateLimit(`recon:${ip}`, DEMO_LIMIT);
+        if (!allowed) {
+            return NextResponse.json(
+                { error: 'Rate limit exceeded.' },
+                { status: 429 }
+            );
+        }
+
+        const supabase = createServerClient();
+
+        const { error } = await supabase
+            .from('research_records')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('RECON research DELETE error:', error);
+            return NextResponse.json(
+                { error: 'Failed to delete research record' },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json({ ok: true });
+    } catch (error) {
+        console.error('RECON research DELETE error:', error);
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}

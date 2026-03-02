@@ -2,12 +2,19 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
+export interface ToastAction {
+    label: string;
+    onClick: (dismiss: () => void) => void;
+    variant?: 'default' | 'danger';
+}
+
 export interface Toast {
     id: string;
     title: string;
     description?: string;
     variant?: 'default' | 'success' | 'error' | 'warning';
     duration?: number;
+    actions?: ToastAction[];
 }
 
 interface ToastContextValue {
@@ -29,7 +36,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
     const addToast = useCallback((toast: Omit<Toast, 'id'>) => {
         const id = Math.random().toString(36).slice(2);
-        const duration = toast.duration ?? 5000;
+        const hasActions = toast.actions && toast.actions.length > 0;
+        const duration = hasActions ? 0 : (toast.duration ?? 5000);
 
         setToasts(prev => [...prev, { ...toast, id }]);
 
@@ -98,20 +106,40 @@ function ToastContainer() {
                     {icons[toast.variant || 'default'] && (
                         <span className="flex-shrink-0 mr-3">{icons[toast.variant || 'default']}</span>
                     )}
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">{toast.title}</p>
                         {toast.description && (
                             <p className="mt-1 text-sm text-foreground-secondary">{toast.description}</p>
                         )}
+                        {toast.actions && toast.actions.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                {toast.actions.map((action, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => action.onClick(() => removeToast(toast.id))}
+                                        className={
+                                            action.variant === 'danger'
+                                                ? 'rounded-md px-3 py-1.5 text-sm font-medium text-error hover:bg-error-bg focus:outline-none focus:ring-2 focus:ring-error focus:ring-offset-1'
+                                                : 'rounded-md px-3 py-1.5 text-sm font-medium text-foreground-secondary hover:bg-surface-raised focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1'
+                                        }
+                                    >
+                                        {action.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
-                    <button
-                        onClick={() => removeToast(toast.id)}
-                        className="ml-3 flex-shrink-0 text-foreground-muted hover:text-foreground-secondary"
-                    >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    {(!toast.actions || toast.actions.length === 0) && (
+                        <button
+                            onClick={() => removeToast(toast.id)}
+                            className="ml-3 flex-shrink-0 text-foreground-muted hover:text-foreground-secondary"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    )}
                 </div>
             ))}
         </div>

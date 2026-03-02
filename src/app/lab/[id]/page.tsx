@@ -37,12 +37,6 @@ export default function EditDemoPage() {
                     throw new Error(data.error || 'Failed to load demo');
                 }
 
-                // If active demo, redirect to success page
-                if (data.status === 'active') {
-                    router.push(`/lab/success?id=${demoId}`);
-                    return;
-                }
-
                 setInitialFormData(demoRowToFormData(data));
                 setInitialStep(data.current_step || 'mission');
                 setInitialVersion(typeof data.version === 'number' ? data.version : 1);

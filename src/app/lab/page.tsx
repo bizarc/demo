@@ -99,14 +99,14 @@ export default function LabHomePage() {
         loadDemos();
     }, [loadDemos]);
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Delete this demo? It can be recovered later.')) return;
+    const performDelete = async (id: string) => {
         setDeletingId(id);
         try {
             const res = await fetchWithRetry(`/api/demo/${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Failed to delete');
             setDemos(prev => prev.filter(d => d.id !== id));
             trackUxEvent('lab_demo_deleted', { demoId: id });
+            addToast({ title: 'Demo deleted', description: 'It can be recovered later.', variant: 'success' });
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Failed to delete';
             addToast({ title: 'Delete failed', description: msg, variant: 'error' });
@@ -114,6 +114,19 @@ export default function LabHomePage() {
         } finally {
             setDeletingId(null);
         }
+    };
+
+    const handleDelete = (id: string) => {
+        addToast({
+            title: 'Delete this demo?',
+            description: 'It can be recovered later.',
+            variant: 'warning',
+            duration: 0,
+            actions: [
+                { label: 'Cancel', onClick: dismiss => dismiss() },
+                { label: 'Delete', variant: 'danger', onClick: dismiss => { dismiss(); performDelete(id); } },
+            ],
+        });
     };
 
     const handlePushToBlueprint = async (id: string) => {
@@ -272,6 +285,12 @@ export default function LabHomePage() {
                                                 label="Resume"
                                                 onClick={() => router.push(`/lab/${demo.id}`)}
                                                 primary
+                                            />
+                                        )}
+                                        {(demo.status === 'active' || demo.status === 'expired' || demo.status === 'blueprint') && (
+                                            <ActionButton
+                                                label="Edit"
+                                                onClick={() => router.push(`/lab/${demo.id}`)}
                                             />
                                         )}
                                         {demo.status === 'active' && (

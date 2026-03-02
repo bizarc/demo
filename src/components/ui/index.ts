@@ -57,7 +57,7 @@ export { Modal } from './Modal';
 export type { ModalProps } from './Modal';
 
 export { ToastProvider, useToast, ToastItem } from './Toast';
-export type { Toast, ToastItemProps } from './Toast';
+export type { Toast, ToastAction, ToastItemProps } from './Toast';
 
 export { Skeleton, SkeletonCard, SkeletonAvatar, SkeletonDemoRow, SkeletonChatPage, SkeletonSuccessCard } from './Skeleton';
 export type { SkeletonProps } from './Skeleton';
