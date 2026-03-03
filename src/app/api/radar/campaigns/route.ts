@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         let query = supabase
             .from('campaigns')
             .select(`
-                id, name, description, mission_profile, channel, from_name, from_email,
+                id, name, description, outreach_goal, target_niche, channel, from_name, from_email,
                 status, daily_send_limit, created_by, created_at, updated_at, version
             `, { count: 'exact' })
             .order('updated_at', { ascending: false })

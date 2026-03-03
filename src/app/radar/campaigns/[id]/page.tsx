@@ -172,8 +172,8 @@ export default function CampaignDetailPage() {
                 </div>
 
                 <h2 className="mb-1 text-2xl font-semibold text-foreground">{campaign.name}</h2>
-                <p className="mb-6 text-sm text-foreground-secondary capitalize">
-                    {campaign.mission_profile?.replace(/-/g, ' ')} · {campaign.channel} · {campaign.daily_send_limit}/day limit
+                <p className="mb-6 text-sm text-foreground-secondary">
+                    {campaign.target_niche || campaign.outreach_goal || campaign.channel} · {campaign.daily_send_limit}/day limit
                 </p>
 
                 {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
@@ -413,7 +413,8 @@ export default function CampaignDetailPage() {
                         <dl className="space-y-3 text-sm">
                             {[
                                 { label: 'Campaign ID', value: campaign.id },
-                                { label: 'Mission Profile', value: campaign.mission_profile },
+                                { label: 'Outreach Goal', value: campaign.outreach_goal || '—' },
+                                { label: 'Target Niche', value: campaign.target_niche || '—' },
                                 { label: 'Channel', value: campaign.channel },
                                 { label: 'From', value: `${campaign.from_name || ''} <${campaign.from_email || ''}>` },
                                 { label: 'Reply-To', value: campaign.reply_to_email || '—' },

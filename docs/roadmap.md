@@ -8,7 +8,7 @@
 | Phase 1 | Core Implementation (THE LAB) | Complete |
 | Phase 2 | Polish & Deploy | Complete |
 | Phase 3 | Platform Intelligence & Channels | Complete |
-| Phase 4 | Module Buildout (RECON → RADAR → BLUEPRINT) | Next |
+| Phase 4 | Module Buildout (RECON → RADAR → BLUEPRINT) | In Progress |
 | Phase 5 | Operations & Voice AI | Planned |
 
 ---
@@ -71,23 +71,24 @@ RECON is the platform-global system of record for shared intelligence. It is con
 
 ---
 
-### 4.2 RADAR — Prospecting & Campaigns
+### 4.2 RADAR — Prospecting & Campaigns 🏁
+*Status: Complete*
 
 RADAR is the prospecting engine. It finds, enriches, and engages leads using RECON intelligence.
 
-**Prospecting channels (priority order):**
-1. **Email** — Primary outreach via SendGrid
-2. **Instagram DMs** — Social media messaging
-3. **LinkedIn messages** — Professional outreach
-4. **Everything else later** — TikTok DMs, other social platforms
+**What was built:**
+- [x] **Discovery layer** — Google Places API search (`/radar/discover`); Perplexity AI fallback; `discovery_sessions` table stores search history
+- [x] **Contact enrichment** — Website scraping + AI lookup to find email addresses; `enrichProspectEmail()` in `radarEnrich.ts`
+- [x] **RADAR UI** — Pipeline dashboard at `/radar`; Discover page; Prospects pipeline with email found/missing indicators
+- [x] **Prospect management** — Import from discovery, CSV import, manual add; `status: new` (no email) → `active` (has email); bulk enrich action
+- [x] **Campaign builder** — Multi-step drip sequences with `outreach_goal` + `target_niche`; no mission profile dependency
+- [x] **RECON integration** — Campaigns optionally reference RECON research records and KBs for personalization
+- [x] **Analytics** — Open rates, reply rates, conversion tracking per campaign via `campaign_analytics` view
+- [x] **Email sending** — SendGrid integration; cron-based send-due processing; open/click/unsubscribe tracking
+- [x] **LAB handoff** — "Create Demo in LAB" button on prospect detail pre-fills company/website/industry
+- [x] **SendGrid webhooks** — Inbound reply handling, bounce/unsubscribe processing
 
-**What needs to be built:**
-- [ ] **RADAR UI** — Dashboard at `/radar` for managing prospect lists and campaigns
-- [ ] **Prospect management** — Import, enrich, segment, and score leads
-- [ ] **Campaign builder** — Multi-step outreach sequences (email, Instagram DMs, LinkedIn messages) using mission-aware prompts
-- [ ] **RECON integration** — Campaigns reference RECON research and KBs for personalized outreach
-- [ ] **Analytics** — Open rates, reply rates, conversion tracking per campaign
-- [ ] **Channel integrations** — SendGrid (email), Instagram Graph API / Meta Business Suite (DMs), LinkedIn Messaging API (messages)
+**Key files:** `src/lib/radar.ts`, `radarPlaces.ts`, `radarEnrich.ts`, `radarPrompts.ts`, `radarSendgrid.ts`, `radarCsv.ts`; migrations `20260302_001–007`; 24+ API routes under `/api/radar/`; 10+ UI pages under `/radar/`
 
 **Dependencies:** RECON (4.1) should be at least partially complete so RADAR can reference shared intelligence assets.
 

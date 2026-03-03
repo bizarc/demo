@@ -182,7 +182,7 @@ export async function processDueEnrollments(supabase: SupabaseClient): Promise<C
             personalization_context,
             campaigns (
                 id, name, from_name, from_email, reply_to_email,
-                mission_profile, openrouter_model, daily_send_limit,
+                outreach_goal, target_niche, openrouter_model, daily_send_limit,
                 knowledge_base_id, status
             ),
             prospects (
@@ -288,7 +288,8 @@ export async function processDueEnrollments(supabase: SupabaseClient): Promise<C
 
             if (step.use_ai) {
                 const systemPrompt = await buildOutreachPrompt({
-                    missionProfile: campaign.mission_profile,
+                    outreachGoal: campaign.outreach_goal,
+                    targetNiche: campaign.target_niche,
                     firstName: prospect.first_name || ctx.firstName,
                     lastName: prospect.last_name || ctx.lastName,
                     companyName: prospect.company_name || ctx.companyName,

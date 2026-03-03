@@ -1,18 +1,14 @@
 /**
  * RADAR outreach prompt builder.
- * Builds personalized email content by composing:
- *   1. Base system prompt (mission × channel) from prompts.ts
- *   2. Prospect context injection
- *   3. RECON research summary
- *   4. KB retrieval via RAG
- *   5. Step-specific ai_instructions
+ * Builds plain cold outreach prompts — no mission profile system prompt dependency.
+ * Personalizes using: prospect context, RECON research, KB retrieval, step instructions.
  */
 
-import { buildSystemPrompt, type MissionProfile } from './prompts';
 import { retrieve } from './retrieval';
 
 export interface OutreachPromptContext {
-    missionProfile: MissionProfile;
+    outreachGoal?: string | null;
+    targetNiche?: string | null;
     // Prospect fields
     firstName?: string | null;
     lastName?: string | null;
@@ -37,15 +33,19 @@ export interface GeneratedOutreach {
     body: string;
 }
 
-/** Build the full system prompt for outreach generation */
+/** Build the system prompt for cold outreach email generation */
 export async function buildOutreachPrompt(ctx: OutreachPromptContext): Promise<string> {
     const prospectName = [ctx.firstName, ctx.lastName].filter(Boolean).join(' ') || 'there';
     const company = ctx.companyName || 'their company';
+    const niche = ctx.targetNiche || ctx.industry || 'small business';
+
+    // Determine the outreach goal
+    const goal = ctx.outreachGoal || 'invite them to a free personalized demo';
 
     // Retrieve KB context if available
     let kbContext = '';
     if (ctx.knowledgeBaseId) {
-        const query = `${ctx.missionProfile} outreach to ${company} ${ctx.title || ''} ${ctx.industry || ''}`.trim();
+        const query = `outreach to ${company} ${ctx.title || ''} ${niche}`.trim();
         try {
             kbContext = await retrieve(ctx.knowledgeBaseId, query);
         } catch {
@@ -53,29 +53,38 @@ export async function buildOutreachPrompt(ctx: OutreachPromptContext): Promise<s
         }
     }
 
-    const base = buildSystemPrompt(
-        ctx.missionProfile,
-        {
-            companyName: company,
-            industry: ctx.industry,
-            agentContext: ctx.researchSummary || undefined,
-            knowledgeBaseContext: kbContext || undefined,
-        },
-        'email'
-    );
+    const parts: string[] = [];
 
-    const parts = [base];
+    parts.push(`You are writing a short, personalized cold outreach email to a ${niche} business.
 
-    parts.push(`\n[OUTREACH CONTEXT]
-You are composing a cold outreach email.
-Prospect name: ${prospectName}
+Your goal: ${goal}
+
+Keep the email:
+- Under 150 words
+- Conversational and specific to their business type
+- Not salesy or generic — feel like it was written just for them
+- With one clear call to action`);
+
+    if (ctx.researchSummary) {
+        parts.push(`\n[RESEARCH CONTEXT]\n${ctx.researchSummary}`);
+    }
+
+    if (kbContext) {
+        parts.push(`\n[BACKGROUND INFO]\n${kbContext}`);
+    }
+
+    parts.push(`\n[RECIPIENT]
+Name: ${prospectName}
 Company: ${company}
-Title: ${ctx.title || 'Unknown'}
-Step: ${ctx.stepNumber ?? 1}
-Sender: ${ctx.senderName || 'The team'}`);
+Title: ${ctx.title || 'Business owner'}
+Step: ${ctx.stepNumber ?? 1} of sequence`);
+
+    if (ctx.senderName) {
+        parts.push(`Sender: ${ctx.senderName}`);
+    }
 
     if (ctx.aiInstructions) {
-        parts.push(`\n[STEP INSTRUCTIONS]\n${ctx.aiInstructions}`);
+        parts.push(`\n[THIS STEP'S SPECIFIC INSTRUCTIONS]\n${ctx.aiInstructions}`);
     }
 
     parts.push(`\n[OUTPUT FORMAT]
@@ -86,7 +95,7 @@ Return ONLY a JSON object with exactly two fields:
 }
 - The body should be clean HTML suitable for email clients
 - Include the unsubscribe link as: <a href="${ctx.unsubscribeUrl || '{{unsubscribe_url}}'}">Unsubscribe</a>
-- Keep the body under 200 words
+- Keep the body under 150 words
 - Do not include any explanation outside the JSON`);
 
     return parts.join('\n');

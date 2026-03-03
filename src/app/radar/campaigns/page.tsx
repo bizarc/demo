@@ -13,7 +13,8 @@ interface Campaign {
     id: string;
     name: string;
     status: string;
-    mission_profile: string;
+    outreach_goal: string | null;
+    target_niche: string | null;
     channel: string;
     daily_send_limit: number;
     updated_at: string;
@@ -125,8 +126,8 @@ export default function CampaignsPage() {
                                             <Radar size={16} className="text-foreground-secondary" />
                                             <div>
                                                 <p className="text-sm font-medium text-foreground">{c.name}</p>
-                                                <p className="text-xs text-foreground-secondary capitalize">
-                                                    {c.mission_profile.replace(/-/g, ' ')} · {c.channel} · limit {c.daily_send_limit}/day
+                                                <p className="text-xs text-foreground-secondary">
+                                                    {c.target_niche || c.outreach_goal || c.channel} · limit {c.daily_send_limit}/day
                                                 </p>
                                             </div>
                                         </div>

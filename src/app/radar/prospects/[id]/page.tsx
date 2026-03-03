@@ -1,9 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Sparkles, Mail, Clock } from 'lucide-react';
+import {
+    ArrowLeft, Loader2, Sparkles, Mail, AlertCircle,
+    ExternalLink, Phone, Globe, MapPin, FlaskConical,
+} from 'lucide-react';
 import { InternalAppShell } from '@/components/layout/InternalAppShell';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -14,33 +17,45 @@ interface Prospect {
     id: string; email: string | null; first_name: string | null; last_name: string | null;
     company_name: string | null; title: string | null; industry: string | null;
     phone: string | null; linkedin_url: string | null; instagram_handle: string | null;
-    website_url: string | null; location: string | null; score: number;
-    status: string; tags: string[]; enriched_at: string | null;
+    website_url: string | null; location: string | null; city: string | null; state: string | null;
+    address: string | null; google_rating: number | null; google_review_count: number | null;
+    score: number; status: string; tags: string[]; enriched_at: string | null;
     enrichment_data: Record<string, unknown> | null; version: number;
     created_at: string; updated_at: string;
 }
 
+interface Campaign {
+    id: string;
+    name: string;
+    status: string;
+}
+
 export default function ProspectDetailPage() {
     const { id } = useParams<{ id: string }>();
-    const router = useRouter();
     const [prospect, setProspect] = useState<Prospect | null>(null);
     const [enrollments, setEnrollments] = useState<any[]>([]);
     const [events, setEvents] = useState<any[]>([]);
+    const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [loading, setLoading] = useState(true);
     const [enriching, setEnriching] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [enrolling, setEnrolling] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [editMode, setEditMode] = useState(false);
     const [form, setForm] = useState<Partial<Prospect>>({});
+    const [showEnrollDropdown, setShowEnrollDropdown] = useState(false);
 
     useEffect(() => {
-        fetch(`/api/radar/prospects/${id}`)
-            .then((r) => r.json())
-            .then((d) => {
-                setProspect(d.prospect);
-                setForm(d.prospect || {});
-                setEnrollments(d.enrollments || []);
-                setEvents(d.events || []);
+        Promise.all([
+            fetch(`/api/radar/prospects/${id}`).then((r) => r.json()),
+            fetch('/api/radar/campaigns?status=active&limit=50').then((r) => r.json()),
+        ])
+            .then(([prospectData, campaignData]) => {
+                setProspect(prospectData.prospect);
+                setForm(prospectData.prospect || {});
+                setEnrollments(prospectData.enrollments || []);
+                setEvents(prospectData.events || []);
+                setCampaigns(campaignData.campaigns || []);
             })
             .catch(console.error)
             .finally(() => setLoading(false));
@@ -70,6 +85,7 @@ export default function ProspectDetailPage() {
 
     const handleEnrich = async () => {
         setEnriching(true);
+        setError(null);
         try {
             const res = await fetch(`/api/radar/prospects/${id}/enrich`, { method: 'POST' });
             const data = await res.json();
@@ -83,13 +99,37 @@ export default function ProspectDetailPage() {
         }
     };
 
+    const handleEnrollInCampaign = async (campaignId: string) => {
+        setEnrolling(true);
+        setShowEnrollDropdown(false);
+        setError(null);
+        try {
+            const res = await fetch(`/api/radar/campaigns/${campaignId}/enrollments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prospect_ids: [id] }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Enrollment failed');
+            // Reload enrollments
+            const updated = await fetch(`/api/radar/prospects/${id}`).then((r) => r.json());
+            setEnrollments(updated.enrollments || []);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Enrollment failed');
+        } finally {
+            setEnrolling(false);
+        }
+    };
+
     const setField = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
         setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
     if (loading) {
         return (
             <InternalAppShell title="RADAR — Prospect">
-                <div className="flex items-center justify-center py-20"><Loader2 size={24} className="animate-spin text-foreground-secondary" /></div>
+                <div className="flex items-center justify-center py-20">
+                    <Loader2 size={24} className="animate-spin text-foreground-secondary" />
+                </div>
             </InternalAppShell>
         );
     }
@@ -99,13 +139,24 @@ export default function ProspectDetailPage() {
             <InternalAppShell title="RADAR — Prospect">
                 <main className="mx-auto max-w-2xl px-6 py-10">
                     <p className="text-sm text-foreground-secondary">Prospect not found.</p>
-                    <Link href="/radar/prospects"><Button variant="ghost" size="sm" className="mt-4">Back</Button></Link>
+                    <Link href="/radar/prospects">
+                        <Button variant="ghost" size="sm" className="mt-4">Back</Button>
+                    </Link>
                 </main>
             </InternalAppShell>
         );
     }
 
-    const displayName = [prospect.first_name, prospect.last_name].filter(Boolean).join(' ') || prospect.email || 'Unknown';
+    const displayName = [prospect.first_name, prospect.last_name].filter(Boolean).join(' ')
+        || prospect.company_name
+        || 'Unknown';
+
+    const labUrl = `/lab?${new URLSearchParams({
+        company: prospect.company_name || '',
+        website: prospect.website_url || '',
+        industry: prospect.industry || '',
+        prospect_id: prospect.id,
+    }).toString()}`;
 
     return (
         <InternalAppShell title={`RADAR — ${displayName}`} subtitle="Prospect detail">
@@ -115,10 +166,58 @@ export default function ProspectDetailPage() {
                         <ArrowLeft size={14} /> Back to Prospects
                     </Link>
                     <div className="flex gap-2">
+                        {/* LAB handoff */}
+                        <Link href={labUrl}>
+                            <Button variant="ghost" size="sm">
+                                <FlaskConical size={14} className="mr-1" />
+                                Create Demo in LAB
+                                <ExternalLink size={12} className="ml-1" />
+                            </Button>
+                        </Link>
+
+                        {/* Enroll in Campaign */}
+                        <div className="relative">
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => setShowEnrollDropdown(!showEnrollDropdown)}
+                                disabled={!prospect.email || enrolling}
+                            >
+                                {enrolling ? <Loader2 size={14} className="animate-spin mr-1" /> : <Mail size={14} className="mr-1" />}
+                                Enroll in Campaign
+                            </Button>
+                            {showEnrollDropdown && campaigns.length > 0 && (
+                                <div className="absolute right-0 top-full z-10 mt-1 w-64 rounded-lg border border-border bg-canvas shadow-lg">
+                                    {campaigns.map((c) => (
+                                        <button
+                                            key={c.id}
+                                            onClick={() => handleEnrollInCampaign(c.id)}
+                                            className="block w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-canvas-secondary"
+                                        >
+                                            {c.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                            {showEnrollDropdown && campaigns.length === 0 && (
+                                <div className="absolute right-0 top-full z-10 mt-1 w-64 rounded-lg border border-border bg-canvas p-3 shadow-lg">
+                                    <p className="text-xs text-foreground-secondary">
+                                        No active campaigns.{' '}
+                                        <Link href="/radar/campaigns/new" className="text-primary hover:underline">
+                                            Create one
+                                        </Link>
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* AI Enrich */}
                         <Button variant="secondary" size="sm" onClick={handleEnrich} disabled={enriching}>
                             <Sparkles size={14} className="mr-1" />
                             {enriching ? 'Enriching…' : 'Enrich with AI'}
                         </Button>
+
+                        {/* Edit */}
                         {editMode ? (
                             <>
                                 <Button variant="primary" size="sm" onClick={handleSave} disabled={saving}>
@@ -136,6 +235,28 @@ export default function ProspectDetailPage() {
 
                 {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
+                {/* Email missing warning */}
+                {!prospect.email && (
+                    <div className="mb-6 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                        <div className="flex items-center gap-2">
+                            <AlertCircle size={16} className="text-amber-600" />
+                            <span className="text-sm text-amber-800">
+                                No email address found. Run AI enrichment to search for one automatically, or add it manually.
+                            </span>
+                        </div>
+                        <Button variant="secondary" size="sm" onClick={handleEnrich} disabled={enriching}>
+                            <Sparkles size={13} className="mr-1" />
+                            {enriching ? 'Searching…' : 'Find Email'}
+                        </Button>
+                    </div>
+                )}
+
+                {!prospect.email && (
+                    <div className="mb-4 text-xs text-foreground-tertiary">
+                        Can&apos;t enroll in campaign without an email address.
+                    </div>
+                )}
+
                 <div className="grid gap-6 lg:grid-cols-3">
                     {/* Main info */}
                     <div className="lg:col-span-2 space-y-4">
@@ -150,7 +271,8 @@ export default function ProspectDetailPage() {
                                     { label: 'Company', field: 'company_name' },
                                     { label: 'Title', field: 'title' },
                                     { label: 'Industry', field: 'industry' },
-                                    { label: 'Location', field: 'location' },
+                                    { label: 'City', field: 'city' },
+                                    { label: 'State', field: 'state' },
                                     { label: 'Website', field: 'website_url' },
                                     { label: 'LinkedIn', field: 'linkedin_url' },
                                 ].map(({ label, field }) => (
@@ -164,6 +286,23 @@ export default function ProspectDetailPage() {
                                     </div>
                                 ))}
                             </div>
+
+                            {/* Google Places data */}
+                            {(prospect.google_rating || prospect.address) && (
+                                <div className="mt-4 border-t border-border pt-4">
+                                    <p className="mb-2 text-xs font-medium text-foreground-secondary">From Google Places</p>
+                                    <div className="flex flex-wrap gap-3 text-xs text-foreground-secondary">
+                                        {prospect.google_rating && (
+                                            <span>★ {prospect.google_rating} ({prospect.google_review_count} reviews)</span>
+                                        )}
+                                        {prospect.address && (
+                                            <span className="inline-flex items-center gap-1">
+                                                <MapPin size={10} /> {prospect.address}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </Card>
 
                         {/* Enrichment data */}
@@ -186,16 +325,58 @@ export default function ProspectDetailPage() {
 
                     {/* Sidebar */}
                     <div className="space-y-4">
-                        {/* Score */}
+                        {/* Status */}
                         <Card variant="default" padding="md">
-                            <p className="text-xs font-medium text-foreground-secondary">Prospect Score</p>
-                            <p className="mt-1 text-3xl font-semibold text-foreground">{prospect.score}</p>
-                            <Badge variant={prospect.status === 'active' ? 'live' : 'draft'} size="sm" className="mt-2">
+                            <p className="text-xs font-medium text-foreground-secondary">Status</p>
+                            <Badge
+                                variant={
+                                    prospect.status === 'active' ? 'live' :
+                                    prospect.status === 'new' ? 'draft' :
+                                    prospect.status === 'unsubscribed' ? 'type' : 'archived'
+                                }
+                                size="sm"
+                                className="mt-2"
+                            >
                                 {prospect.status}
                             </Badge>
+                            {prospect.score > 0 && (
+                                <p className="mt-2 text-sm font-medium text-foreground">Score: {prospect.score}</p>
+                            )}
+                            {prospect.tags?.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-1">
+                                    {prospect.tags.map((tag) => (
+                                        <span key={tag} className="rounded bg-canvas-secondary px-1.5 py-0.5 text-xs text-foreground-secondary">
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                         </Card>
 
-                        {/* Recent events */}
+                        {/* Contact links */}
+                        <Card variant="default" padding="md">
+                            <p className="mb-2 text-xs font-medium text-foreground-secondary">Quick Links</p>
+                            <div className="space-y-1.5">
+                                {prospect.website_url && (
+                                    <a href={prospect.website_url} target="_blank" rel="noopener noreferrer"
+                                        className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                                        <Globe size={12} /> {new URL(prospect.website_url).hostname.replace('www.', '')}
+                                    </a>
+                                )}
+                                {prospect.phone && (
+                                    <a href={`tel:${prospect.phone}`} className="flex items-center gap-1.5 text-xs text-foreground-secondary hover:text-foreground">
+                                        <Phone size={12} /> {prospect.phone}
+                                    </a>
+                                )}
+                                {prospect.email && (
+                                    <a href={`mailto:${prospect.email}`} className="flex items-center gap-1.5 text-xs text-foreground-secondary hover:text-foreground">
+                                        <Mail size={12} /> {prospect.email}
+                                    </a>
+                                )}
+                            </div>
+                        </Card>
+
+                        {/* Outreach timeline */}
                         <Card variant="default" padding="md">
                             <h3 className="mb-3 text-sm font-medium text-foreground">Outreach Timeline</h3>
                             {events.length === 0 ? (
@@ -207,7 +388,9 @@ export default function ProspectDetailPage() {
                                             <Mail size={12} className="mt-0.5 flex-shrink-0 text-foreground-secondary" />
                                             <div>
                                                 <p className="text-xs font-medium text-foreground capitalize">{e.event_type}</p>
-                                                <p className="text-xs text-foreground-secondary">Step {e.step_number} — {new Date(e.occurred_at).toLocaleDateString()}</p>
+                                                <p className="text-xs text-foreground-secondary">
+                                                    Step {e.step_number} — {new Date(e.occurred_at).toLocaleDateString()}
+                                                </p>
                                             </div>
                                         </div>
                                     ))}
@@ -215,7 +398,7 @@ export default function ProspectDetailPage() {
                             )}
                         </Card>
 
-                        {/* Enrollments */}
+                        {/* Campaign enrollments */}
                         <Card variant="default" padding="md">
                             <h3 className="mb-3 text-sm font-medium text-foreground">Campaign Enrollments</h3>
                             {enrollments.length === 0 ? (
@@ -224,7 +407,12 @@ export default function ProspectDetailPage() {
                                 <div className="space-y-2">
                                     {enrollments.map((e) => (
                                         <div key={e.id}>
-                                            <p className="text-xs font-medium text-foreground">{(e.campaigns as any)?.name || '—'}</p>
+                                            <Link
+                                                href={`/radar/campaigns/${e.campaign_id}`}
+                                                className="text-xs font-medium text-primary hover:underline"
+                                            >
+                                                {(e.campaigns as any)?.name || '—'}
+                                            </Link>
                                             <p className="text-xs text-foreground-secondary capitalize">
                                                 {e.status} · Step {e.current_step}
                                             </p>

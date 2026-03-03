@@ -49,7 +49,8 @@ export async function POST(
 
         if (step.use_ai) {
             const systemPrompt = await buildOutreachPrompt({
-                missionProfile: campaign.mission_profile,
+                outreachGoal: campaign.outreach_goal,
+                targetNiche: campaign.target_niche,
                 firstName: prospect.first_name,
                 lastName: prospect.last_name,
                 companyName: prospect.company_name,

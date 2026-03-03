@@ -470,7 +470,8 @@ export interface Database {
                     id: string
                     name: string
                     description: string | null
-                    mission_profile: 'database-reactivation' | 'inbound-nurture' | 'customer-service' | 'review-generation'
+                    outreach_goal: string | null
+                    target_niche: string | null
                     channel: 'email' | 'instagram' | 'linkedin'
                     from_name: string | null
                     from_email: string | null
@@ -492,7 +493,8 @@ export interface Database {
                     id?: string
                     name: string
                     description?: string | null
-                    mission_profile?: 'database-reactivation' | 'inbound-nurture' | 'customer-service' | 'review-generation'
+                    outreach_goal?: string | null
+                    target_niche?: string | null
                     channel?: 'email' | 'instagram' | 'linkedin'
                     from_name?: string | null
                     from_email?: string | null
@@ -619,7 +621,7 @@ export interface Database {
                     campaign_name: string
                     campaign_status: string
                     channel: string
-                    mission_profile: string
+                    outreach_goal: string | null
                     total_enrollments: number
                     active_enrollments: number
                     completed_enrollments: number

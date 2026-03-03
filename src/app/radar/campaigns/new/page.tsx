@@ -9,14 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
-const MISSION_PROFILES = [
-    { value: 'database-reactivation', label: 'Database Reactivation', desc: 'Re-engage past customers and dormant leads' },
-    { value: 'inbound-nurture', label: 'Inbound Nurture', desc: 'Guide inbound leads through the funnel' },
-    { value: 'customer-service', label: 'Customer Service', desc: 'Proactive outreach to existing customers' },
-    { value: 'review-generation', label: 'Review Generation', desc: 'Encourage satisfied customers to leave reviews' },
-];
-
-const STEPS = ['Mission', 'RECON Link', 'Sender Identity', 'Schedule'];
+const STEPS = ['Campaign', 'RECON Link', 'Sender Identity', 'Schedule'];
 
 export default function NewCampaignPage() {
     const router = useRouter();
@@ -25,7 +18,8 @@ export default function NewCampaignPage() {
     const [error, setError] = useState<string | null>(null);
     const [form, setForm] = useState({
         name: '',
-        mission_profile: 'inbound-nurture',
+        outreach_goal: '',
+        target_niche: '',
         channel: 'email',
         research_record_id: '',
         knowledge_base_id: '',
@@ -89,35 +83,38 @@ export default function NewCampaignPage() {
                 {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
                 <Card variant="default" padding="lg">
-                    {/* Step 0: Mission */}
+                    {/* Step 0: Campaign basics */}
                     {step === 0 && (
                         <div className="space-y-4">
                             <div>
                                 <label className="mb-1 block text-sm font-medium text-foreground">Campaign Name *</label>
-                                <Input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="Q2 Reactivation" />
+                                <Input
+                                    value={form.name}
+                                    onChange={(e) => set('name', e.target.value)}
+                                    placeholder="Austin Roofers Q2"
+                                />
                             </div>
                             <div>
-                                <label className="mb-2 block text-sm font-medium text-foreground">Mission Profile</label>
-                                <div className="space-y-2">
-                                    {MISSION_PROFILES.map((m) => (
-                                        <label key={m.value} className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
-                                            form.mission_profile === m.value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                                        }`}>
-                                            <input
-                                                type="radio"
-                                                name="mission"
-                                                value={m.value}
-                                                checked={form.mission_profile === m.value}
-                                                onChange={() => set('mission_profile', m.value)}
-                                                className="mt-0.5"
-                                            />
-                                            <div>
-                                                <p className="text-sm font-medium text-foreground">{m.label}</p>
-                                                <p className="text-xs text-foreground-secondary">{m.desc}</p>
-                                            </div>
-                                        </label>
-                                    ))}
-                                </div>
+                                <label className="mb-1 block text-sm font-medium text-foreground">Outreach Goal</label>
+                                <Input
+                                    value={form.outreach_goal}
+                                    onChange={(e) => set('outreach_goal', e.target.value)}
+                                    placeholder="Invite to a free demo, Check if interested in growth, Follow up after site visit…"
+                                />
+                                <p className="mt-1 text-xs text-foreground-secondary">
+                                    Describes what you want recipients to do. Used to personalize AI-generated emails.
+                                </p>
+                            </div>
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-foreground">Target Niche (optional)</label>
+                                <Input
+                                    value={form.target_niche}
+                                    onChange={(e) => set('target_niche', e.target.value)}
+                                    placeholder="Roofing contractors, Dentists, HVAC companies…"
+                                />
+                                <p className="mt-1 text-xs text-foreground-secondary">
+                                    Helps AI use industry-relevant language.
+                                </p>
                             </div>
                         </div>
                     )}
@@ -126,18 +123,30 @@ export default function NewCampaignPage() {
                     {step === 1 && (
                         <div className="space-y-4">
                             <p className="text-sm text-foreground-secondary">
-                                Link a RECON research record and knowledge base to power personalization.
+                                Optionally link a RECON research record and knowledge base to power personalization.
                                 Both are optional but improve AI-generated email quality.
                             </p>
                             <div>
                                 <label className="mb-1 block text-sm font-medium text-foreground">Research Record ID (optional)</label>
-                                <Input value={form.research_record_id} onChange={(e) => set('research_record_id', e.target.value)} placeholder="UUID from RECON" />
-                                <p className="mt-1 text-xs text-foreground-secondary">Find IDs in <Link href="/recon/research" className="text-primary hover:underline">RECON → Research</Link></p>
+                                <Input
+                                    value={form.research_record_id}
+                                    onChange={(e) => set('research_record_id', e.target.value)}
+                                    placeholder="UUID from RECON"
+                                />
+                                <p className="mt-1 text-xs text-foreground-secondary">
+                                    Find IDs in <Link href="/recon/research" className="text-primary hover:underline">RECON → Research</Link>
+                                </p>
                             </div>
                             <div>
                                 <label className="mb-1 block text-sm font-medium text-foreground">Knowledge Base ID (optional)</label>
-                                <Input value={form.knowledge_base_id} onChange={(e) => set('knowledge_base_id', e.target.value)} placeholder="UUID from RECON" />
-                                <p className="mt-1 text-xs text-foreground-secondary">Find IDs in <Link href="/recon/kb" className="text-primary hover:underline">RECON → Knowledge Bases</Link></p>
+                                <Input
+                                    value={form.knowledge_base_id}
+                                    onChange={(e) => set('knowledge_base_id', e.target.value)}
+                                    placeholder="UUID from RECON"
+                                />
+                                <p className="mt-1 text-xs text-foreground-secondary">
+                                    Find IDs in <Link href="/recon/kb" className="text-primary hover:underline">RECON → Knowledge Bases</Link>
+                                </p>
                             </div>
                         </div>
                     )}
@@ -147,15 +156,29 @@ export default function NewCampaignPage() {
                         <div className="space-y-4">
                             <div>
                                 <label className="mb-1 block text-sm font-medium text-foreground">From Name *</label>
-                                <Input value={form.from_name} onChange={(e) => set('from_name', e.target.value)} placeholder="Jane from Acme" />
+                                <Input
+                                    value={form.from_name}
+                                    onChange={(e) => set('from_name', e.target.value)}
+                                    placeholder="Jane from Acme"
+                                />
                             </div>
                             <div>
                                 <label className="mb-1 block text-sm font-medium text-foreground">From Email *</label>
-                                <Input type="email" value={form.from_email} onChange={(e) => set('from_email', e.target.value)} placeholder="jane@acme.com" />
+                                <Input
+                                    type="email"
+                                    value={form.from_email}
+                                    onChange={(e) => set('from_email', e.target.value)}
+                                    placeholder="jane@acme.com"
+                                />
                             </div>
                             <div>
                                 <label className="mb-1 block text-sm font-medium text-foreground">Reply-To Email (optional)</label>
-                                <Input type="email" value={form.reply_to_email} onChange={(e) => set('reply_to_email', e.target.value)} placeholder="replies@acme.com" />
+                                <Input
+                                    type="email"
+                                    value={form.reply_to_email}
+                                    onChange={(e) => set('reply_to_email', e.target.value)}
+                                    placeholder="replies@acme.com"
+                                />
                             </div>
                         </div>
                     )}
@@ -165,22 +188,45 @@ export default function NewCampaignPage() {
                         <div className="space-y-4">
                             <div>
                                 <label className="mb-1 block text-sm font-medium text-foreground">Send Time (hour, 0–23)</label>
-                                <Input type="number" min={0} max={23} value={form.send_time_hour} onChange={(e) => set('send_time_hour', parseInt(e.target.value) || 9)} />
-                                <p className="mt-1 text-xs text-foreground-secondary">Cron runs every 5 minutes — this is a target hour guideline.</p>
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    max={23}
+                                    value={form.send_time_hour}
+                                    onChange={(e) => set('send_time_hour', parseInt(e.target.value) || 9)}
+                                />
+                                <p className="mt-1 text-xs text-foreground-secondary">
+                                    Cron runs every 5 minutes — this is a target hour guideline.
+                                </p>
                             </div>
                             <div>
                                 <label className="mb-1 block text-sm font-medium text-foreground">Timezone</label>
-                                <Input value={form.timezone} onChange={(e) => set('timezone', e.target.value)} placeholder="America/New_York" />
+                                <Input
+                                    value={form.timezone}
+                                    onChange={(e) => set('timezone', e.target.value)}
+                                    placeholder="America/New_York"
+                                />
                             </div>
                             <div>
                                 <label className="mb-1 block text-sm font-medium text-foreground">Daily Send Limit</label>
-                                <Input type="number" min={1} max={2000} value={form.daily_send_limit} onChange={(e) => set('daily_send_limit', parseInt(e.target.value) || 200)} />
+                                <Input
+                                    type="number"
+                                    min={1}
+                                    max={2000}
+                                    value={form.daily_send_limit}
+                                    onChange={(e) => set('daily_send_limit', parseInt(e.target.value) || 200)}
+                                />
                             </div>
                             <div className="rounded-lg bg-canvas-secondary p-4">
                                 <p className="mb-2 text-sm font-medium text-foreground">Review</p>
                                 <dl className="space-y-1 text-xs text-foreground-secondary">
                                     <div><dt className="inline font-medium">Name:</dt> <dd className="inline">{form.name}</dd></div>
-                                    <div><dt className="inline font-medium">Mission:</dt> <dd className="inline capitalize">{form.mission_profile.replace(/-/g, ' ')}</dd></div>
+                                    {form.outreach_goal && (
+                                        <div><dt className="inline font-medium">Goal:</dt> <dd className="inline">{form.outreach_goal}</dd></div>
+                                    )}
+                                    {form.target_niche && (
+                                        <div><dt className="inline font-medium">Niche:</dt> <dd className="inline">{form.target_niche}</dd></div>
+                                    )}
                                     <div><dt className="inline font-medium">From:</dt> <dd className="inline">{form.from_name} &lt;{form.from_email}&gt;</dd></div>
                                     <div><dt className="inline font-medium">Limit:</dt> <dd className="inline">{form.daily_send_limit}/day</dd></div>
                                 </dl>
