@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   BookOpen,
@@ -61,10 +62,10 @@ export function InternalAppShell({ children, title, subtitle, actions }: Interna
             trackUxEvent('nav_item_selected', { module: item.id, route: item.href ?? null });
           }}
           header={
-            <div>
+            <Link href="/" className="block hover:opacity-80 transition-opacity">
               <p className="text-xs text-foreground-secondary">Funnel Finished</p>
               <h2 className="text-sm font-medium text-foreground">Command Deck</h2>
-            </div>
+            </Link>
           }
         />
         <div className="flex min-w-0 flex-1 flex-col">

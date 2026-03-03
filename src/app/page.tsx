@@ -75,18 +75,22 @@ export default function HomePage() {
               </Card>
             </Link>
 
-            <Card variant="default" padding="lg" className="h-full opacity-75">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-border-subtle">
-                <Radar size={20} strokeWidth={2} className="text-foreground-secondary" />
-              </div>
-              <h4 className="mb-1 text-base font-medium text-foreground">Radar</h4>
-              <p className="text-sm text-foreground-secondary">
-                Prospecting, target acquisition, campaign signals
-              </p>
-              <Badge variant="draft" size="sm" className="mt-3">
-                Soon
-              </Badge>
-            </Card>
+            <Link href="/radar">
+              <Card variant="interactive" padding="lg" className="h-full transition-all hover:shadow-sm">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-primary [&_svg]:text-white">
+                  <Radar size={20} strokeWidth={2} />
+                </div>
+                <h4 className="mb-1 text-base font-medium text-foreground">Radar</h4>
+                <p className="text-sm text-foreground-secondary">
+                  Prospecting, target acquisition, campaign signals
+                </p>
+                <div className="mt-3">
+                  <Badge variant="live" size="sm">
+                    Active
+                  </Badge>
+                </div>
+              </Card>
+            </Link>
 
             <Card variant="default" padding="lg" className="h-full opacity-75">
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-border-subtle">

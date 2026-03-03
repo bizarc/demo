@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -50,13 +50,15 @@ export default function DiscoverPage() {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [sessionsLoading, setSessionsLoading] = useState(true);
 
-    useEffect(() => {
+    const loadSessions = useCallback(() => {
         fetch('/api/radar/discover/sessions')
             .then((r) => r.json())
             .then((d) => setSessions(d.sessions || []))
             .catch(() => {})
             .finally(() => setSessionsLoading(false));
     }, []);
+
+    useEffect(() => { loadSessions(); }, [loadSessions]);
 
     const handleSearch = async () => {
         const finalQuery = useAdvanced
@@ -83,6 +85,7 @@ export default function DiscoverPage() {
             setResults(data.results || []);
             setSessionId(data.session_id || null);
             setSourceLabel(data.source === 'ai' ? 'AI (no Places API key)' : 'Google Places');
+            loadSessions(); // refresh past searches list
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Search failed');
         } finally {
@@ -119,7 +122,13 @@ export default function DiscoverPage() {
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Import failed');
-            router.push(`/radar/prospects?status=new`);
+            if (data.imported === 0) {
+                const detail = data.db_error ? ` DB: ${data.db_error}` : '';
+                throw new Error(
+                    `No prospects were imported (${data.skipped} skipped — may already exist or lack a phone number).${detail}`
+                );
+            }
+            router.push(`/radar/prospects`);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Import failed');
             setImporting(false);

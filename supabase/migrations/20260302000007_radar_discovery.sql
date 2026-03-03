@@ -33,6 +33,9 @@ ALTER TABLE prospects ADD CONSTRAINT prospect_has_contact CHECK (
 
 -- ─── Campaigns: drop mission_profile, add outreach_goal ──────────────────────
 
+-- Must drop the view before dropping the column it references
+DROP VIEW IF EXISTS campaign_analytics;
+
 ALTER TABLE campaigns DROP CONSTRAINT IF EXISTS campaigns_mission_profile_check;
 ALTER TABLE campaigns DROP COLUMN IF EXISTS mission_profile;
 ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS outreach_goal TEXT;

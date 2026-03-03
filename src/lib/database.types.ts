@@ -416,13 +416,20 @@ export interface Database {
                     company_size: string | null
                     website_url: string | null
                     location: string | null
+                    // Discovery columns (migration 007)
+                    address: string | null
+                    city: string | null
+                    state: string | null
+                    google_place_id: string | null
+                    google_rating: number | null
+                    google_review_count: number | null
                     enriched_at: string | null
                     enrichment_source: string | null
                     enrichment_data: Json | null
                     tags: string[]
                     score: number
                     score_signals: Json | null
-                    status: 'active' | 'unsubscribed' | 'bounced' | 'archived'
+                    status: 'active' | 'new' | 'unsubscribed' | 'bounced' | 'archived'
                     unsubscribed_at: string | null
                     bounced_at: string | null
                     bounce_type: 'hard' | 'soft' | null
@@ -446,13 +453,19 @@ export interface Database {
                     company_size?: string | null
                     website_url?: string | null
                     location?: string | null
+                    address?: string | null
+                    city?: string | null
+                    state?: string | null
+                    google_place_id?: string | null
+                    google_rating?: number | null
+                    google_review_count?: number | null
                     enriched_at?: string | null
                     enrichment_source?: string | null
                     enrichment_data?: Json | null
                     tags?: string[]
                     score?: number
                     score_signals?: Json | null
-                    status?: 'active' | 'unsubscribed' | 'bounced' | 'archived'
+                    status?: 'active' | 'new' | 'unsubscribed' | 'bounced' | 'archived'
                     unsubscribed_at?: string | null
                     bounced_at?: string | null
                     bounce_type?: 'hard' | 'soft' | null
@@ -463,6 +476,39 @@ export interface Database {
                     version?: number
                 }
                 Update: { [k: string]: unknown }
+                Relationships: []
+            }
+            discovery_sessions: {
+                Row: {
+                    id: string
+                    query: string
+                    niche: string | null
+                    location: string | null
+                    result_count: number
+                    imported_count: number
+                    raw_results: Json | null
+                    created_by: string | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    query: string
+                    niche?: string | null
+                    location?: string | null
+                    result_count?: number
+                    imported_count?: number
+                    raw_results?: Json | null
+                    created_by?: string | null
+                    created_at?: string
+                }
+                Update: {
+                    query?: string
+                    niche?: string | null
+                    location?: string | null
+                    result_count?: number
+                    imported_count?: number
+                    raw_results?: Json | null
+                }
                 Relationships: []
             }
             campaigns: {
