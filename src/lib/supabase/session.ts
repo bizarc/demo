@@ -8,7 +8,9 @@ import { NextResponse, type NextRequest } from 'next/server';
 const AUTH_REQUIRED_PATHS = [
     '/',      // Home / Command Deck
     '/lab',   // Demo builder
-    // Future: '/radar', '/blueprint', '/mission-control', '/portal'
+    '/recon', // RECON intelligence hub
+    '/radar', // RADAR outreach engine
+    // Future: '/blueprint', '/mission-control', '/portal'
 ];
 
 function isAuthRequiredPath(pathname: string): boolean {

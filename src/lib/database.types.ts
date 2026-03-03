@@ -400,9 +400,247 @@ export interface Database {
                 Update: { [k: string]: unknown }
                 Relationships: []
             }
+            // RADAR tables
+            prospects: {
+                Row: {
+                    id: string
+                    email: string | null
+                    phone: string | null
+                    linkedin_url: string | null
+                    instagram_handle: string | null
+                    first_name: string | null
+                    last_name: string | null
+                    company_name: string | null
+                    title: string | null
+                    industry: string | null
+                    company_size: string | null
+                    website_url: string | null
+                    location: string | null
+                    enriched_at: string | null
+                    enrichment_source: string | null
+                    enrichment_data: Json | null
+                    tags: string[]
+                    score: number
+                    score_signals: Json | null
+                    status: 'active' | 'unsubscribed' | 'bounced' | 'archived'
+                    unsubscribed_at: string | null
+                    bounced_at: string | null
+                    bounce_type: 'hard' | 'soft' | null
+                    lead_id: string | null
+                    imported_by: string | null
+                    created_at: string
+                    updated_at: string
+                    version: number
+                }
+                Insert: {
+                    id?: string
+                    email?: string | null
+                    phone?: string | null
+                    linkedin_url?: string | null
+                    instagram_handle?: string | null
+                    first_name?: string | null
+                    last_name?: string | null
+                    company_name?: string | null
+                    title?: string | null
+                    industry?: string | null
+                    company_size?: string | null
+                    website_url?: string | null
+                    location?: string | null
+                    enriched_at?: string | null
+                    enrichment_source?: string | null
+                    enrichment_data?: Json | null
+                    tags?: string[]
+                    score?: number
+                    score_signals?: Json | null
+                    status?: 'active' | 'unsubscribed' | 'bounced' | 'archived'
+                    unsubscribed_at?: string | null
+                    bounced_at?: string | null
+                    bounce_type?: 'hard' | 'soft' | null
+                    lead_id?: string | null
+                    imported_by?: string | null
+                    created_at?: string
+                    updated_at?: string
+                    version?: number
+                }
+                Update: { [k: string]: unknown }
+                Relationships: []
+            }
+            campaigns: {
+                Row: {
+                    id: string
+                    name: string
+                    description: string | null
+                    mission_profile: 'database-reactivation' | 'inbound-nurture' | 'customer-service' | 'review-generation'
+                    channel: 'email' | 'instagram' | 'linkedin'
+                    from_name: string | null
+                    from_email: string | null
+                    reply_to_email: string | null
+                    research_record_id: string | null
+                    knowledge_base_id: string | null
+                    openrouter_model: string | null
+                    send_time_hour: number
+                    send_days: string[]
+                    timezone: string
+                    daily_send_limit: number
+                    status: 'draft' | 'active' | 'paused' | 'completed' | 'archived'
+                    created_by: string | null
+                    created_at: string
+                    updated_at: string
+                    version: number
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    description?: string | null
+                    mission_profile?: 'database-reactivation' | 'inbound-nurture' | 'customer-service' | 'review-generation'
+                    channel?: 'email' | 'instagram' | 'linkedin'
+                    from_name?: string | null
+                    from_email?: string | null
+                    reply_to_email?: string | null
+                    research_record_id?: string | null
+                    knowledge_base_id?: string | null
+                    openrouter_model?: string | null
+                    send_time_hour?: number
+                    send_days?: string[]
+                    timezone?: string
+                    daily_send_limit?: number
+                    status?: 'draft' | 'active' | 'paused' | 'completed' | 'archived'
+                    created_by?: string | null
+                    created_at?: string
+                    updated_at?: string
+                    version?: number
+                }
+                Update: { [k: string]: unknown }
+                Relationships: []
+            }
+            campaign_steps: {
+                Row: {
+                    id: string
+                    campaign_id: string
+                    step_number: number
+                    name: string | null
+                    subject_template: string | null
+                    body_template: string | null
+                    delay_days: number
+                    use_ai: boolean
+                    ai_instructions: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    campaign_id: string
+                    step_number: number
+                    name?: string | null
+                    subject_template?: string | null
+                    body_template?: string | null
+                    delay_days?: number
+                    use_ai?: boolean
+                    ai_instructions?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: { [k: string]: unknown }
+                Relationships: []
+            }
+            campaign_enrollments: {
+                Row: {
+                    id: string
+                    campaign_id: string
+                    prospect_id: string
+                    current_step: number
+                    status: 'active' | 'completed' | 'replied' | 'unsubscribed' | 'bounced' | 'paused'
+                    enrolled_at: string
+                    next_send_at: string | null
+                    completed_at: string | null
+                    sending_at: string | null
+                    personalization_context: Json | null
+                    enrolled_by: string | null
+                }
+                Insert: {
+                    id?: string
+                    campaign_id: string
+                    prospect_id: string
+                    current_step?: number
+                    status?: 'active' | 'completed' | 'replied' | 'unsubscribed' | 'bounced' | 'paused'
+                    enrolled_at?: string
+                    next_send_at?: string | null
+                    completed_at?: string | null
+                    sending_at?: string | null
+                    personalization_context?: Json | null
+                    enrolled_by?: string | null
+                }
+                Update: { [k: string]: unknown }
+                Relationships: []
+            }
+            outreach_events: {
+                Row: {
+                    id: string
+                    campaign_id: string | null
+                    prospect_id: string | null
+                    enrollment_id: string | null
+                    step_number: number | null
+                    event_type: 'sent' | 'delivered' | 'opened' | 'clicked' | 'replied' | 'bounced' | 'unsubscribed' | 'converted'
+                    channel: string
+                    message_id: string | null
+                    subject: string | null
+                    body_preview: string | null
+                    tracking_id: string | null
+                    ip_address: string | null
+                    user_agent: string | null
+                    metadata: Json | null
+                    occurred_at: string
+                }
+                Insert: {
+                    id?: string
+                    campaign_id?: string | null
+                    prospect_id?: string | null
+                    enrollment_id?: string | null
+                    step_number?: number | null
+                    event_type: 'sent' | 'delivered' | 'opened' | 'clicked' | 'replied' | 'bounced' | 'unsubscribed' | 'converted'
+                    channel?: string
+                    message_id?: string | null
+                    subject?: string | null
+                    body_preview?: string | null
+                    tracking_id?: string | null
+                    ip_address?: string | null
+                    user_agent?: string | null
+                    metadata?: Json | null
+                    occurred_at?: string
+                }
+                Update: { [k: string]: unknown }
+                Relationships: []
+            }
         }
         Views: {
-            [_ in never]: never
+            campaign_analytics: {
+                Row: {
+                    campaign_id: string
+                    campaign_name: string
+                    campaign_status: string
+                    channel: string
+                    mission_profile: string
+                    total_enrollments: number
+                    active_enrollments: number
+                    completed_enrollments: number
+                    replied_enrollments: number
+                    total_sent: number
+                    total_delivered: number
+                    unique_opens: number
+                    total_opens: number
+                    unique_clicks: number
+                    total_clicks: number
+                    unique_replies: number
+                    total_bounced: number
+                    total_unsubscribed: number
+                    total_converted: number
+                    open_rate: number
+                    reply_rate: number
+                    click_rate: number
+                    created_at: string
+                    updated_at: string
+                }
+            }
         }
         Functions: {
             match_chunks: {
@@ -440,3 +678,18 @@ export type KnowledgeBaseInsert = Database['public']['Tables']['knowledge_bases'
 export type KnowledgeBaseUpdate = Database['public']['Tables']['knowledge_bases']['Update'];
 export type ResearchRecord = Database['public']['Tables']['research_records']['Row'];
 export type ResearchRecordInsert = Database['public']['Tables']['research_records']['Insert'];
+
+// RADAR convenience types
+export type Prospect = Database['public']['Tables']['prospects']['Row'];
+export type ProspectInsert = Database['public']['Tables']['prospects']['Insert'];
+export type ProspectUpdate = Database['public']['Tables']['prospects']['Update'];
+export type Campaign = Database['public']['Tables']['campaigns']['Row'];
+export type CampaignInsert = Database['public']['Tables']['campaigns']['Insert'];
+export type CampaignUpdate = Database['public']['Tables']['campaigns']['Update'];
+export type CampaignStep = Database['public']['Tables']['campaign_steps']['Row'];
+export type CampaignStepInsert = Database['public']['Tables']['campaign_steps']['Insert'];
+export type CampaignEnrollment = Database['public']['Tables']['campaign_enrollments']['Row'];
+export type CampaignEnrollmentInsert = Database['public']['Tables']['campaign_enrollments']['Insert'];
+export type OutreachEvent = Database['public']['Tables']['outreach_events']['Row'];
+export type OutreachEventInsert = Database['public']['Tables']['outreach_events']['Insert'];
+export type CampaignAnalytics = Database['public']['Views']['campaign_analytics']['Row'];

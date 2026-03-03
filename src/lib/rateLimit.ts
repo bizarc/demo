@@ -71,3 +71,15 @@ export const CHAT_LIMIT: RateLimitConfig = {
     maxRequests: 60,
     windowMs: 60 * 1000,
 };
+
+/** RADAR: 30 per minute per IP (operator activity) */
+export const RADAR_LIMIT: RateLimitConfig = {
+    maxRequests: 30,
+    windowMs: 60 * 1000,
+};
+
+/** RADAR Cron: 10 per minute (protects against concurrent cron firings) */
+export const RADAR_CRON_LIMIT: RateLimitConfig = {
+    maxRequests: 10,
+    windowMs: 60 * 1000,
+};
