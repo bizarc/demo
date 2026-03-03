@@ -1,17 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
     ArrowLeft, Loader2, Sparkles, Mail, AlertCircle,
-    ExternalLink, Phone, Globe, MapPin, FlaskConical,
+    ExternalLink, Phone, Globe, MapPin, FlaskConical, Trash2,
 } from 'lucide-react';
 import { InternalAppShell } from '@/components/layout/InternalAppShell';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useToast } from '@/components/ui/Toast';
+import { Modal } from '@/components/ui/Modal';
 
 interface Prospect {
     id: string; email: string | null; first_name: string | null; last_name: string | null;
@@ -32,6 +34,8 @@ interface Campaign {
 
 export default function ProspectDetailPage() {
     const { id } = useParams<{ id: string }>();
+    const router = useRouter();
+    const { addToast } = useToast();
     const [prospect, setProspect] = useState<Prospect | null>(null);
     const [enrollments, setEnrollments] = useState<any[]>([]);
     const [events, setEvents] = useState<any[]>([]);
@@ -40,25 +44,49 @@ export default function ProspectDetailPage() {
     const [enriching, setEnriching] = useState(false);
     const [saving, setSaving] = useState(false);
     const [enrolling, setEnrolling] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [editMode, setEditMode] = useState(false);
     const [form, setForm] = useState<Partial<Prospect>>({});
     const [showEnrollDropdown, setShowEnrollDropdown] = useState(false);
 
     useEffect(() => {
-        Promise.all([
-            fetch(`/api/radar/prospects/${id}`).then((r) => r.json()),
-            fetch('/api/radar/campaigns?status=active&limit=50').then((r) => r.json()),
-        ])
-            .then(([prospectData, campaignData]) => {
+        if (!id) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                const [prospectRes, campaignRes] = await Promise.all([
+                    fetch(`/api/radar/prospects/${id}`),
+                    fetch('/api/radar/campaigns?status=active&limit=50'),
+                ]);
+                const prospectData = await prospectRes.json();
+                const campaignData = await campaignRes.json();
+                if (cancelled) return;
+                if (!prospectRes.ok) {
+                    setError(prospectData.error || 'Prospect not found');
+                    setProspect(null);
+                    setEnrollments([]);
+                    setEvents([]);
+                    setCampaigns(campaignData.campaigns || []);
+                    return;
+                }
                 setProspect(prospectData.prospect);
                 setForm(prospectData.prospect || {});
                 setEnrollments(prospectData.enrollments || []);
                 setEvents(prospectData.events || []);
                 setCampaigns(campaignData.campaigns || []);
-            })
-            .catch(console.error)
-            .finally(() => setLoading(false));
+                setError(null);
+            } catch (err) {
+                if (!cancelled) {
+                    setError(err instanceof Error ? err.message : 'Failed to load prospect');
+                    setProspect(null);
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
     }, [id]);
 
     const handleSave = async () => {
@@ -92,10 +120,39 @@ export default function ProspectDetailPage() {
             if (!res.ok) throw new Error(data.error || 'Enrichment failed');
             setProspect(data.prospect);
             setForm(data.prospect);
+            if (data.email_found) {
+                addToast({ title: 'Enrichment complete', description: 'Email and company details updated.', variant: 'success' });
+            } else {
+                addToast({
+                    title: 'Enrichment complete',
+                    description: 'No email could be found for this prospect. Company details may still have been updated.',
+                    variant: 'warning',
+                });
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Enrichment failed');
+            addToast({ title: 'Enrichment failed', description: err instanceof Error ? err.message : 'Enrichment failed', variant: 'error' });
         } finally {
             setEnriching(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!id) return;
+        setDeleting(true);
+        setError(null);
+        try {
+            const res = await fetch(`/api/radar/prospects/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Delete failed');
+            setShowDeleteModal(false);
+            addToast({ title: 'Prospect deleted', variant: 'success' });
+            router.push('/radar/prospects');
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Delete failed');
+            addToast({ title: 'Delete failed', description: err instanceof Error ? err.message : 'Delete failed', variant: 'error' });
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -138,7 +195,7 @@ export default function ProspectDetailPage() {
         return (
             <InternalAppShell title="RADAR — Prospect">
                 <main className="mx-auto max-w-2xl px-6 py-10">
-                    <p className="text-sm text-foreground-secondary">Prospect not found.</p>
+                    <p className="text-sm text-foreground-secondary">{error || 'Prospect not found.'}</p>
                     <Link href="/radar/prospects">
                         <Button variant="ghost" size="sm" className="mt-4">Back</Button>
                     </Link>
@@ -230,8 +287,36 @@ export default function ProspectDetailPage() {
                         ) : (
                             <Button variant="secondary" size="sm" onClick={() => setEditMode(true)}>Edit</Button>
                         )}
+
+                        {/* Delete */}
+                        <Button variant="destructive" size="sm" onClick={() => setShowDeleteModal(true)} disabled={deleting}>
+                            <Trash2 size={14} className="mr-1" />
+                            Delete
+                        </Button>
                     </div>
                 </div>
+
+                {/* Delete confirmation modal */}
+                <Modal
+                    open={showDeleteModal}
+                    onClose={() => !deleting && setShowDeleteModal(false)}
+                    title="Delete prospect"
+                    description={`Remove ${displayName} from your pipeline? This cannot be undone.`}
+                    size="sm"
+                    footer={
+                        <>
+                            <Button variant="ghost" size="sm" onClick={() => setShowDeleteModal(false)} disabled={deleting}>
+                                Cancel
+                            </Button>
+                            <Button variant="destructive" size="sm" onClick={handleDelete} disabled={deleting}>
+                                {deleting ? <Loader2 size={14} className="animate-spin mr-1" /> : <Trash2 size={14} className="mr-1" />}
+                                {deleting ? 'Deleting…' : 'Delete'}
+                            </Button>
+                        </>
+                    }
+                >
+                    <p className="text-sm text-foreground-secondary">Enrollments and outreach history for this prospect will remain in the system for reporting.</p>
+                </Modal>
 
                 {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 

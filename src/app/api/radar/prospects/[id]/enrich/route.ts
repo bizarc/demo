@@ -13,8 +13,8 @@ function isValidUUID(id: string): boolean {
  * 1. Email extraction: scrape website → Perplexity → save if found
  * 2. General enrichment: Perplexity research → enrichment_data
  */
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-    const { id } = params;
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     if (!isValidUUID(id)) {
         return NextResponse.json({ error: 'Invalid prospect ID' }, { status: 400 });
     }
@@ -39,7 +39,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
         const { data } = await supabase.from('prospects').select('*').eq('id', id).single();
 
-        return NextResponse.json({ prospect: data });
+        return NextResponse.json({
+            prospect: data,
+            email_found: !!data?.email,
+        });
     } catch (err) {
         console.error('Prospect enrich error:', err);
         return NextResponse.json(

@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useToast } from '@/components/ui/Toast';
 
 interface Prospect {
     id: string;
@@ -47,6 +48,7 @@ function statusBadgeVariant(status: string): 'live' | 'draft' | 'archived' | 'ty
 
 export default function ProspectsPage() {
     const searchParams = useSearchParams();
+    const { addToast } = useToast();
     const [prospects, setProspects] = useState<Prospect[]>([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -92,13 +94,18 @@ export default function ProspectsPage() {
 
         setEnrichingAll(true);
         let done = 0;
+        let emailFound = 0;
+        let failed = 0;
 
         for (const p of targets) {
             setEnrichProgress(`Enriching ${done + 1} of ${targets.length}…`);
             try {
-                await fetch(`/api/radar/prospects/${p.id}/enrich`, { method: 'POST' });
+                const res = await fetch(`/api/radar/prospects/${p.id}/enrich`, { method: 'POST' });
+                const data = await res.json();
+                if (res.ok && data.email_found) emailFound++;
+                if (!res.ok) failed++;
             } catch {
-                // continue on error
+                failed++;
             }
             done++;
         }
@@ -106,6 +113,26 @@ export default function ProspectsPage() {
         setEnrichProgress(null);
         setEnrichingAll(false);
         load();
+
+        if (failed > 0) {
+            addToast({
+                title: 'Enrichment finished',
+                description: `${done} enriched; ${emailFound} email(s) found. ${failed} request(s) failed.`,
+                variant: 'warning',
+            });
+        } else if (emailFound === 0) {
+            addToast({
+                title: 'Enrichment finished',
+                description: `Enriched ${done} prospect(s). No emails could be found.`,
+                variant: 'warning',
+            });
+        } else {
+            addToast({
+                title: 'Enrichment finished',
+                description: `Enriched ${done} prospect(s); email found for ${emailFound}.`,
+                variant: 'success',
+            });
+        }
     };
 
     const noEmailCount = prospects.filter((p) => !p.email).length;

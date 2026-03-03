@@ -7,8 +7,8 @@ function isValidUUID(id: string): boolean {
 }
 
 /** GET /api/radar/prospects/[id] */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-    const { id } = params;
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     if (!isValidUUID(id)) {
         return NextResponse.json({ error: 'Invalid prospect ID' }, { status: 400 });
     }
@@ -50,8 +50,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 /** PATCH /api/radar/prospects/[id] — Optimistic locking via version */
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-    const { id } = params;
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     if (!isValidUUID(id)) {
         return NextResponse.json({ error: 'Invalid prospect ID' }, { status: 400 });
     }
@@ -94,8 +94,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 /** DELETE /api/radar/prospects/[id] */
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-    const { id } = params;
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     if (!isValidUUID(id)) {
         return NextResponse.json({ error: 'Invalid prospect ID' }, { status: 400 });
     }
