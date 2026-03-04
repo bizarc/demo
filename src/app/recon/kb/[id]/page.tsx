@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Loader2, Database, Upload, FileText, X, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Database, Upload, FileText, X, Trash2, CheckCircle, XCircle, ClipboardList } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { InternalAppShell } from '@/components/layout/InternalAppShell';
 import { Card } from '@/components/ui/Card';
@@ -20,6 +20,18 @@ interface KnowledgeBase {
     documents?: { id: string; filename: string; chunk_count: number }[];
 }
 
+interface KbScorecard {
+    document_count: number;
+    total_chunks: number;
+    max_documents: number;
+    max_chunks: number;
+    coverage_documents_pct: number;
+    coverage_chunks_pct: number;
+    recommendation: string;
+    recommendation_reason: string;
+    checks: { id: string; label: string; passed: boolean; detail?: string }[];
+}
+
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 const ACCEPT_FORMATS = '.txt,.md,.csv,.pdf';
 
@@ -33,6 +45,7 @@ export default function KBDetailPage() {
     const [uploading, setUploading] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [scorecard, setScorecard] = useState<KbScorecard | null>(null);
 
     // Editable fields
     const [name, setName] = useState('');
@@ -53,6 +66,16 @@ export default function KBDetailPage() {
             .catch(err => setError(err.message))
             .finally(() => setLoading(false));
     }, [params.id]);
+
+    useEffect(() => {
+        if (!params.id) return;
+        fetch(`/api/knowledge-base/${params.id}/scorecard`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.error) setScorecard(data);
+            })
+            .catch(() => setScorecard(null));
+    }, [params.id, kb?.documents?.length, kb?.status]);
 
     const handleSave = async () => {
         if (!kb) return;
@@ -236,7 +259,7 @@ export default function KBDetailPage() {
                                         <option value="draft">Draft (In Progress)</option>
                                         <option value="reviewed">Reviewed (Pending Approval)</option>
                                         <option value="approved">Approved (Live)</option>
-                                        <option value="archived">Archived (Deprected)</option>
+                                        <option value="archived">Archived (Deprecated)</option>
                                     </select>
                                     <p className="mt-1 text-xs text-foreground-tertiary">
                                         Only 'Approved' KBs can be selected by agents and other users.
@@ -244,6 +267,32 @@ export default function KBDetailPage() {
                                 </div>
                             </div>
                         </Card>
+
+                        {scorecard && (
+                            <Card variant="default" padding="lg">
+                                <h3 className="mb-4 text-sm font-medium text-foreground border-b border-border pb-2 flex items-center gap-2">
+                                    <ClipboardList size={16} /> Quality Scorecard
+                                </h3>
+                                <div className="space-y-3">
+                                    <p className="text-xs text-foreground-secondary">
+                                        {scorecard.document_count} / {scorecard.max_documents} documents, {scorecard.total_chunks} / {scorecard.max_chunks} chunks
+                                    </p>
+                                    <p className="text-xs font-medium text-foreground">
+                                        Recommendation: {scorecard.recommendation}
+                                    </p>
+                                    <p className="text-xs text-foreground-tertiary">{scorecard.recommendation_reason}</p>
+                                    <ul className="space-y-1.5">
+                                        {scorecard.checks.map(c => (
+                                            <li key={c.id} className="flex items-center gap-2 text-xs">
+                                                {c.passed ? <CheckCircle size={14} className="text-green-600" /> : <XCircle size={14} className="text-amber-600" />}
+                                                <span className={c.passed ? 'text-foreground-secondary' : 'text-foreground'}>{c.label}</span>
+                                                {c.detail && <span className="text-foreground-tertiary">— {c.detail}</span>}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </Card>
+                        )}
                     </div>
 
                     <div className="space-y-6">

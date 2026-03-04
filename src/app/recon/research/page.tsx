@@ -20,6 +20,8 @@ interface ResearchRecord {
     competitors: string[];
     created_at: string;
     updated_at: string;
+    research_type?: string | null;
+    skill_key?: string | null;
 }
 
 function statusBadgeVariant(status: string): 'live' | 'draft' | 'archived' | 'type' {
@@ -36,6 +38,7 @@ export default function ResearchListPage() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [researchTypeFilter, setResearchTypeFilter] = useState('');
     const [total, setTotal] = useState(0);
 
     useEffect(() => {
@@ -45,6 +48,7 @@ export default function ResearchListPage() {
                 const params = new URLSearchParams();
                 if (search) params.set('search', search);
                 if (statusFilter) params.set('status', statusFilter);
+                if (researchTypeFilter) params.set('research_type', researchTypeFilter);
                 params.set('limit', '50');
 
                 const res = await fetch(`/api/recon/research?${params}`);
@@ -59,9 +63,16 @@ export default function ResearchListPage() {
         }
         const timer = setTimeout(load, 300);
         return () => clearTimeout(timer);
-    }, [search, statusFilter]);
+    }, [search, statusFilter, researchTypeFilter]);
 
     const statuses = ['', 'draft', 'reviewed', 'approved', 'archived'];
+    const researchTypes = [
+        { value: '', label: 'All types' },
+        { value: 'company', label: 'Company' },
+        { value: 'industry', label: 'Industry' },
+        { value: 'function', label: 'Function' },
+        { value: 'technology', label: 'Technology' },
+    ];
 
     return (
         <InternalAppShell title="RECON" subtitle="Research Records">
@@ -92,6 +103,17 @@ export default function ResearchListPage() {
                         onChange={(e) => setSearch(e.target.value)}
                         className="w-64"
                     />
+                    <select
+                        value={researchTypeFilter}
+                        onChange={(e) => setResearchTypeFilter(e.target.value)}
+                        className="rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    >
+                        {researchTypes.map((opt) => (
+                            <option key={opt.value || 'all'} value={opt.value}>
+                                {opt.label}
+                            </option>
+                        ))}
+                    </select>
                     <div className="flex gap-1">
                         {statuses.map((s) => (
                             <Button
@@ -126,6 +148,11 @@ export default function ResearchListPage() {
                                             <div className="mb-1 flex items-center gap-2">
                                                 <FileSearch size={16} className="flex-shrink-0 text-foreground-secondary" />
                                                 <span className="text-sm font-medium text-foreground">{r.title}</span>
+                                                {r.research_type && (
+                                                    <Badge variant="type" size="sm">
+                                                        {r.research_type.replace('_', ' ')}
+                                                    </Badge>
+                                                )}
                                             </div>
                                             <p className="truncate text-xs text-foreground-tertiary">{r.summary}</p>
                                             {r.offerings.length > 0 && (

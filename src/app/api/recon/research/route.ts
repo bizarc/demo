@@ -20,6 +20,8 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const status = searchParams.get('status');
         const search = searchParams.get('search');
+        const researchType = searchParams.get('research_type');
+        const skillKey = searchParams.get('skill_key');
         const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100);
         const offset = parseInt(searchParams.get('offset') || '0');
 
@@ -27,12 +29,20 @@ export async function GET(request: NextRequest) {
 
         let query = supabase
             .from('research_records')
-            .select('id, title, summary, status, version, source, competitors, offerings, tech_stack, confidence_score, created_by, created_at, updated_at', { count: 'exact' })
+            .select('id, title, summary, status, version, source, competitors, offerings, tech_stack, confidence_score, created_by, created_at, updated_at, research_type, skill_key', { count: 'exact' })
             .order('updated_at', { ascending: false })
             .range(offset, offset + limit - 1);
 
         if (status) {
             query = query.eq('status', status);
+        }
+
+        if (researchType) {
+            query = query.eq('research_type', researchType);
+        }
+
+        if (skillKey) {
+            query = query.eq('skill_key', skillKey);
         }
 
         if (search) {

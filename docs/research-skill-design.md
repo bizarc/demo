@@ -59,6 +59,22 @@ Optional companion entities for traceability:
 - `research_runs` (prompt/model/runtime metadata)
 - `research_links` (maps records to campaigns, demos, blueprints)
 
+### 3.1 Research Type Taxonomy
+
+Research is classified by **research_type** (and corresponding skill_key) into four types:
+
+| Type | Description | Examples | Primary use |
+|------|-------------|----------|-------------|
+| **company** | Single organization: offerings, positioning, competitors | Acme Corp, “Roofers Inc” | Demo prep, account planning, onboarding |
+| **industry** | Vertical or market: trends, buyers, compliance | Roofing, SaaS, Healthcare | RADAR targeting, vertical playbooks |
+| **function** | Business function or domain: practices, SOPs, escalation | Customer Service, Finance, Sales, HR | Agent behavior, escalation, best practices |
+| **technology** | Platform or tool: troubleshooting, integration, adoption | ServiceNow, Workday, Salesforce | Technical playbooks, tool-specific guidance |
+
+- **Function** = “how this role/domain works” (process, language, escalation). Stays relevant across tools.
+- **Technology** = “how this product works” (features, troubleshooting, APIs). Tool-specific, often versioned.
+
+Skill keys: `research.company.profile.v1`, `research.industry.landscape.v1`, `research.function.v1`, `research.technology.v1`.
+
 ---
 
 ## 4. Lifecycle

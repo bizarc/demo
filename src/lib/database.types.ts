@@ -359,6 +359,8 @@ export interface Database {
                     created_by: string | null
                     created_at: string
                     updated_at: string
+                    research_type: string | null
+                    skill_key: string | null
                 }
                 Insert: {
                     id?: string
@@ -378,6 +380,8 @@ export interface Database {
                     created_by?: string | null
                     created_at?: string
                     updated_at?: string
+                    research_type?: string | null
+                    skill_key?: string | null
                 }
                 Update: { [k: string]: unknown }
                 Relationships: []
@@ -398,6 +402,124 @@ export interface Database {
                     created_at?: string
                 }
                 Update: { [k: string]: unknown }
+                Relationships: []
+            }
+            skill_catalog: {
+                Row: {
+                    id: string
+                    skill_key: string
+                    skill_family: 'research' | 'knowledge_base' | 'outreach'
+                    name: string
+                    description: string | null
+                    domain_tags: string[]
+                    execution_modes: string[]
+                    input_schema: Json
+                    output_schema: Json
+                    quality_gates: Json
+                    approval_requirements: Json
+                    config_defaults: Json
+                    version: number
+                    status: 'active' | 'deprecated' | 'archived'
+                    created_by: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    skill_key: string
+                    skill_family: 'research' | 'knowledge_base' | 'outreach'
+                    name: string
+                    description?: string | null
+                    domain_tags?: string[]
+                    execution_modes?: string[]
+                    input_schema?: Json
+                    output_schema?: Json
+                    quality_gates?: Json
+                    approval_requirements?: Json
+                    config_defaults?: Json
+                    version?: number
+                    status?: 'active' | 'deprecated' | 'archived'
+                    created_by?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    skill_key?: string
+                    skill_family?: 'research' | 'knowledge_base' | 'outreach'
+                    name?: string
+                    description?: string | null
+                    domain_tags?: string[]
+                    execution_modes?: string[]
+                    input_schema?: Json
+                    output_schema?: Json
+                    quality_gates?: Json
+                    approval_requirements?: Json
+                    config_defaults?: Json
+                    version?: number
+                    status?: 'active' | 'deprecated' | 'archived'
+                    created_by?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: []
+            }
+            skill_runs: {
+                Row: {
+                    id: string
+                    skill_id: string
+                    skill_key: string
+                    execution_mode: 'assist' | 'hitl' | 'autonomous'
+                    input_payload: Json
+                    output_payload: Json | null
+                    output_asset_id: string | null
+                    output_asset_type: 'research_record' | 'knowledge_base' | 'campaign_step' | 'outreach_draft' | null
+                    status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+                    lifecycle_state: 'draft' | 'reviewed' | 'approved' | 'archived' | null
+                    approved_by: string | null
+                    approved_at: string | null
+                    rejection_reason: string | null
+                    error_message: string | null
+                    created_by: string | null
+                    created_at: string
+                    completed_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    skill_id: string
+                    skill_key: string
+                    execution_mode: 'assist' | 'hitl' | 'autonomous'
+                    input_payload?: Json
+                    output_payload?: Json | null
+                    output_asset_id?: string | null
+                    output_asset_type?: 'research_record' | 'knowledge_base' | 'campaign_step' | 'outreach_draft' | null
+                    status?: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+                    lifecycle_state?: 'draft' | 'reviewed' | 'approved' | 'archived' | null
+                    approved_by?: string | null
+                    approved_at?: string | null
+                    rejection_reason?: string | null
+                    error_message?: string | null
+                    created_by?: string | null
+                    created_at?: string
+                    completed_at?: string | null
+                }
+                Update: {
+                    skill_id?: string
+                    skill_key?: string
+                    execution_mode?: 'assist' | 'hitl' | 'autonomous'
+                    input_payload?: Json
+                    output_payload?: Json | null
+                    output_asset_id?: string | null
+                    output_asset_type?: 'research_record' | 'knowledge_base' | 'campaign_step' | 'outreach_draft' | null
+                    status?: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+                    lifecycle_state?: 'draft' | 'reviewed' | 'approved' | 'archived' | null
+                    approved_by?: string | null
+                    approved_at?: string | null
+                    rejection_reason?: string | null
+                    error_message?: string | null
+                    created_by?: string | null
+                    created_at?: string
+                    completed_at?: string | null
+                }
                 Relationships: []
             }
             // RADAR tables
@@ -726,6 +848,13 @@ export type KnowledgeBaseInsert = Database['public']['Tables']['knowledge_bases'
 export type KnowledgeBaseUpdate = Database['public']['Tables']['knowledge_bases']['Update'];
 export type ResearchRecord = Database['public']['Tables']['research_records']['Row'];
 export type ResearchRecordInsert = Database['public']['Tables']['research_records']['Insert'];
+
+export type SkillCatalogEntry = Database['public']['Tables']['skill_catalog']['Row'];
+export type SkillCatalogInsert = Database['public']['Tables']['skill_catalog']['Insert'];
+export type SkillCatalogUpdate = Database['public']['Tables']['skill_catalog']['Update'];
+export type SkillRun = Database['public']['Tables']['skill_runs']['Row'];
+export type SkillRunInsert = Database['public']['Tables']['skill_runs']['Insert'];
+export type SkillRunUpdate = Database['public']['Tables']['skill_runs']['Update'];
 
 // RADAR convenience types
 export type Prospect = Database['public']['Tables']['prospects']['Row'];

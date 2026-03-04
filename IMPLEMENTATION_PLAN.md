@@ -7,7 +7,7 @@ Build a working demo environment where operators can create branded, AI-powered 
 
 ## Project Phases
 
-**Status:** Phases 0–2 and Phase 3 are complete. Phase 4 (RECON, RADAR, BLUEPRINT module buildout) is next.
+**Status:** Phases 0–2 and Phase 3 are complete. Phase 4 (RECON, RADAR, BLUEPRINT module buildout + skill runtime rollout) is next.
 
 ### Phase 0: Design System & UI — Complete
 Design system (23 UI components), Stitch exploration, approved designs.
@@ -26,12 +26,54 @@ Home & auth, research skill (Perplexity), context redesign, mission×channel pro
 - **4.1 RECON — Complete.** Shared intelligence module: `/recon` UI for research records and knowledge bases; "Select Existing KB" in Demo Builder; demos reference RECON KBs via `demo_knowledge_bases` (no demo-owned KBs). Lifecycle: draft → reviewed → approved.
 - **4.2 RADAR — Planned.** Prospecting engine. Channels (priority): 1 Email, 2 Instagram DMs, 3 LinkedIn messages, 4 everything else (no SMS). **Target acquisition** (from Funnel Finished spec): Google Maps/Places API and LinkedIn scrapers; input e.g. "Roofers in Austin, TX"; output list of targets with phone, email, and "Current Tech Stack" analysis. **Campaign manager:** cold outreach (email, LinkedIn), signal detection. **RECON:** read for personalization; write net-new research and campaign signals.
 - **4.3 BLUEPRINT — Planned.** Production config from promoted LAB demos; workspace scoping for client deployments only.
+- **4.4 Skill Runtime + Matrix — Planned.** Introduce a unified RECON-centered skill framework where research, KB, and communication capabilities are modeled as versioned skills with three execution modes: assist, human-in-the-loop (HITL), and autonomous.
+
+#### 4.4 Skill Families and Coverage Matrix
+
+- **Research skills (RECON):**
+  - Company intelligence (demo prep, account planning, onboarding)
+  - Industry intelligence (RADAR targeting, vertical campaigns)
+  - Function/technology intelligence (SOPs, troubleshooting, tool/domain guidance)
+- **Knowledge Base development skills (RECON KB):**
+  - KB strategy/design by function and mission
+  - KB ingestion/normalization by content type
+  - KB quality and governance (freshness, confidence, approvals)
+  - KB optimization packs for customer service, customer success, sales, marketing
+- **Professional communication skills (RADAR/Operations):**
+  - Prospecting email, LinkedIn outreach, follow-up ladders
+  - Customer service messaging best practices
+  - Customer success lifecycle messaging best practices
+  - Marketing and sales campaign copy best practices
+
+#### 4.4 Core Implementation Work
+
+- Add a **Skill Catalog** (skill metadata, schemas, quality gates, versioning)
+- Add a **Skill Runtime** (shared executor API + policy guardrails)
+- Extend RECON research with first-class `research_type` and `skill_key`
+- Add skill-run audit trail and approval/promotion controls
+- Integrate skill execution in RECON, RADAR, LAB, and BLUEPRINT module contracts
+- Implement **4.4 testing in parallel with code** (unit/integration/E2E) as part of each feature delivery slice
+- Implement **4.4 documentation in parallel with code** (architecture, API, operator playbooks) as part of each feature delivery slice
+- Enforce **definition of done** for 4.4: no capability is marked complete without both passing tests and merged documentation
+
+#### 4.4 Delivery Checklist Template (Per Capability/Sprint)
+
+- [ ] **Scope + ownership:** skill family/key, owner, acceptance criteria, and rollout mode are defined
+- [ ] **Implementation complete:** catalog/runtime/module integration merged
+- [ ] **Unit test coverage:** schema/policy/parser/prompt logic tests merged
+- [ ] **Integration coverage:** API + DB lifecycle + approval contract tests merged
+- [ ] **E2E coverage:** operator workflow tests (assist, HITL, autonomous where applicable) merged
+- [ ] **Architecture docs:** design updates merged with code
+- [ ] **API docs:** endpoint/schema/examples updates merged with code
+- [ ] **Operator docs:** runbook + review/approval instructions merged with code
+- [ ] **Release gate package:** links to tests/docs/evidence captured for sign-off
+- [ ] **Monitoring + follow-up:** quality metrics and post-release review owner/date recorded
 
 ---
 
 ## Platform Expansion Direction (Phase 3)
 
-To align with Funnel Finished v3, research and knowledge assets are owned by **RECON**. Internal ops (LAB, RADAR) use permission-level security without workspace scoping. Workspaces are reserved for BLUEPRINT client implementations and client portals.
+To align with Funnel Finished v4 direction, research and knowledge assets are owned by **RECON** and executed through reusable skill patterns. Internal ops (LAB, RADAR) use permission-level security without workspace scoping. Workspaces are reserved for BLUEPRINT client implementations and client portals.
 
 - **RECON owns intelligence assets**: research records, reusable knowledge bases, and retrieval context.
 - **RADAR** consumes and contributes intelligence for prospecting and campaign personalization.
@@ -39,6 +81,31 @@ To align with Funnel Finished v3, research and knowledge assets are owned by **R
 - **BLUEPRINT** consumes approved RECON assets when configuring production agents.
 
 Guiding rule: module workflows remain separate, but intelligence assets are shared and referenced from RECON rather than duplicated by default.
+
+---
+
+## Phase 6: Comprehensive Testing and Documentation
+
+### 6.1 Testing Strategy
+
+- **Unit:** skill schema validation, prompt assembly, execution-mode policy checks, parser robustness
+- **Integration:** API contracts across RECON research, KB ingestion/retrieval, RADAR outreach generation, and lifecycle transitions
+- **End-to-end:** operator workflows across RECON, LAB, RADAR, and BLUEPRINT handoff paths
+- **Regression quality suites:** research structure quality, KB retrieval relevance, outreach compliance and formatting
+- **Reliability/performance:** provider outage simulation, fallback behavior, throughput/latency baselines
+
+### 6.2 Documentation Strategy
+
+- **Architecture docs:** skill catalog/runtime model and module contracts
+- **API docs:** skill execution endpoints, payload schemas, versioning and compatibility policy
+- **Operator playbooks:** assist vs HITL vs autonomous run procedures and approvals
+- **Authoring guides:** how to create/update skill packs (research, KB, communication)
+- **Rollout runbooks:** migration steps, feature flags, monitoring, and incident response
+
+### 6.3 Release Gates
+
+- Autonomous mode can be enabled per skill family only after defined quality thresholds are met.
+- Each promotion requires linked test evidence and documented operator approval criteria.
 
 ---
 
@@ -248,7 +315,7 @@ src/
 - **RECON:** Research records (Perplexity, CRUD, status draft/reviewed/approved); knowledge bases (RECON-owned, status, documents, RAG); demos reference KBs via `demo_knowledge_bases`.
 - **Auth/RBAC:** Home page, login, auth callback; role-based access (super_admin, operator); demos and RECON are role-scoped, not workspace-scoped.
 - **Channels:** Mission×channel prompt strategies; SendGrid inbound, Twilio SMS/voice/WhatsApp webhooks; conversation engine (leads, sessions, messages).
-- **Not yet:** RADAR UI, BLUEPRINT UI, role-scoped RLS (currently permissive).
+- **Not yet:** Full skill runtime/cross-family matrix, complete channel adapters, role-scoped RLS (currently permissive), and comprehensive test/docs release gates.
 
 ---
 

@@ -10,6 +10,7 @@
 | Phase 3 | Platform Intelligence & Channels | Complete |
 | Phase 4 | Module Buildout (RECON → RADAR → BLUEPRINT) | In Progress |
 | Phase 5 | Operations & Voice AI | Planned |
+| Phase 6 | Quality, Testing, and Documentation | Planned |
 
 ---
 
@@ -110,6 +111,59 @@ BLUEPRINT converts approved LAB demos into production-ready agent deployments fo
 
 ---
 
+### 4.4 Skill Runtime and Capability Matrix (RECON-centered)
+
+Treat each intelligence behavior as a reusable skill that can run in:
+- **Assist mode** (operator-led with AI support)
+- **Human-in-the-loop mode** (agent drafts, operator approves/promotes)
+- **Autonomous mode** (agent executes within role/policy guardrails)
+
+**What needs to be built:**
+- [ ] **Skill Catalog** — Canonical RECON skill registry (`skill_family`, `skill_key`, schemas, execution mode policy, quality gates)
+- [ ] **Skill Runtime** — Shared execution engine used by RECON, RADAR, LAB, and BLUEPRINT
+- [ ] **Research skill family** — First-class research types for company, industry, and function/technology
+- [ ] **KB skill family** — Best-practice skills for KB strategy, ingestion, quality, and function-specific optimization
+- [ ] **Professional communication skill family** — Best-practice skills for prospecting email, LinkedIn, customer service, customer success, and marketing copy
+- [ ] **Governance and auditability** — Lifecycle + approval trail by skill run (`draft`, `reviewed`, `approved`, `archived`)
+
+**Skill coverage matrix (target state):**
+- **RECON / Research**
+  - Company intelligence skills: demo prep, account planning, onboarding context
+  - Industry intelligence skills: RADAR targeting, vertical messaging, market triggers
+  - Function/technology skills: SOPs, troubleshooting playbooks (e.g., ServiceNow), maturity guidance
+- **RECON / Knowledge Base**
+  - KB strategy and design skills by mission/function
+  - KB ingestion/normalization skills by content type
+  - KB quality/governance skills for confidence, freshness, and approval readiness
+  - KB optimization skills for customer service, customer success, sales, and marketing
+- **RADAR + Operations / Communication**
+  - Prospecting email skills (cold, follow-up, reactivation)
+  - LinkedIn outreach skills (connect, first touch, follow-up ladders)
+  - Customer service messaging skills (resolution, de-escalation, escalation)
+  - Customer success messaging skills (onboarding, adoption, renewal)
+  - Marketing/sales copy skills (persona framing, CTA strategy, objection handling)
+
+**4.4 delivery requirement (same cycle as code):**
+- [ ] **Testing implemented with feature code** — Unit + integration + E2E coverage for every 4.4 capability in the same sprint/PR window; no deferred test backlogs for skill runtime core paths.
+- [ ] **Documentation implemented with feature code** — Architecture/API/operator docs authored in the same sprint/PR window as each delivered 4.4 capability.
+- [ ] **Promotion gate evidence** — A 4.4 capability cannot move beyond `draft` rollout unless linked tests and docs are complete.
+
+**4.4 sprint delivery checklist (template):**
+- [ ] **Capability defined** — `skill_family`, `skill_key`, execution mode(s), owner, and acceptance criteria documented
+- [ ] **Code complete** — Runtime/catalog/API/UI implementation merged for this capability
+- [ ] **Unit tests complete** — Validation, parsing, policy, and prompt assembly tests added/updated
+- [ ] **Integration tests complete** — API + lifecycle + persistence contract coverage added/updated
+- [ ] **E2E tests complete** — Operator flow coverage (run, review, approve/promote) added/updated
+- [ ] **Architecture docs updated** — Skill model and module contract changes documented
+- [ ] **API docs updated** — Request/response schemas, versioning, and examples documented
+- [ ] **Operator docs updated** — Usage, approval workflow, and troubleshooting playbook documented
+- [ ] **Release gate passed** — Evidence links captured; capability approved for rollout state
+- [ ] **Post-release review set** — Metrics/quality review date and owner assigned
+
+**Dependencies:** 4.0 role-scoped RBAC alignment and RECON lifecycle consistency.
+
+---
+
 ## Phase 5 — Operations & Voice AI (Planned)
 
 ### 5.1 MISSION CONTROL — Operations Dashboard
@@ -129,6 +183,28 @@ BLUEPRINT converts approved LAB demos into production-ready agent deployments fo
 - Provider evaluation: ElevenLabs, OpenAI TTS/STT, Deepgram
 - Browser-based and/or phone call UX
 - Integration with existing conversation engine and Twilio voice webhook
+
+---
+
+## Phase 6 — Quality, Testing, and Documentation (Planned)
+
+### 6.1 Comprehensive Testing
+- Unit tests for skill catalog validation, schema guards, and execution mode policy logic
+- Integration tests for RECON research/KB/outreach APIs and lifecycle transitions
+- End-to-end tests for operator workflows across RECON, RADAR, and LAB
+- Regression suites for research structure quality, retrieval quality, and outreach compliance
+- Reliability/performance tests for skill runtime throughput, provider failure handling, and fallback behavior
+
+### 6.2 Comprehensive Documentation
+- Architecture docs for skill catalog/runtime and module contracts
+- API docs for skill execution payloads, schemas, and versioning
+- Operator playbooks for assist, HITL approval, and autonomous run governance
+- Authoring guides for creating/updating skill packs and best-practice templates
+- Rollout runbooks for migration, feature flags, monitoring, and incident response
+
+### 6.3 Release Gates
+- Define minimum quality thresholds required before enabling autonomous mode per skill family
+- Require documented test evidence and operator sign-off for production promotion
 
 ---
 

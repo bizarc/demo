@@ -177,6 +177,10 @@ RECON is the system of record for shared intelligence assets:
 - **GET /api/research** — Lists research records (filterable by status).
 - **LAB Builder Step 3 (Context)** — "Run AI Research" button merges Perplexity output into the `agentContext` block. Requires `OPENROUTER_API_KEY`.
 
+### RECON Skill Runtime
+
+Research, KB quality, and outreach generation are executed through a **skill runtime**: a catalog of versioned skills (`skill_catalog`, `skill_runs`) with execution-mode policy (assist, human-in-the-loop, autonomous). See [Skill Runtime](skill-runtime.md) and [Operator Playbook: Skill Runs](operator-playbook-skill-runs.md).
+
 Module contracts:
 
 - RADAR writes prospect intelligence and references RECON during campaign personalization.

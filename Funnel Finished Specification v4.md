@@ -1,10 +1,8 @@
-# **Funnel Finished: Platform Feature & UX Specification v3.0**
+# **Funnel Finished: Platform Feature & UX Specification v4.0**
 
 **Architecture Model:** Service Bureau / Tech-Enabled Service
 
 **Design System:** "Command Deck" (Internal) vs. "Scoreboard" (Client)
-
-**Versioning Note:** This v3 document is retained for continuity. The expanded skill-runtime specification is now maintained in `Funnel Finished Specification v4.md`.
 
 ## **1\. Executive Summary**
 
@@ -105,7 +103,7 @@
   * Secure storage for Client API Keys (Twilio SID, CRM Keys, SendGrid).  
   * *Note:* Clients never see this; your team inputs this during onboarding.  
 * **Logic Mapping:**  
-  * Define "Triggers" (e.g., Lead fills Form B) and "Actions" (e.g., Wait 2 mins \-\> Send SMS).
+  * Define "Triggers" (e.g., Lead fills Form B) and "Actions" (e.g., Wait 2 mins -> Send SMS).
 
 ### **Phase 4: MISSION CONTROL (Live Operations)**
 
@@ -124,7 +122,7 @@
 *The retention tool.*
 
 * **Dashboard:**  
-  * **Visual Funnel:** Sent \-\> Delivered \-\> Replied \-\> Appt Booked \-\> Revenue.  
+  * **Visual Funnel:** Sent -> Delivered -> Replied -> Appt Booked -> Revenue.  
   * **ROI Calculator:** "Cost per Lead" vs "Revenue Generated".  
 * **Activity Feed:** Anonymized or full log of successful interactions.  
 * **Billing:** View current usage (SMS segments, AI tokens) and upcoming invoices.

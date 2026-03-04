@@ -328,4 +328,60 @@ Runs AI research (Perplexity via OpenRouter) and returns structured company cont
 
 ### `GET /api/research` — List research records
 
-Lists stored research records (when persistence tables are present), optionally filterable by status.
+Lists stored research records (when persistence tables are present). Query params: `status`, `search`, `research_type`, `skill_key`, `limit`, `offset`.
+
+---
+
+## RECON Skills and Skill Runs
+
+### `GET /api/recon/skills` — List skills
+
+Returns active skills from the catalog. Query: `?family=research|knowledge_base|outreach`.
+
+**Response:** `200 OK` — `{ skills: SkillCatalogEntry[] }`
+
+---
+
+### `POST /api/recon/skills/execute` — Execute a skill
+
+Runs a skill by key with execution mode and input. Applies policy (e.g. autonomous only for super_admin) and records a skill run.
+
+**Request:** `application/json`
+
+```json
+{
+  "skillKey": "research.company.profile.v1",
+  "executionMode": "assist",
+  "input": {
+    "companyName": "Acme Corp",
+    "websiteUrl": "https://acme.com",
+    "industry": "Technology"
+  }
+}
+```
+
+**Response:** `200 OK` — `{ runId, status, outputPayload?, outputAssetId?, outputAssetType?, lifecycleState, errorMessage? }`
+
+---
+
+### `GET /api/recon/skill-runs` — List skill runs
+
+Lists skill runs with optional filters. Query: `status`, `lifecycle_state`, `skill_key`, `limit`, `offset`.
+
+**Response:** `200 OK` — `{ runs: SkillRun[], total: number }`
+
+---
+
+### `PATCH /api/recon/skill-runs/[id]` — Approve or reject run
+
+Sets lifecycle state and approval provenance. Body: `{ lifecycle_state: "reviewed" | "approved" | "archived", rejection_reason?: string }`.
+
+**Response:** `200 OK` — `{ id, lifecycle_state }`
+
+---
+
+### `GET /api/knowledge-base/[id]/scorecard` — KB quality scorecard
+
+Returns a quality scorecard for a knowledge base (document count, chunk count, checks, recommendation).
+
+**Response:** `200 OK` — `KbScorecard`
