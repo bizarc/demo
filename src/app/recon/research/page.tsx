@@ -22,6 +22,26 @@ interface ResearchRecord {
     updated_at: string;
     research_type?: string | null;
     skill_key?: string | null;
+    research_data?: Record<string, unknown> | null;
+}
+
+function getPreviewItems(r: ResearchRecord): { label: string; items: string[] } {
+    const rt = r.research_type;
+    const rd = r.research_data;
+    if (rt === 'industry' && rd && Array.isArray(rd.key_players)) {
+        return { label: 'Key players', items: rd.key_players.filter((x): x is string => typeof x === 'string').slice(0, 5) };
+    }
+    if (rt === 'function' && rd && Array.isArray(rd.related_roles)) {
+        return { label: 'Related roles', items: rd.related_roles.filter((x): x is string => typeof x === 'string').slice(0, 5) };
+    }
+    if (rt === 'technology' && rd && Array.isArray(rd.alternatives)) {
+        return { label: 'Alternatives', items: rd.alternatives.filter((x): x is string => typeof x === 'string').slice(0, 5) };
+    }
+    const offerings = Array.isArray(r.offerings) ? r.offerings : [];
+    if (offerings.length > 0) return { label: 'Offerings', items: offerings.slice(0, 5) };
+    const competitors = Array.isArray(r.competitors) ? r.competitors : [];
+    if (competitors.length > 0) return { label: 'Competitors', items: competitors.slice(0, 5) };
+    return { label: 'Details', items: [] };
 }
 
 function statusBadgeVariant(status: string): 'live' | 'draft' | 'archived' | 'type' {
@@ -155,18 +175,23 @@ export default function ResearchListPage() {
                                                 )}
                                             </div>
                                             <p className="truncate text-xs text-foreground-tertiary">{r.summary}</p>
-                                            {r.offerings.length > 0 && (
-                                                <div className="mt-2 flex flex-wrap gap-1">
-                                                    {r.offerings.slice(0, 3).map((o, i) => (
-                                                        <span key={i} className="inline-block rounded bg-surface-raised px-1.5 py-0.5 text-xs text-foreground-secondary">
-                                                            {o}
-                                                        </span>
-                                                    ))}
-                                                    {r.offerings.length > 3 && (
-                                                        <span className="text-xs text-foreground-tertiary">+{r.offerings.length - 3} more</span>
-                                                    )}
-                                                </div>
-                                            )}
+                                            {(() => {
+                                                const { label, items } = getPreviewItems(r);
+                                                if (items.length === 0) return null;
+                                                return (
+                                                    <div className="mt-2 flex flex-wrap items-center gap-1">
+                                                        <span className="text-xs text-foreground-tertiary">{label}:</span>
+                                                        {items.slice(0, 3).map((o, i) => (
+                                                            <span key={i} className="inline-block rounded bg-surface-raised px-1.5 py-0.5 text-xs text-foreground-secondary">
+                                                                {o}
+                                                            </span>
+                                                        ))}
+                                                        {items.length > 3 && (
+                                                            <span className="text-xs text-foreground-tertiary">+{items.length - 3} more</span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                         <div className="flex flex-shrink-0 flex-col items-end gap-1">
                                             <Badge variant={statusBadgeVariant(r.status)} size="sm">

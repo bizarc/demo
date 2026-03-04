@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
         let query = supabase
             .from('research_records')
-            .select('id, title, summary, status, version, source, competitors, offerings, tech_stack, confidence_score, created_by, created_at, updated_at, research_type, skill_key', { count: 'exact' })
+            .select('id, title, summary, status, version, source, competitors, offerings, tech_stack, confidence_score, created_by, created_at, updated_at, research_type, skill_key, research_data, context_block', { count: 'exact' })
             .order('updated_at', { ascending: false })
             .range(offset, offset + limit - 1);
 

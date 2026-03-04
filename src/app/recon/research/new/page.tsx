@@ -8,12 +8,41 @@ import { InternalAppShell } from '@/components/layout/InternalAppShell';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { KnowledgeBaseSelect } from '@/components/ui/KnowledgeBaseSelect';
 
 const RESEARCH_TYPE_OPTIONS = [
-    { value: 'company', skillKey: 'research.company.profile.v1', label: 'Company', inputLabel: 'Company name', inputPlaceholder: 'e.g. Acme Corp' },
-    { value: 'industry', skillKey: 'research.industry.landscape.v1', label: 'Industry', inputLabel: 'Industry or vertical', inputPlaceholder: 'e.g. Roofing, SaaS' },
-    { value: 'function', skillKey: 'research.function.v1', label: 'Function', inputLabel: 'Function or domain', inputPlaceholder: 'e.g. Customer Service, Finance, Sales' },
-    { value: 'technology', skillKey: 'research.technology.v1', label: 'Technology', inputLabel: 'Platform or tool', inputPlaceholder: 'e.g. ServiceNow, Workday, Salesforce' },
+    {
+        value: 'company',
+        skillKey: 'research.company.profile.v1',
+        label: 'Company',
+        inputLabel: 'Company name',
+        inputPlaceholder: 'e.g. Acme Corp',
+        fields: { showWebsiteUrl: true, showIndustry: true, showMissionProfile: true },
+    },
+    {
+        value: 'industry',
+        skillKey: 'research.industry.landscape.v1',
+        label: 'Industry',
+        inputLabel: 'Industry or vertical',
+        inputPlaceholder: 'e.g. Roofing, SaaS',
+        fields: { showWebsiteUrl: false, showIndustry: false, showMissionProfile: true },
+    },
+    {
+        value: 'function',
+        skillKey: 'research.function.v1',
+        label: 'Function',
+        inputLabel: 'Function or domain',
+        inputPlaceholder: 'e.g. Customer Service, Finance, Sales',
+        fields: { showWebsiteUrl: false, showIndustry: true, showMissionProfile: false },
+    },
+    {
+        value: 'technology',
+        skillKey: 'research.technology.v1',
+        label: 'Technology',
+        inputLabel: 'Platform or tool',
+        inputPlaceholder: 'e.g. ServiceNow, Workday, Salesforce',
+        fields: { showWebsiteUrl: false, showIndustry: true, showMissionProfile: false },
+    },
 ];
 
 const MISSION_OPTIONS = [
@@ -33,6 +62,7 @@ export default function NewResearchPage() {
     const [missionProfile, setMissionProfile] = useState('');
     const [running, setRunning] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [knowledgeBaseId, setKnowledgeBaseId] = useState('');
 
     const currentType = RESEARCH_TYPE_OPTIONS.find((o) => o.value === researchType) ?? RESEARCH_TYPE_OPTIONS[0];
 
@@ -54,14 +84,19 @@ export default function NewResearchPage() {
                     input: {
                         companyName: researchType === 'company' ? target : undefined,
                         target: target,
-                        websiteUrl: websiteUrl.trim() || undefined,
-                        industry: industry.trim() || undefined,
-                        missionProfile: missionProfile || undefined,
+                        ...(currentType.fields.showWebsiteUrl && { websiteUrl: websiteUrl.trim() || undefined }),
+                        ...(currentType.fields.showIndustry && { industry: industry.trim() || undefined }),
+                        ...(currentType.fields.showMissionProfile && { missionProfile: missionProfile || undefined }),
+                        ...(knowledgeBaseId.trim() && { knowledge_base_id: knowledgeBaseId.trim() }),
                     },
                 }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data.error || 'Research failed');
+            if (data.status === 'failed' || data.errorMessage) {
+                setError(data.errorMessage || 'Research failed');
+                return;
+            }
             const outputAssetId = data.outputAssetId;
             if (outputAssetId) {
                 router.push(`/recon/research/${outputAssetId}`);
@@ -138,37 +173,55 @@ export default function NewResearchPage() {
                                 autoFocus
                             />
                         </div>
+                        {currentType.fields.showWebsiteUrl && (
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-foreground">Website URL</label>
+                                <Input
+                                    value={websiteUrl}
+                                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                                    placeholder="https://..."
+                                />
+                            </div>
+                        )}
+                        {currentType.fields.showIndustry && (
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-foreground">Industry</label>
+                                <Input
+                                    value={industry}
+                                    onChange={(e) => setIndustry(e.target.value)}
+                                    placeholder="e.g. Auto repair, SaaS"
+                                />
+                                <p className="mt-1 text-xs text-foreground-muted">Optional context for the research.</p>
+                            </div>
+                        )}
+                        {currentType.fields.showMissionProfile && (
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-foreground">Mission profile</label>
+                                <select
+                                    value={missionProfile}
+                                    onChange={(e) => setMissionProfile(e.target.value)}
+                                    className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                >
+                                    {MISSION_OPTIONS.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="mt-1 text-xs text-foreground-muted">
+                                    Optional. Shapes the context block for a specific agent type.
+                                </p>
+                            </div>
+                        )}
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-foreground">Website URL</label>
-                            <Input
-                                value={websiteUrl}
-                                onChange={(e) => setWebsiteUrl(e.target.value)}
-                                placeholder="https://..."
+                            <KnowledgeBaseSelect
+                                label="Knowledge Base (optional)"
+                                value={knowledgeBaseId}
+                                onChange={setKnowledgeBaseId}
+                                statusFilter="approved"
                             />
-                        </div>
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-foreground">Industry</label>
-                            <Input
-                                value={industry}
-                                onChange={(e) => setIndustry(e.target.value)}
-                                placeholder="e.g. Auto repair, SaaS"
-                            />
-                        </div>
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-foreground">Mission profile</label>
-                            <select
-                                value={missionProfile}
-                                onChange={(e) => setMissionProfile(e.target.value)}
-                                className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                            >
-                                {MISSION_OPTIONS.map((opt) => (
-                                    <option key={opt.value} value={opt.value}>
-                                        {opt.label}
-                                    </option>
-                                ))}
-                            </select>
                             <p className="mt-1 text-xs text-foreground-muted">
-                                Optional. Shapes the context block for a specific agent type.
+                                Attach a KB to add its context to the research prompt.
                             </p>
                         </div>
                     </div>

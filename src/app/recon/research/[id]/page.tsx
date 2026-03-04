@@ -10,6 +10,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
+type ResearchType = 'company' | 'industry' | 'function' | 'technology';
+
 interface ResearchRecord {
     id: string;
     title: string;
@@ -22,6 +24,10 @@ interface ResearchRecord {
     tech_stack: string[];
     competitors: string[];
     market_position: string | null;
+    research_type: ResearchType | null;
+    skill_key: string | null;
+    research_data: Record<string, unknown> | null;
+    context_block: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -38,6 +44,15 @@ function textToArray(text: string): string[] {
         .split('\n')
         .map(s => s.trim())
         .filter(Boolean);
+}
+
+function getResearchDataArray(rd: Record<string, unknown>, key: string): string[] {
+    const v = rd[key];
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+}
+function getResearchDataString(rd: Record<string, unknown>, key: string): string {
+    const v = rd[key];
+    return typeof v === 'string' ? v : '';
 }
 
 export default function ResearchDetailPage() {
@@ -59,6 +74,8 @@ export default function ResearchDetailPage() {
     const [techStackText, setTechStackText] = useState('');
     const [competitorsText, setCompetitorsText] = useState('');
     const [marketPosition, setMarketPosition] = useState('');
+    const [researchData, setResearchData] = useState<Record<string, unknown>>({});
+    const [contextBlock, setContextBlock] = useState('');
 
     useEffect(() => {
         if (!id) return;
@@ -70,14 +87,48 @@ export default function ResearchDetailPage() {
                 setTitle(data.title || '');
                 setSummary(data.summary || '');
                 setStatus(data.status || 'draft');
-                setOfferingsText(arrayToText(data.offerings));
-                setTechStackText(arrayToText(data.tech_stack));
+                setContextBlock(data.context_block || '');
+                const rd = data.research_data && typeof data.research_data === 'object' ? { ...data.research_data } : {};
+                setResearchData(rd);
+                setOfferingsText(arrayToText(rd.offerings ?? data.offerings));
+                setTechStackText(arrayToText(rd.tech_stack ?? data.tech_stack));
                 setCompetitorsText(arrayToText(data.competitors));
-                setMarketPosition(data.market_position || '');
+                setMarketPosition(String(rd.market_position ?? data.market_position ?? ''));
             })
             .catch(err => setError(err.message))
             .finally(() => setLoading(false));
     }, [id]);
+
+    const buildPatchPayload = () => {
+        const payload: Record<string, unknown> = {
+            version: record!.version,
+            title: title.slice(0, 500),
+            summary: summary.slice(0, 5000),
+            status,
+            context_block: contextBlock || undefined,
+        };
+        const rt = record!.research_type;
+        if (rt === 'company') {
+            payload.competitors = textToArray(competitorsText);
+            payload.research_data = {
+                ...researchData,
+                offerings: textToArray(offeringsText),
+                tech_stack: textToArray(techStackText),
+                market_position: marketPosition || undefined,
+            };
+            payload.offerings = textToArray(offeringsText);
+            payload.tech_stack = textToArray(techStackText);
+            payload.market_position = marketPosition || undefined;
+        } else if (rt === 'industry' || rt === 'function' || rt === 'technology') {
+            payload.research_data = researchData;
+        } else {
+            payload.offerings = textToArray(offeringsText);
+            payload.tech_stack = textToArray(techStackText);
+            payload.competitors = textToArray(competitorsText);
+            payload.market_position = marketPosition || undefined;
+        }
+        return payload;
+    };
 
     const handleSave = async () => {
         if (!record) return;
@@ -87,16 +138,7 @@ export default function ResearchDetailPage() {
             const res = await fetch(`/api/recon/research/${record.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    version: record.version,
-                    title: title.slice(0, 500),
-                    summary: summary.slice(0, 5000),
-                    status,
-                    offerings: textToArray(offeringsText),
-                    tech_stack: textToArray(techStackText),
-                    competitors: textToArray(competitorsText),
-                    market_position: marketPosition || undefined,
-                }),
+                body: JSON.stringify(buildPatchPayload()),
             });
             const data = await res.json();
             if (res.status === 409) {
@@ -108,10 +150,13 @@ export default function ResearchDetailPage() {
                     setTitle(updated.title || '');
                     setSummary(updated.summary || '');
                     setStatus(updated.status || 'draft');
-                    setOfferingsText(arrayToText(updated.offerings));
-                    setTechStackText(arrayToText(updated.tech_stack));
+                    setContextBlock(updated.context_block || '');
+                    const rd = updated.research_data && typeof updated.research_data === 'object' ? { ...updated.research_data } : {};
+                    setResearchData(rd);
+                    setOfferingsText(arrayToText(rd.offerings ?? updated.offerings));
+                    setTechStackText(arrayToText(rd.tech_stack ?? updated.tech_stack));
                     setCompetitorsText(arrayToText(updated.competitors));
-                    setMarketPosition(updated.market_position || '');
+                    setMarketPosition(String(rd.market_position ?? updated.market_position ?? ''));
                 }
                 return;
             }
@@ -259,45 +304,188 @@ export default function ResearchDetailPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="mb-2 block text-xs font-medium text-foreground-secondary">Offerings (one per line)</label>
+                                <label className="mb-2 block text-xs font-medium text-foreground-secondary">Context block</label>
                                 <textarea
-                                    value={offeringsText}
-                                    onChange={e => setOfferingsText(e.target.value)}
-                                    rows={3}
+                                    value={contextBlock}
+                                    onChange={e => setContextBlock(e.target.value)}
+                                    rows={4}
                                     className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                                    placeholder="One item per line"
+                                    placeholder="2-3 paragraphs of context from research"
                                 />
                             </div>
-                            <div>
-                                <label className="mb-2 block text-xs font-medium text-foreground-secondary">Tech stack (one per line)</label>
-                                <textarea
-                                    value={techStackText}
-                                    onChange={e => setTechStackText(e.target.value)}
-                                    rows={3}
-                                    className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                                    placeholder="One item per line"
-                                />
-                            </div>
-                            <div>
-                                <label className="mb-2 block text-xs font-medium text-foreground-secondary">Competitors (one per line)</label>
-                                <textarea
-                                    value={competitorsText}
-                                    onChange={e => setCompetitorsText(e.target.value)}
-                                    rows={3}
-                                    className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                                    placeholder="One item per line"
-                                />
-                            </div>
-                            <div>
-                                <label className="mb-2 block text-xs font-medium text-foreground-secondary">Market position</label>
-                                <Input value={marketPosition} onChange={e => setMarketPosition(e.target.value)} />
-                            </div>
+                            {(record.research_type === 'company' || !record.research_type) && (
+                                <>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Competitors (one per line)</label>
+                                        <textarea
+                                            value={competitorsText}
+                                            onChange={e => setCompetitorsText(e.target.value)}
+                                            rows={3}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                            placeholder="One item per line"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Offerings (one per line)</label>
+                                        <textarea
+                                            value={offeringsText}
+                                            onChange={e => setOfferingsText(e.target.value)}
+                                            rows={3}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                            placeholder="One item per line"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Tech stack (one per line)</label>
+                                        <textarea
+                                            value={techStackText}
+                                            onChange={e => setTechStackText(e.target.value)}
+                                            rows={3}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                            placeholder="One item per line"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Market position</label>
+                                        <Input value={marketPosition} onChange={e => setMarketPosition(e.target.value)} />
+                                    </div>
+                                </>
+                            )}
+                            {record.research_type === 'industry' && (
+                                <>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Key players (one per line)</label>
+                                        <textarea
+                                            value={getResearchDataArray(researchData, 'key_players').join('\n')}
+                                            onChange={e => setResearchData({ ...researchData, key_players: textToArray(e.target.value) })}
+                                            rows={3}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                            placeholder="One per line"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Market trends</label>
+                                        <textarea
+                                            value={getResearchDataString(researchData, 'market_trends')}
+                                            onChange={e => setResearchData({ ...researchData, market_trends: e.target.value })}
+                                            rows={3}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Buying triggers</label>
+                                        <textarea
+                                            value={getResearchDataString(researchData, 'buying_triggers')}
+                                            onChange={e => setResearchData({ ...researchData, buying_triggers: e.target.value })}
+                                            rows={2}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Compliance notes</label>
+                                        <textarea
+                                            value={getResearchDataString(researchData, 'compliance_notes')}
+                                            onChange={e => setResearchData({ ...researchData, compliance_notes: e.target.value })}
+                                            rows={2}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </div>
+                                </>
+                            )}
+                            {record.research_type === 'function' && (
+                                <>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Related roles (one per line)</label>
+                                        <textarea
+                                            value={getResearchDataArray(researchData, 'related_roles').join('\n')}
+                                            onChange={e => setResearchData({ ...researchData, related_roles: textToArray(e.target.value) })}
+                                            rows={3}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                            placeholder="One per line"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Best practices</label>
+                                        <textarea
+                                            value={getResearchDataString(researchData, 'best_practices')}
+                                            onChange={e => setResearchData({ ...researchData, best_practices: e.target.value })}
+                                            rows={4}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">SOP patterns</label>
+                                        <textarea
+                                            value={getResearchDataString(researchData, 'sop_patterns')}
+                                            onChange={e => setResearchData({ ...researchData, sop_patterns: e.target.value })}
+                                            rows={2}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Escalation norms</label>
+                                        <textarea
+                                            value={getResearchDataString(researchData, 'escalation_norms')}
+                                            onChange={e => setResearchData({ ...researchData, escalation_norms: e.target.value })}
+                                            rows={2}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </div>
+                                </>
+                            )}
+                            {record.research_type === 'technology' && (
+                                <>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Alternatives (one per line)</label>
+                                        <textarea
+                                            value={getResearchDataArray(researchData, 'alternatives').join('\n')}
+                                            onChange={e => setResearchData({ ...researchData, alternatives: textToArray(e.target.value) })}
+                                            rows={3}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                            placeholder="One per line"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Capabilities</label>
+                                        <textarea
+                                            value={getResearchDataString(researchData, 'capabilities')}
+                                            onChange={e => setResearchData({ ...researchData, capabilities: e.target.value })}
+                                            rows={3}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Integration patterns</label>
+                                        <textarea
+                                            value={getResearchDataString(researchData, 'integration_patterns')}
+                                            onChange={e => setResearchData({ ...researchData, integration_patterns: e.target.value })}
+                                            rows={2}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-medium text-foreground-secondary">Adoption notes</label>
+                                        <textarea
+                                            value={getResearchDataString(researchData, 'adoption_notes')}
+                                            onChange={e => setResearchData({ ...researchData, adoption_notes: e.target.value })}
+                                            rows={2}
+                                            className="w-full rounded-md border border-input bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </Card>
 
                     <Card variant="default" padding="lg">
                         <h3 className="mb-4 border-b border-border pb-2 text-sm font-medium text-foreground">Read-only</h3>
                         <dl className="space-y-2 text-sm">
+                            {record.research_type && (
+                                <div>
+                                    <dt className="text-foreground-tertiary">Research type</dt>
+                                    <dd className="text-foreground capitalize">{record.research_type}</dd>
+                                </div>
+                            )}
                             <div>
                                 <dt className="text-foreground-tertiary">Source</dt>
                                 <dd className="text-foreground">{record.source}</dd>

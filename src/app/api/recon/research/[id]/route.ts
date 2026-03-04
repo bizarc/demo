@@ -82,7 +82,7 @@ export async function PATCH(
         }
 
         const body = await request.json();
-        const { version, status, title, summary, offerings, tech_stack, competitors, market_position } = body;
+        const { version, status, title, summary, offerings, tech_stack, competitors, market_position, research_data, context_block } = body;
 
         if (version === undefined || typeof version !== 'number') {
             return NextResponse.json(
@@ -111,6 +111,8 @@ export async function PATCH(
         if (tech_stack !== undefined) updatePayload.tech_stack = tech_stack;
         if (competitors !== undefined) updatePayload.competitors = competitors;
         if (market_position !== undefined) updatePayload.market_position = market_position;
+        if (research_data !== undefined && research_data !== null && typeof research_data === 'object') updatePayload.research_data = research_data;
+        if (context_block !== undefined) updatePayload.context_block = context_block === null ? null : String(context_block);
 
         const { data, error } = await supabase
             .from('research_records')

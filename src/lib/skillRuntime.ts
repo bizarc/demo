@@ -17,7 +17,7 @@ import { getKbScorecard } from '@/lib/kbScorecard';
 import { buildOutreachPrompt } from '@/lib/radarPrompts';
 
 const INTERNAL_SCOPE_ID = '00000000-0000-0000-0000-000000000001';
-const PERPLEXITY_MODEL = 'perplexity/sonar';
+const DEFAULT_RESEARCH_MODEL = 'perplexity/sonar';
 
 function skillKeyToResearchType(skillKey: string): 'company' | 'industry' | 'function' | 'technology' | null {
     if (skillKey === 'research.company.profile.v1') return 'company';
@@ -136,7 +136,8 @@ export async function executeSkill(params: ExecuteSkillInput): Promise<ExecuteSk
             errorMessage: `Unknown skill family: ${skill.skill_family}`,
         };
     } catch (err) {
-        const message = err instanceof Error ? err.message : 'Skill execution failed';
+        const message = getErrorMessage(err);
+        console.error('Skill execute error:', err);
         await completeSkillRun(runId, {
             status: 'failed',
             error_message: message,
@@ -149,6 +150,16 @@ export async function executeSkill(params: ExecuteSkillInput): Promise<ExecuteSk
             errorMessage: message,
         };
     }
+}
+
+/** Extract a readable message from any thrown value (Error, PostgrestError, or plain object). */
+function getErrorMessage(err: unknown): string {
+    if (err instanceof Error) return err.message;
+    if (err && typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string') {
+        return (err as { message: string }).message;
+    }
+    if (typeof err === 'string') return err;
+    return 'Skill execution failed';
 }
 
 /** Outreach skill: generate email (or LinkedIn) copy via buildOutreachPrompt + LLM */
@@ -258,7 +269,76 @@ async function executeKbSkill(
     };
 }
 
-/** Research skill: Perplexity + research_records insert by research type */
+/**
+ * Parse model output into universal competitors (company only) and type-specific research_data.
+ */
+function parseResearchOutput(
+    parsed: Record<string, unknown>,
+    researchType: 'company' | 'industry' | 'function' | 'technology' | null
+): { competitors: string[] | undefined; research_data: Record<string, unknown> } {
+    const context_block = typeof parsed.context_block === 'string' ? parsed.context_block : '';
+    const summary = typeof parsed.summary === 'string' ? parsed.summary : '';
+
+    if (researchType === 'company') {
+        const competitors = Array.isArray(parsed.competitors) ? parsed.competitors : [];
+        const offerings = Array.isArray(parsed.offerings) ? parsed.offerings : [];
+        const tech_stack = Array.isArray(parsed.tech_stack) ? parsed.tech_stack : [];
+        const market_position = typeof parsed.market_position === 'string' ? parsed.market_position : undefined;
+        return {
+            competitors: competitors.filter((c): c is string => typeof c === 'string'),
+            research_data: {
+                offerings: offerings.filter((o): o is string => typeof o === 'string'),
+                tech_stack: tech_stack.filter((t): t is string => typeof t === 'string'),
+                ...(market_position && { market_position }),
+            },
+        };
+    }
+
+    if (researchType === 'industry') {
+        const key_players = Array.isArray(parsed.key_players) ? parsed.key_players.filter((k): k is string => typeof k === 'string') : [];
+        return {
+            competitors: undefined,
+            research_data: {
+                key_players,
+                market_trends: typeof parsed.market_trends === 'string' ? parsed.market_trends : '',
+                buying_triggers: typeof parsed.buying_triggers === 'string' ? parsed.buying_triggers : '',
+                compliance_notes: typeof parsed.compliance_notes === 'string' ? parsed.compliance_notes : '',
+            },
+        };
+    }
+
+    if (researchType === 'function') {
+        const related_roles = Array.isArray(parsed.related_roles) ? parsed.related_roles.filter((r): r is string => typeof r === 'string') : [];
+        return {
+            competitors: undefined,
+            research_data: {
+                related_roles,
+                best_practices: typeof parsed.best_practices === 'string' ? parsed.best_practices : '',
+                sop_patterns: typeof parsed.sop_patterns === 'string' ? parsed.sop_patterns : '',
+                escalation_norms: typeof parsed.escalation_norms === 'string' ? parsed.escalation_norms : '',
+            },
+        };
+    }
+
+    if (researchType === 'technology') {
+        const alternatives = Array.isArray(parsed.alternatives) ? parsed.alternatives.filter((a): a is string => typeof a === 'string') : [];
+        return {
+            competitors: undefined,
+            research_data: {
+                alternatives,
+                capabilities: typeof parsed.capabilities === 'string' ? parsed.capabilities : '',
+                integration_patterns: typeof parsed.integration_patterns === 'string' ? parsed.integration_patterns : '',
+                adoption_notes: typeof parsed.adoption_notes === 'string' ? parsed.adoption_notes : '',
+            },
+        };
+    }
+
+    // Legacy or unknown: keep summary/context_block, pass through raw as research_data
+    const competitors = Array.isArray(parsed.competitors) ? parsed.competitors.filter((c): c is string => typeof c === 'string') : undefined;
+    return { competitors, research_data: { ...parsed } };
+}
+
+/** Research skill: LLM + research_records insert by research type */
 async function executeResearchSkill(
     skill: SkillCatalogEntry,
     input: Record<string, unknown>,
@@ -269,6 +349,7 @@ async function executeResearchSkill(
     const industry = typeof input.industry === 'string' ? input.industry.trim() : '';
     const demoId = typeof input.demoId === 'string' ? input.demoId : undefined;
     const missionProfile = typeof input.missionProfile === 'string' ? input.missionProfile : undefined;
+    const knowledgeBaseId = typeof input.knowledge_base_id === 'string' ? input.knowledge_base_id.trim() : '';
 
     const targetName = companyName || (typeof input.target === 'string' ? input.target.trim() : '');
     if (!targetName) {
@@ -280,24 +361,45 @@ async function executeResearchSkill(
         throw new Error('OpenRouter API key not configured');
     }
 
+    let kbContextPrefix = '';
+    if (knowledgeBaseId) {
+        const supabase = createServerClient();
+        const { data: kb } = await supabase
+            .from('knowledge_bases')
+            .select('id, name, description')
+            .eq('id', knowledgeBaseId)
+            .single();
+        if (kb) {
+            const { data: docs } = await supabase
+                .from('documents')
+                .select('filename')
+                .eq('kb_id', knowledgeBaseId)
+                .limit(10);
+            const names = (docs ?? []).map((d: { filename?: string }) => d.filename || '').filter(Boolean);
+            kbContextPrefix = `[Knowledge base context: "${(kb as { name?: string }).name}"${(kb as { description?: string }).description ? `. ${(kb as { description: string }).description}` : ''}. Documents: ${names.join(', ') || 'none'}.]\n\n`;
+        }
+    }
+
     const { prompt, titleSuffix } = buildResearchPrompt(skill.skill_key, {
         target: targetName,
         websiteUrl,
         industry,
         missionProfile,
     });
+    const fullPrompt = kbContextPrefix + prompt;
 
+    const model = (skill.config_defaults as { model?: string })?.model ?? DEFAULT_RESEARCH_MODEL;
     const response = await client.chat(
-        [{ role: 'user', content: prompt }],
-        PERPLEXITY_MODEL,
+        [{ role: 'user', content: fullPrompt }],
+        model,
         { temperature: 0.3, maxTokens: 1024 }
     );
 
-    let parsed: { summary?: string; competitors?: string[]; context_block?: string; [k: string]: unknown } = {};
+    let parsed: Record<string, unknown> = {};
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
         try {
-            parsed = JSON.parse(jsonMatch[0]) as typeof parsed;
+            parsed = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
         } catch {
             parsed = { summary: response };
         }
@@ -305,19 +407,20 @@ async function executeResearchSkill(
         parsed = { summary: response };
     }
 
+    const researchType = skillKeyToResearchType(skill.skill_key);
     const summary = typeof parsed.summary === 'string' ? parsed.summary : '';
-    const competitors = Array.isArray(parsed.competitors) ? parsed.competitors : [];
     const context_block = typeof parsed.context_block === 'string' ? parsed.context_block : '';
+    const { competitors, research_data } = parseResearchOutput(parsed, researchType);
 
     const payload = {
         summary,
-        competitors,
+        competitors: competitors ?? [],
         context_block,
+        research_data,
         raw: parsed,
     };
 
     const supabase = createServerClient();
-    const researchType = skillKeyToResearchType(skill.skill_key);
     const { data: record, error } = await supabase
         .from('research_records')
         .insert({
@@ -326,13 +429,15 @@ async function executeResearchSkill(
             source: 'perplexity',
             title: `${targetName} - ${titleSuffix}`,
             summary: summary || 'No summary generated',
-            competitors,
+            competitors: competitors ?? [],
             tech_stack: [],
             evidence: [],
             status: 'draft',
             created_by: createdBy ?? undefined,
             research_type: researchType ?? undefined,
             skill_key: skill.skill_key,
+            research_data: research_data as never,
+            context_block: context_block || undefined,
         } as never)
         .select('id')
         .single();
@@ -364,18 +469,17 @@ function buildResearchPrompt(
     const url = websiteUrl ? ` (website: ${websiteUrl})` : '';
     const ind = industry ? ` in the ${industry} industry` : '';
 
-    let contextInstructions = `- "context_block": 2-3 paragraphs describing the company's offerings and target audience`;
-    if (missionProfile === 'database-reactivation') {
-        contextInstructions = `- "context_block": describe offerings to re-pitch, win-back deals/incentives for returning customers, and signals of a good reactivation candidate`;
-    } else if (missionProfile === 'inbound-nurture') {
-        contextInstructions = `- "context_block": describe core products/services, trial/demo offers, and key qualification questions (budget, timeline, authority)`;
-    } else if (missionProfile === 'customer-service') {
-        contextInstructions = `- "context_block": describe services supported, common customer issues, and standard escalation policies`;
-    } else if (missionProfile === 'review-generation') {
-        contextInstructions = `- "context_block": describe the typical service delivered, review incentives (if any seen), and target audience for feedback`;
-    }
-
     if (skillKey === 'research.company.profile.v1') {
+        let contextInstructions = `- "context_block": 2-3 paragraphs describing the company's offerings and target audience`;
+        if (missionProfile === 'database-reactivation') {
+            contextInstructions = `- "context_block": describe offerings to re-pitch, win-back deals/incentives for returning customers, and signals of a good reactivation candidate`;
+        } else if (missionProfile === 'inbound-nurture') {
+            contextInstructions = `- "context_block": describe core products/services, trial/demo offers, and key qualification questions (budget, timeline, authority)`;
+        } else if (missionProfile === 'customer-service') {
+            contextInstructions = `- "context_block": describe services supported, common customer issues, and standard escalation policies`;
+        } else if (missionProfile === 'review-generation') {
+            contextInstructions = `- "context_block": describe the typical service delivered, review incentives (if any seen), and target audience for feedback`;
+        }
         return {
             titleSuffix: 'Company Intelligence',
             prompt: `You are a business research assistant. Research the company "${target}"${url}${ind}.
@@ -383,6 +487,9 @@ function buildResearchPrompt(
 Return a JSON object with these exact keys (no other keys):
 - "summary": 2-4 sentence company overview
 - "competitors": array of strings (competitor names - max 5)
+- "offerings": array of strings (main products or services - max 5)
+- "tech_stack": array of strings (technologies or tools mentioned - max 5)
+- "market_position": one sentence on market position or differentiator
 ${contextInstructions}
 
 Output ONLY valid JSON, no markdown or extra text.`,
@@ -390,14 +497,27 @@ Output ONLY valid JSON, no markdown or extra text.`,
     }
 
     if (skillKey === 'research.industry.landscape.v1') {
+        let contextInstructions = `- "context_block": 2-3 paragraphs on market trends, typical buying triggers, common objections, and compliance or regulatory notes relevant to marketing and sales in this vertical`;
+        if (missionProfile === 'database-reactivation') {
+            contextInstructions = `- "context_block": describe offerings typical in this vertical to re-pitch, win-back incentives, and signals of good reactivation candidates`;
+        } else if (missionProfile === 'inbound-nurture') {
+            contextInstructions = `- "context_block": describe core offerings in this vertical, trial/demo norms, and key qualification questions`;
+        } else if (missionProfile === 'customer-service') {
+            contextInstructions = `- "context_block": describe service norms in this vertical, common issues, and escalation patterns`;
+        } else if (missionProfile === 'review-generation') {
+            contextInstructions = `- "context_block": describe typical services in this vertical, review incentives, and target audience for feedback`;
+        }
         return {
             titleSuffix: 'Industry Intelligence',
             prompt: `You are a market research assistant. Research the industry or vertical: "${target}"${ind || ''}.
 
 Return a JSON object with these exact keys (no other keys):
 - "summary": 2-4 sentence overview of the industry, key trends, and buyer dynamics
-- "competitors": array of strings (representative players or segments - max 5)
-- "context_block": 2-3 paragraphs on market trends, typical buying triggers, common objections, and compliance or regulatory notes relevant to marketing and sales in this vertical
+- "key_players": array of strings (representative companies or segments - max 5)
+- "market_trends": 2-3 sentences on current market trends
+- "buying_triggers": 2-3 sentences on what drives purchases in this vertical
+- "compliance_notes": 1-2 sentences on compliance or regulatory notes if relevant
+${contextInstructions}
 
 Output ONLY valid JSON, no markdown or extra text.`,
         };
@@ -410,8 +530,11 @@ Output ONLY valid JSON, no markdown or extra text.`,
 
 Return a JSON object with these exact keys (no other keys):
 - "summary": 2-4 sentence overview of the function/domain and typical responsibilities and practices
-- "competitors": array of strings (alternative roles, methodologies, or comparable functions - max 5)
-- "context_block": 2-3 paragraphs on best practices, typical SOPs, escalation and handoff norms, language and compliance considerations (e.g. Customer Service, Finance, Sales, HR)
+- "related_roles": array of strings (alternative or adjacent job roles - max 5)
+- "best_practices": 2-3 paragraphs on best practices for this function
+- "sop_patterns": 2-3 sentences on typical SOPs and workflows
+- "escalation_norms": 2-3 sentences on escalation and handoff norms
+- "context_block": 2-3 paragraphs on language, compliance considerations, and how to position messaging for this function (e.g. Customer Service, Finance, Sales, HR)
 
 Output ONLY valid JSON, no markdown or extra text.`,
         };
@@ -424,8 +547,11 @@ Output ONLY valid JSON, no markdown or extra text.`,
 
 Return a JSON object with these exact keys (no other keys):
 - "summary": 2-4 sentence overview of the technology, main use cases, and typical adoption
-- "competitors": array of strings (alternative platforms or tools - max 5)
-- "context_block": 2-3 paragraphs on capabilities, common troubleshooting, integration patterns, and maturity or adoption best practices (e.g. ServiceNow, Workday, Salesforce, HubSpot)
+- "alternatives": array of strings (alternative platforms or tools - max 5)
+- "capabilities": 2-3 sentences on key capabilities
+- "integration_patterns": 2-3 sentences on common integration patterns
+- "adoption_notes": 2-3 sentences on maturity or adoption best practices
+- "context_block": 2-3 paragraphs on capabilities, common troubleshooting, integration patterns, and maturity (e.g. ServiceNow, Workday, Salesforce, HubSpot)
 
 Output ONLY valid JSON, no markdown or extra text.`,
         };
@@ -438,8 +564,9 @@ Output ONLY valid JSON, no markdown or extra text.`,
 
 Return a JSON object with these exact keys (no other keys):
 - "summary": 2-4 sentence overview of the function/domain and typical practices
-- "competitors": array of strings (alternative roles, methodologies, or tools - max 5)
-- "context_block": 2-3 paragraphs on best practices, SOPs, escalation norms, and troubleshooting considerations
+- "related_roles": array of strings (alternative roles or methodologies - max 5)
+- "best_practices": 2-3 paragraphs on best practices and SOPs
+- "context_block": 2-3 paragraphs on escalation norms and troubleshooting considerations
 
 Output ONLY valid JSON, no markdown or extra text.`,
         };
@@ -452,7 +579,7 @@ Output ONLY valid JSON, no markdown or extra text.`,
 Return a JSON object with these exact keys (no other keys):
 - "summary": 2-4 sentence overview
 - "competitors": array of strings (max 5)
-${contextInstructions}
+- "context_block": 2-3 paragraphs of relevant context
 
 Output ONLY valid JSON, no markdown or extra text.`,
     };

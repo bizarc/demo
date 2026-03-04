@@ -361,6 +361,8 @@ export interface Database {
                     updated_at: string
                     research_type: string | null
                     skill_key: string | null
+                    research_data: Json
+                    context_block: string | null
                 }
                 Insert: {
                     id?: string
@@ -382,6 +384,8 @@ export interface Database {
                     updated_at?: string
                     research_type?: string | null
                     skill_key?: string | null
+                    research_data?: Json
+                    context_block?: string | null
                 }
                 Update: { [k: string]: unknown }
                 Relationships: []
@@ -848,6 +852,14 @@ export type KnowledgeBaseInsert = Database['public']['Tables']['knowledge_bases'
 export type KnowledgeBaseUpdate = Database['public']['Tables']['knowledge_bases']['Update'];
 export type ResearchRecord = Database['public']['Tables']['research_records']['Row'];
 export type ResearchRecordInsert = Database['public']['Tables']['research_records']['Insert'];
+
+/** Type-specific research_data shapes for type-safe access by research_type */
+export type ResearchData =
+    | { offerings?: string[]; tech_stack?: string[]; market_position?: string }
+    | { key_players?: string[]; market_trends?: string; buying_triggers?: string; compliance_notes?: string }
+    | { related_roles?: string[]; best_practices?: string; sop_patterns?: string; escalation_norms?: string }
+    | { alternatives?: string[]; capabilities?: string; integration_patterns?: string; adoption_notes?: string }
+    | Record<string, unknown>;
 
 export type SkillCatalogEntry = Database['public']['Tables']['skill_catalog']['Row'];
 export type SkillCatalogInsert = Database['public']['Tables']['skill_catalog']['Insert'];

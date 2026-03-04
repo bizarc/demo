@@ -42,7 +42,9 @@ export async function POST(request: NextRequest) {
         });
         return Response.json(result);
     } catch (err) {
-        const message = err instanceof Error ? err.message : 'Skill execution failed';
+        const message = err instanceof Error ? err.message : (err && typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string')
+            ? (err as { message: string }).message
+            : 'Skill execution failed';
         console.error('Skill execute error:', err);
         return Response.json({ error: message }, { status: 400 });
     }

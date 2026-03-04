@@ -8,6 +8,7 @@ import { InternalAppShell } from '@/components/layout/InternalAppShell';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { KnowledgeBaseSelect } from '@/components/ui/KnowledgeBaseSelect';
 
 const STEPS = ['Campaign', 'RECON Link', 'Sender Identity', 'Schedule'];
 
@@ -138,14 +139,14 @@ export default function NewCampaignPage() {
                                 </p>
                             </div>
                             <div>
-                                <label className="mb-1 block text-sm font-medium text-foreground">Knowledge Base ID (optional)</label>
-                                <Input
+                                <KnowledgeBaseSelect
+                                    label="Knowledge Base (optional)"
                                     value={form.knowledge_base_id}
-                                    onChange={(e) => set('knowledge_base_id', e.target.value)}
-                                    placeholder="UUID from RECON"
+                                    onChange={(v) => set('knowledge_base_id', v)}
+                                    statusFilter="approved"
                                 />
                                 <p className="mt-1 text-xs text-foreground-secondary">
-                                    Find IDs in <Link href="/recon/kb" className="text-primary hover:underline">RECON → Knowledge Bases</Link>
+                                    <Link href="/recon/kb" className="text-primary hover:underline">RECON → Knowledge Bases</Link> to create or manage.
                                 </p>
                             </div>
                         </div>

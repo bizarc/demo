@@ -216,4 +216,20 @@ sessions (1) ── (*) messages
 
 ## Migrations
 
-Migrations are stored in `supabase/migrations/` and applied via `npx supabase db push`.
+Migrations are stored in `supabase/migrations/` and applied via the Supabase CLI.
+
+- **Remote project (hosted Supabase):** Link once, then push:
+  ```bash
+  npx supabase link --project-ref <your-project-ref>
+  npx supabase db push
+  ```
+- **Local Supabase:** From the project root (e.g. `demo/`), run:
+  ```bash
+  npx supabase db reset
+  ```
+  or, to apply only new migrations without resetting:
+  ```bash
+  npx supabase migration up
+  ```
+
+RECON skill runtime (skill catalog, skill runs, research by type) requires the `20260304*` migrations; if you see "Could not find the table 'public.skill_catalog'", run the migrations above.
