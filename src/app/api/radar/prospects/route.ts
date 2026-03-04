@@ -64,26 +64,34 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { email, phone, linkedin_url, instagram_handle, ...rest } = body;
+        const { email, phone, linkedin_url, instagram_handle, website_url, ...rest } = body;
 
-        if (!email && !phone && !linkedin_url && !instagram_handle) {
+        const hasContact =
+            !!(email?.trim() || phone?.trim() || linkedin_url?.trim() || instagram_handle?.trim() || website_url?.trim());
+        if (!hasContact) {
             return NextResponse.json(
-                { error: 'At least one contact identifier required (email, phone, linkedin_url, or instagram_handle)' },
+                { error: 'At least one contact identifier required (email, phone, LinkedIn, Instagram, or website)' },
                 { status: 400 }
             );
         }
 
         const supabase = createServerClient();
 
+        // Prospects without email get status 'new' so they can be enrolled and receive once email is added
+        const hasEmail = !!(email?.trim());
+        const payload = {
+            email: email?.trim() ? email.trim().toLowerCase() : null,
+            phone: phone?.trim() || null,
+            linkedin_url: linkedin_url?.trim() || null,
+            instagram_handle: instagram_handle?.trim() || null,
+            website_url: website_url?.trim() || null,
+            ...rest,
+            status: hasEmail ? 'active' : 'new',
+        };
+
         const { data, error } = await supabase
             .from('prospects')
-            .insert({
-                email: email?.toLowerCase() || undefined,
-                phone,
-                linkedin_url,
-                instagram_handle,
-                ...rest,
-            })
+            .insert(payload)
             .select()
             .single();
 

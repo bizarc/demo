@@ -24,8 +24,9 @@ export default function NewProspectPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!form.email && !form.phone && !form.linkedin_url && !form.instagram_handle) {
-            setError('At least one contact identifier is required (email, phone, LinkedIn URL, or Instagram handle)');
+        const hasContact = !!(form.email?.trim() || form.phone?.trim() || form.linkedin_url?.trim() || form.instagram_handle?.trim() || form.website_url?.trim());
+        if (!hasContact) {
+            setError('At least one contact identifier is required (email, phone, LinkedIn, Instagram, or website)');
             return;
         }
         setSaving(true);
@@ -105,6 +106,9 @@ export default function NewProspectPage() {
                         <div>
                             <label className="mb-1 block text-sm font-medium text-foreground">Website</label>
                             <Input value={form.website_url} onChange={set('website_url')} placeholder="https://example.com" />
+                            <p className="mt-1 text-xs text-foreground-secondary">
+                                You can add a prospect with just company name and website; add email later to send campaigns.
+                            </p>
                         </div>
 
                         <div>

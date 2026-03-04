@@ -36,6 +36,7 @@ export default function NewCampaignPage() {
 
     const handleCreate = async () => {
         if (!form.name.trim()) { setError('Campaign name required'); return; }
+        // From name/email are required to activate the campaign later; allow creating as draft without them
         setSaving(true);
         setError(null);
         try {
@@ -228,9 +229,14 @@ export default function NewCampaignPage() {
                                     {form.target_niche && (
                                         <div><dt className="inline font-medium">Niche:</dt> <dd className="inline">{form.target_niche}</dd></div>
                                     )}
-                                    <div><dt className="inline font-medium">From:</dt> <dd className="inline">{form.from_name} &lt;{form.from_email}&gt;</dd></div>
+                                    <div><dt className="inline font-medium">From:</dt> <dd className="inline">{form.from_name || '—'} &lt;{form.from_email || '—'}&gt;</dd></div>
                                     <div><dt className="inline font-medium">Limit:</dt> <dd className="inline">{form.daily_send_limit}/day</dd></div>
                                 </dl>
+                                {(!form.from_name?.trim() || !form.from_email?.trim()) && (
+                                    <p className="mt-2 text-xs text-amber-600">
+                                        Add From Name and From Email to activate this campaign and send messages. You can add them later on the campaign page.
+                                    </p>
+                                )}
                             </div>
                         </div>
                     )}

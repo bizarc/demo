@@ -66,19 +66,32 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Campaign name is required' }, { status: 400 });
         }
 
+        // Sanitize optional UUIDs: empty string is invalid for PostgreSQL UUID columns
+        const uuidFields = ['research_record_id', 'knowledge_base_id'] as const;
+        const sanitized: Record<string, unknown> = { ...rest };
+        for (const field of uuidFields) {
+            const v = sanitized[field];
+            if (v === '' || (typeof v === 'string' && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v))) {
+                sanitized[field] = null;
+            }
+        }
+
         const supabase = createServerClient();
 
         const { data: { user } } = await supabase.auth.getUser();
 
         const { data, error } = await supabase
             .from('campaigns')
-            .insert({ name: name.trim(), ...rest, created_by: user?.id })
+            .insert({ name: name.trim(), ...sanitized, created_by: user?.id })
             .select()
             .single();
 
         if (error) {
             console.error('Campaign create error:', error);
-            return NextResponse.json({ error: 'Failed to create campaign' }, { status: 500 });
+            return NextResponse.json(
+                { error: error.message || 'Failed to create campaign' },
+                { status: 500 }
+            );
         }
 
         return NextResponse.json({ campaign: data }, { status: 201 });

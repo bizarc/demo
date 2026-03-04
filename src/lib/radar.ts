@@ -116,12 +116,12 @@ export async function enrollProspects(
         researchSummary = research?.summary || null;
     }
 
-    // Filter out unsubscribed/bounced prospects
+    // Include active and new prospects (new = no email yet; they can be enrolled and will receive once email is added)
     const { data: prospects } = await supabase
         .from('prospects')
         .select('id, status, first_name, last_name, company_name, title, industry')
         .in('id', prospectIds)
-        .in('status', ['active']);
+        .in('status', ['active', 'new']);
 
     const eligible = prospects || [];
     let enrolled = 0;

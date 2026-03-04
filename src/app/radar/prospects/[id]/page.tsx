@@ -238,7 +238,7 @@ export default function ProspectDetailPage() {
                                 variant="secondary"
                                 size="sm"
                                 onClick={() => setShowEnrollDropdown(!showEnrollDropdown)}
-                                disabled={!prospect.email || enrolling}
+                                disabled={enrolling}
                             >
                                 {enrolling ? <Loader2 size={14} className="animate-spin mr-1" /> : <Mail size={14} className="mr-1" />}
                                 Enroll in Campaign
@@ -338,7 +338,7 @@ export default function ProspectDetailPage() {
 
                 {!prospect.email && (
                     <div className="mb-4 text-xs text-foreground-tertiary">
-                        Can&apos;t enroll in campaign without an email address.
+                        You can enroll this prospect now; emails will send once an email address is added (e.g. via Edit or Find Email).
                     </div>
                 )}
 
